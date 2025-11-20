@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>포트폴리오 & 투자자 비교</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothic', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f8f9fa;
+        }
+
+        .navbar {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar-logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #667eea;
+            cursor: pointer;
+        }
+
+        .navbar-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn-nav {
+            padding: 10px 20px;
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-nav:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .page-header h1 {
+            font-size: 2.5rem;
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+
+        .page-header p {
+            font-size: 1.1rem;
+            color: #718096;
+        }
+
+        .investor-selector {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .investor-selector h2 {
+            font-size: 1.5rem;
+            color: #2d3748;
+            margin-bottom: 20px;
+        }
+
+        .investor-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .investor-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .investor-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(102, 126, 234, 0.3);
+        }
+
+        .investor-card.selected {
+            border: 3px solid #fbbf24;
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
+        }
+
+        .remove-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.3);
+            border: none;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: none;
+        }
+
+        .investor-card.selected .remove-btn {
+            display: block;
+        }
+
+        .investor-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .investor-style {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .add-investor {
+            background: white;
+            border: 3px dashed #667eea;
+            color: #667eea;
+            padding: 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .add-investor:hover {
+            background: #f7fafc;
+        }
+
+        .comparison-section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .comparison-section h2 {
+            font-size: 1.8rem;
+            color: #2d3748;
+            margin-bottom: 25px;
+        }
+
+        .philosophy-comparison {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .investor-philosophy {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+        }
+
+        .investor-philosophy h3 {
+            font-size: 1.3rem;
+            color: #2d3748;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .philosophy-item {
+            margin-bottom: 20px;
+        }
+
+        .philosophy-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        .philosophy-bar {
+            background: #e2e8f0;
+            height: 25px;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .philosophy-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 10px;
+            color: white;
+            font-weight: 700;
+            font-size: 0.9rem;
+            transition: width 1s ease-out;
+        }
+
+        .insights-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #e2e8f0;
+        }
+
+        .insights-section h4 {
+            font-size: 1.1rem;
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+
+        .insight-text {
+            color: #4a5568;
+            line-height: 1.8;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-size: 1.2rem;
+            color: #667eea;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            color: #2d3748;
+        }
+
+        .close {
+            color: #718096;
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            background: none;
+        }
+
+        .close:hover {
+            color: #2d3748;
+        }
+
+        .investor-list {
+            display: grid;
+            gap: 15px;
+        }
+
+        .investor-option {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .investor-option:hover {
+            background: #e2e8f0;
+            border-color: #667eea;
+        }
+
+        .investor-option h3 {
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+
+        .investor-option p {
+            color: #718096;
+            font-size: 0.9rem;
+        }
+
+        .search-container {
+            margin-bottom: 25px;
+            padding-bottom: 25px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .search-container h3 {
+            font-size: 1.1rem;
+            color: #2d3748;
+            margin-bottom: 15px;
+        }
+
+        .search-box {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .search-input-wrapper {
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .search-btn {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .search-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .suggestions-dropdown {
+            display: none;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+
+        .suggestions-dropdown.show {
+            display: block;
+        }
+
+        .suggestion-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+
+        .suggestion-item:hover {
+            background: #f7fafc;
+            border-left: 4px solid #667eea;
+        }
+
+        .suggestion-name {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 4px;
+        }
+
+        .suggestion-style {
+            font-size: 0.85rem;
+            color: #667eea;
+            margin-bottom: 2px;
+        }
+
+        .suggestion-desc {
+            font-size: 0.8rem;
+            color: #718096;
+        }
+
+        .no-suggestions {
+            padding: 12px 16px;
+            text-align: center;
+            color: #718096;
+            font-size: 0.9rem;
+        }
+
+        .generate-btn {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .generate-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+        }
+
+        .generate-btn:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .portfolio-content {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+        }
+
+        .portfolio-section {
+            margin-bottom: 30px;
+        }
+
+        .portfolio-section h3 {
+            font-size: 1.3rem;
+            color: #2d3748;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .portfolio-text {
+            color: #4a5568;
+            line-height: 1.8;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #10b981;
+            white-space: pre-wrap;
+        }
+
+        @media (max-width: 768px) {
+            .page-header h1 {
+                font-size: 2rem;
+            }
+
+            .investor-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .philosophy-comparison {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- 네비게이션 바 -->
+<nav class="navbar">
+    <div class="navbar-content">
+        <div class="navbar-logo" onclick="location.href='/'">📊 InvestHub</div>
+        <div class="navbar-buttons">
+            <button class="btn-nav" onclick="location.href='/'">홈으로</button>
+            <button class="btn-nav" onclick="location.href='/news'">뉴스 인사이트</button>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="page-header">
+        <h1>포트폴리오 & 투자자 비교</h1>
+        <p>유명 투자자들의 투자 철학을 비교하고 인사이트를 얻어보세요</p>
+    </div>
+
+    <!-- 투자자 선택 섹션 -->
+    <div class="investor-selector">
+        <h2>비교할 투자자 선택 (최대 4명)</h2>
+        <div class="investor-grid" id="selected-investors">
+            <!-- 선택된 투자자들이 여기에 표시됩니다 -->
+        </div>
+    </div>
+
+    <!-- 투자 철학 비교 섹션 -->
+    <div class="comparison-section">
+        <h2>투자 철학 비교</h2>
+        <div class="philosophy-comparison" id="philosophy-container">
+            <div class="loading">투자자를 선택하면 비교 분석이 시작됩니다</div>
+        </div>
+    </div>
+
+    <!-- 포트폴리오 추천 섹션 -->
+    <div class="comparison-section">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+            <h2 style="margin: 0;">AI 추천 포트폴리오</h2>
+            <button id="generateBtn" class="generate-btn" onclick="generatePortfolio()" disabled>
+                포트폴리오 생성
+            </button>
+        </div>
+        <div id="portfolio-container">
+            <div class="loading">4명의 투자자를 선택하면 추천 포트폴리오를 생성할 수 있습니다</div>
+        </div>
+    </div>
+</div>
+
+<!-- 투자자 추가 모달 -->
+<div id="investorModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>투자자 선택</h2>
+            <button class="close" onclick="closeModal()">&times;</button>
+        </div>
+
+        <!-- 검색 기능 -->
+        <div class="search-container">
+            <h3>🔍 투자자 이름으로 검색</h3>
+            <div class="search-box">
+                <div class="search-input-wrapper">
+                    <input type="text" id="investorSearch" class="search-input"
+                           placeholder="투자자 이름을 입력하세요 (예: Warren Buffett, 워렌 버핏)"
+                           autocomplete="off">
+                    <button class="search-btn" onclick="searchInvestor()" id="searchBtn">추가</button>
+                </div>
+                <div id="suggestions" class="suggestions-dropdown"></div>
+            </div>
+        </div>
+
+        <h3 style="margin-bottom: 15px; color: #2d3748;">또는 목록에서 선택</h3>
+        <div class="investor-list" id="investor-list">
+            <!-- 투자자 목록이 여기에 표시됩니다 -->
+        </div>
+    </div>
+</div>
+
+<script>
+    let selectedInvestors = [];
+    const maxInvestors = 4;
+
+    // 사용 가능한 투자자 목록
+    const availableInvestors = [
+        {
+            id: 'wood',
+            name: '캐시 우드',
+            style: '파괴적 혁신 투자',
+            description: 'ARK Invest 창립자, AI와 블록체인 등 혁신 기술 중심 투자'
+        },
+        {
+            id: 'soros',
+            name: '조지 소로스',
+            style: '매크로 투자',
+            description: '글로벌 매크로 경제 동향을 활용한 투기적 투자'
+        },
+        {
+            id: 'thiel',
+            name: '피터 틸',
+            style: '벤처 캐피털',
+            description: 'PayPal 공동 창업자, 독점 기업과 기술 혁신 투자'
+        },
+        {
+            id: 'fink',
+            name: '래리 핑크',
+            style: 'ESG 투자',
+            description: 'BlackRock CEO, 지속가능성과 장기 가치 중심 투자'
+        },
+        {
+            id: 'buffett',
+            name: '워렌 버핏',
+            style: '가치투자',
+            description: '장기 가치투자의 대가, 내재가치보다 낮은 가격의 우량주를 선호'
+        },
+        {
+            id: 'lynch',
+            name: '피터 린치',
+            style: '성장주 투자',
+            description: '일상에서 투자 아이디어를 찾는 상향식 접근법'
+        },
+        {
+            id: 'dalio',
+            name: '레이 달리오',
+            style: '리스크 패리티',
+            description: '분산투자와 경제 사이클 이해를 중시하는 매크로 투자'
+        },
+        {
+            id: 'graham',
+            name: '벤저민 그레이엄',
+            style: '가치투자 원조',
+            description: '안전마진을 중시하는 보수적 가치투자'
+        },
+        {
+            id: 'simons',
+            name: '짐 사이먼스',
+            style: '퀀트 투자',
+            description: '수학과 통계를 활용한 알고리즘 투자'
+        }
+    ];
+
+    // 커스텀 투자자 저장소
+    let customInvestors = [];
+
+    // 페이지 로드 시 기본 투자자 4명 선택
+    window.addEventListener('DOMContentLoaded', () => {
+        // 캐시 우드, 소로스, 피터 틸, 래리 핑크를 기본 선택
+        selectedInvestors = ['wood', 'soros', 'thiel', 'fink'];
+        updateSelectedInvestors();
+        loadComparison();
+        updateGenerateButton();
+    });
+
+    function updateSelectedInvestors() {
+        const container = document.getElementById('selected-investors');
+        container.innerHTML = '';
+
+        selectedInvestors.forEach(investorId => {
+            let investor = availableInvestors.find(inv => inv.id === investorId);
+            if (!investor) {
+                // 커스텀 투자자 찾기
+                investor = customInvestors.find(inv => inv.id === investorId);
+            }
+            if (investor) {
+                const card = document.createElement('div');
+                card.className = 'investor-card selected';
+                card.innerHTML = `
+                    <button class="remove-btn" onclick="removeInvestor('${investor.id}')">✕</button>
+                    <div class="investor-name">${investor.name}</div>
+                    <div class="investor-style">${investor.style || '커스텀 투자자'}</div>
+                `;
+                container.appendChild(card);
+            }
+        });
+
+        // 4명 미만이면 추가 버튼 표시
+        if (selectedInvestors.length < maxInvestors) {
+            const addCard = document.createElement('div');
+            addCard.className = 'add-investor';
+            addCard.innerHTML = '+ 투자자 추가';
+            addCard.onclick = openModal;
+            container.appendChild(addCard);
+        }
+    }
+
+    function openModal() {
+        const modal = document.getElementById('investorModal');
+        const list = document.getElementById('investor-list');
+        list.innerHTML = '';
+
+        availableInvestors
+            .filter(inv => !selectedInvestors.includes(inv.id))
+            .forEach(investor => {
+                const option = document.createElement('div');
+                option.className = 'investor-option';
+                option.innerHTML = `
+                    <h3>${investor.name}</h3>
+                    <p>${investor.description}</p>
+                `;
+                option.onclick = () => addInvestor(investor.id);
+                list.appendChild(option);
+            });
+
+        modal.style.display = 'block';
+    }
+
+    function closeModal() {
+        document.getElementById('investorModal').style.display = 'none';
+    }
+
+    function addInvestor(investorId) {
+        if (selectedInvestors.length < maxInvestors && !selectedInvestors.includes(investorId)) {
+            selectedInvestors.push(investorId);
+            updateSelectedInvestors();
+            loadComparison();
+            updateGenerateButton();
+            closeModal();
+        }
+    }
+
+    function removeInvestor(investorId) {
+        selectedInvestors = selectedInvestors.filter(id => id !== investorId);
+        updateSelectedInvestors();
+        loadComparison();
+        updateGenerateButton();
+    }
+
+    function updateGenerateButton() {
+        const generateBtn = document.getElementById('generateBtn');
+        if (selectedInvestors.length === maxInvestors) {
+            generateBtn.disabled = false;
+        } else {
+            generateBtn.disabled = true;
+        }
+    }
+
+    async function generatePortfolio() {
+        if (selectedInvestors.length !== maxInvestors) {
+            alert('4명의 투자자를 모두 선택해주세요.');
+            return;
+        }
+
+        const generateBtn = document.getElementById('generateBtn');
+        const container = document.getElementById('portfolio-container');
+
+        // 버튼 비활성화 및 로딩 표시
+        generateBtn.disabled = true;
+        generateBtn.textContent = 'AI가 포트폴리오를 생성 중입니다...';
+        container.innerHTML = '<div class="loading">GPT API를 통해 추천 포트폴리오를 생성하고 있습니다. 잠시만 기다려주세요...</div>';
+
+        try {
+            const response = await fetch('/api/portfolio/recommend', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ investors: selectedInvestors })
+            });
+
+            if (!response.ok) {
+                throw new Error('포트폴리오 생성에 실패했습니다.');
+            }
+
+            const data = await response.json();
+            displayPortfolio(data);
+        } catch (error) {
+            console.error('포트폴리오 생성 오류:', error);
+            container.innerHTML = '<div class="loading">포트폴리오 생성에 실패했습니다. API 키를 확인하거나 나중에 다시 시도해주세요.</div>';
+        } finally {
+            generateBtn.disabled = false;
+            generateBtn.textContent = '포트폴리오 생성';
+        }
+    }
+
+    function displayPortfolio(data) {
+        const container = document.getElementById('portfolio-container');
+
+        let investorNames = '';
+        selectedInvestors.forEach((id, index) => {
+            let investor = availableInvestors.find(inv => inv.id === id);
+            if (!investor) {
+                investor = customInvestors.find(inv => inv.id === id);
+            }
+            if (investor) {
+                investorNames += investor.name;
+                if (index < selectedInvestors.length - 1) {
+                    investorNames += ', ';
+                }
+            }
+        });
+
+        container.innerHTML = `
+            <div class="portfolio-content">
+                <div class="portfolio-section">
+                    <h3>📌 선택된 투자자</h3>
+                    <div class="portfolio-text">${investorNames}</div>
+                </div>
+                <div class="portfolio-section">
+                    <h3>💼 추천 포트폴리오</h3>
+                    <div class="portfolio-text">${data.rationale || data.combinedPhilosophy}</div>
+                </div>
+            </div>
+        `;
+    }
+
+    async function loadComparison() {
+        if (selectedInvestors.length === 0) {
+            document.getElementById('philosophy-container').innerHTML =
+                '<div class="loading">투자자를 선택하면 비교 분석이 시작됩니다</div>';
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/portfolio/compare', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ investors: selectedInvestors })
+            });
+
+            const data = await response.json();
+            displayComparison(data);
+        } catch (error) {
+            console.error('비교 데이터 로딩 오류:', error);
+            document.getElementById('philosophy-container').innerHTML =
+                '<div class="loading">데이터를 불러오는데 실패했습니다.</div>';
+        }
+    }
+
+    function displayComparison(data) {
+        const container = document.getElementById('philosophy-container');
+        container.innerHTML = '';
+
+        data.forEach(investorData => {
+            let investor = availableInvestors.find(inv => inv.id === investorData.investorId);
+            if (!investor) {
+                investor = customInvestors.find(inv => inv.id === investorData.investorId);
+            }
+
+            const card = document.createElement('div');
+            card.className = 'investor-philosophy';
+
+            let philosophyHtml = `
+                <h3>${investor ? investor.name : investorData.investorId}</h3>
+            `;
+
+            investorData.philosophy.forEach(item => {
+                philosophyHtml += `
+                    <div class="philosophy-item">
+                        <div class="philosophy-label">
+                            <span>${item.category}</span>
+                            <span>${item.percentage}%</span>
+                        </div>
+                        <div class="philosophy-bar">
+                            <div class="philosophy-fill" style="width: ${item.percentage}%">
+                                ${item.percentage}%
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            if (investorData.insights) {
+                philosophyHtml += `
+                    <div class="insights-section">
+                        <h4>💡 AI 인사이트</h4>
+                        <div class="insight-text">${investorData.insights}</div>
+                    </div>
+                `;
+            }
+
+            card.innerHTML = philosophyHtml;
+            container.appendChild(card);
+        });
+    }
+
+    // 자동완성 기능
+    function filterInvestors(searchTerm) {
+        if (!searchTerm) {
+            return [];
+        }
+
+        const term = searchTerm.toLowerCase();
+        return availableInvestors.filter(investor =>
+            investor.name.toLowerCase().includes(term) ||
+            investor.style.toLowerCase().includes(term) ||
+            investor.description.toLowerCase().includes(term)
+        );
+    }
+
+    function showSuggestions(investors) {
+        const suggestionsDiv = document.getElementById('suggestions');
+
+        if (investors.length === 0) {
+            suggestionsDiv.innerHTML = '<div class="no-suggestions">검색 결과가 없습니다. 직접 입력하여 추가하세요.</div>';
+            suggestionsDiv.classList.add('show');
+            return;
+        }
+
+        suggestionsDiv.innerHTML = '';
+        investors.forEach(investor => {
+            const item = document.createElement('div');
+            item.className = 'suggestion-item';
+            item.innerHTML = `
+                <div class="suggestion-name">${investor.name}</div>
+                <div class="suggestion-style">${investor.style}</div>
+                <div class="suggestion-desc">${investor.description}</div>
+            `;
+            item.onclick = () => selectSuggestion(investor);
+            suggestionsDiv.appendChild(item);
+        });
+
+        suggestionsDiv.classList.add('show');
+    }
+
+    function hideSuggestions() {
+        const suggestionsDiv = document.getElementById('suggestions');
+        suggestionsDiv.classList.remove('show');
+        suggestionsDiv.innerHTML = '';
+    }
+
+    function selectSuggestion(investor) {
+        // 이미 선택된 투자자인지 확인
+        if (selectedInvestors.includes(investor.id)) {
+            alert('이미 선택된 투자자입니다.');
+            hideSuggestions();
+            return;
+        }
+
+        // 최대 인원 확인
+        if (selectedInvestors.length >= maxInvestors) {
+            alert('최대 4명까지만 비교할 수 있습니다.');
+            hideSuggestions();
+            return;
+        }
+
+        // 투자자 추가
+        selectedInvestors.push(investor.id);
+        updateSelectedInvestors();
+        loadComparison();
+
+        // 입력창 초기화 및 제안 숨김
+        document.getElementById('investorSearch').value = '';
+        hideSuggestions();
+        closeModal();
+    }
+
+    // 검색 기능 (API 호출)
+    async function searchInvestor() {
+        const searchInput = document.getElementById('investorSearch');
+        const searchBtn = document.getElementById('searchBtn');
+        const investorName = searchInput.value.trim();
+
+        // 자동완성 제안 숨김
+        hideSuggestions();
+
+        if (!investorName) {
+            alert('투자자 이름을 입력해주세요.');
+            return;
+        }
+
+        if (selectedInvestors.length >= maxInvestors) {
+            alert('최대 4명까지만 비교할 수 있습니다.');
+            return;
+        }
+
+        // 버튼 비활성화 및 로딩 표시
+        searchBtn.disabled = true;
+        searchBtn.textContent = '검색 중...';
+
+        try {
+            const response = await fetch('/api/portfolio/search', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ name: investorName })
+            });
+
+            if (!response.ok) {
+                throw new Error('투자자 정보를 가져올 수 없습니다.');
+            }
+
+            const investorData = await response.json();
+
+            // 커스텀 투자자 ID 생성 (타임스탬프 기반)
+            const customId = 'custom_' + Date.now();
+            const customInvestor = {
+                id: customId,
+                name: investorData.name || investorName,
+                style: investorData.style || '커스텀 투자자',
+                description: investorData.description || '검색으로 추가된 투자자'
+            };
+
+            // 커스텀 투자자 목록에 추가
+            customInvestors.push(customInvestor);
+
+            // 선택된 투자자에 추가
+            selectedInvestors.push(customId);
+            updateSelectedInvestors();
+            loadComparison();
+
+            // 입력창 초기화 및 모달 닫기
+            searchInput.value = '';
+            closeModal();
+        } catch (error) {
+            console.error('투자자 검색 오류:', error);
+            alert('투자자 정보를 가져오는데 실패했습니다. 다시 시도해주세요.');
+        } finally {
+            searchBtn.disabled = false;
+            searchBtn.textContent = '추가';
+        }
+    }
+
+    // 검색 입력 이벤트 리스너
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('investorSearch');
+        if (searchInput) {
+            // 입력할 때마다 자동완성 표시
+            searchInput.addEventListener('input', function(event) {
+                const searchTerm = event.target.value.trim();
+
+                if (searchTerm.length === 0) {
+                    hideSuggestions();
+                    return;
+                }
+
+                const matches = filterInvestors(searchTerm);
+                showSuggestions(matches);
+            });
+
+            // 엔터키로 검색 (자동완성 결과가 없거나 직접 입력한 경우)
+            searchInput.addEventListener('keypress', function(event) {
+                if (event.key === 'Enter') {
+                    const suggestionsDiv = document.getElementById('suggestions');
+
+                    // 자동완성 제안이 있고 첫 번째 항목 선택
+                    const firstSuggestion = suggestionsDiv.querySelector('.suggestion-item');
+                    if (firstSuggestion && suggestionsDiv.classList.contains('show')) {
+                        firstSuggestion.click();
+                    } else {
+                        // 자동완성 제안이 없으면 API로 검색
+                        searchInvestor();
+                    }
+                }
+            });
+
+            // 입력창에서 포커스 잃으면 잠시 후 제안 숨김
+            searchInput.addEventListener('blur', function() {
+                setTimeout(hideSuggestions, 200);
+            });
+        }
+    });
+
+    // 모달 외부 클릭 시 닫기
+    window.onclick = function(event) {
+        const modal = document.getElementById('investorModal');
+        if (event.target === modal) {
+            closeModal();
+        }
+    }
+</script>
+</body>
+</html>

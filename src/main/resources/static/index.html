@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>투자자를 위한 경제 콘텐츠 플랫폼</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothic', sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* 네비게이션 바 */
+        .navbar {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar-logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .navbar-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn-login {
+            padding: 10px 25px;
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-login:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-signup {
+            padding: 10px 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-signup:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        /* 히어로 섹션 */
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 120px 20px;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 2.8rem;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            margin-bottom: 40px;
+            opacity: 0.95;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 15px 35px;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: white;
+            color: #667eea;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        /* 핵심 기능 섹션 */
+        .features {
+            padding: 80px 20px;
+            background: #f8f9fa;
+        }
+
+        .features h2 {
+            text-align: center;
+            font-size: 2.5rem;
+            color: #2d3748;
+        }
+
+        /* 여기부터: 이달의 자료를 왼쪽 사이드로 배치하는 레이아웃 */
+        .features-layout {
+            display: flex;
+            gap: 30px;
+            margin-top: 40px;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+            align-items: flex-start;
+        }
+
+        .monthly-sidebar {
+            width: 280px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 25px;
+            height: fit-content;
+            position: sticky;
+            top: 100px;
+        }
+
+        .monthly-sidebar h3 {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: #2d3748;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .features-main {
+            flex: 1;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 40px 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+        }
+
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+        }
+
+        .feature-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #2d3748;
+        }
+
+        .feature-card p {
+            color: #718096;
+            line-height: 1.7;
+        }
+
+        /* 콘텐츠 리뷰 섹션 */
+        .content-review {
+            padding: 80px 20px;
+            background: white;
+        }
+
+        .content-review h2 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 60px;
+            color: #2d3748;
+        }
+
+        .review-container {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* 랭킹 사이드바 (콘텐츠 리뷰 영역) */
+        .ranking-sidebar {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 25px;
+            height: fit-content;
+            position: sticky;
+            top: 80px;
+        }
+
+        .ranking-section {
+            margin-bottom: 30px;
+        }
+
+        .ranking-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .ranking-section h3 {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: #2d3748;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ranking-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .ranking-item {
+            padding: 12px 10px;
+            margin-bottom: 8px;
+            background: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: start;
+            gap: 10px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .ranking-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .rank-number {
+            font-weight: 700;
+            color: #667eea;
+            font-size: 1.1rem;
+            min-width: 20px;
+        }
+
+        .rank-number.top {
+            color: #fbbf24;
+        }
+
+        .rank-title {
+            flex: 1;
+            font-size: 0.9rem;
+            color: #2d3748;
+            line-height: 1.4;
+        }
+
+        .rank-views {
+            font-size: 0.75rem;
+            color: #718096;
+            white-space: nowrap;
+        }
+
+        .review-content {
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+
+        .review-cards {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .content-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: all 0.3s;
+        }
+
+        .content-card:hover {
+            box-shadow: 0 8px 16px rgba(0,0,0,0.12);
+            transform: translateY(-3px);
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 12px;
+        }
+
+        .content-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2d3748;
+            flex: 1;
+        }
+
+        .paid-badge {
+            background: #fbbf24;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .creator {
+            color: #718096;
+            font-size: 0.95rem;
+            margin-bottom: 10px;
+        }
+
+        .rating {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stars {
+            color: #fbbf24;
+            font-size: 1.1rem;
+        }
+
+        .review-info {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 12px;
+        }
+
+        .review-info h3 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #2d3748;
+        }
+
+        .keyword-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .tag {
+            background: #e0e7ff;
+            color: #5a67d8;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .pros-cons {
+            margin-bottom: 25px;
+        }
+
+        .pros-cons h4 {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            color: #2d3748;
+        }
+
+        .pros-cons ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .pros-cons li {
+            padding: 6px 0;
+            color: #4a5568;
+        }
+
+        .pros-cons li:before {
+            content: "✓ ";
+            color: #48bb78;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .review-info .btn {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        @media (max-width: 1024px) {
+            .review-container {
+                grid-template-columns: 1fr;
+            }
+
+            .ranking-sidebar {
+                position: static;
+            }
+
+            .review-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .features-layout {
+                flex-direction: column;
+            }
+
+            .monthly-sidebar {
+                width: 100%;
+                position: static;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .navbar-buttons {
+                gap: 10px;
+            }
+
+            .btn-login, .btn-signup {
+                padding: 8px 18px;
+                font-size: 0.9rem;
+            }
+
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .review-cards {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- 네비게이션 바 -->
+<nav class="navbar">
+    <div class="navbar-content">
+        <div class="navbar-logo">📊 InvestHub</div>
+        <div class="navbar-buttons">
+            <button class="btn-login">로그인</button>
+            <button class="btn-signup">회원가입</button>
+        </div>
+    </div>
+</nav>
+
+<!-- 히어로 섹션 -->
+<section class="hero">
+    <div class="container">
+        <h1>투자자들을 위한 경제 콘텐츠 리뷰 & 종목 토론 플랫폼</h1>
+        <p>신뢰할 수 있는 투자 인사이트와 커뮤니티를 한곳에서 경험하세요</p>
+        <div class="hero-buttons">
+            <button class="btn btn-primary">서비스 소개 보기</button>
+            <button class="btn btn-secondary">바로 데모 살펴보기</button>
+        </div>
+    </div>
+</section>
+
+<!-- 핵심 기능 + 왼쪽 이달의 자료 섹션 -->
+<section class="features">
+    <div class="container">
+        <h2>핵심 기능</h2>
+        <div class="features-layout">
+            <!-- 왼쪽 이달의 자료 사이드바 -->
+            <aside class="monthly-sidebar">
+                <h3>📚 이달의 자료</h3>
+                <ul class="ranking-list">
+                    <li class="ranking-item">
+                        <span class="rank-number top">1</span>
+                        <div>
+                            <div class="rank-title">2024년 미국 경제 전망 완벽 분석</div>
+                            <div class="rank-views">👁 12,453</div>
+                        </div>
+                    </li>
+                    <li class="ranking-item">
+                        <span class="rank-number top">2</span>
+                        <div>
+                            <div class="rank-title">반도체 산업 트렌드 리포트</div>
+                            <div class="rank-views">👁 9,821</div>
+                        </div>
+                    </li>
+                    <li class="ranking-item">
+                        <span class="rank-number top">3</span>
+                        <div>
+                            <div class="rank-title">ETF 투자 실전 가이드북</div>
+                            <div class="rank-views">👁 8,654</div>
+                        </div>
+                    </li>
+                    <li class="ranking-item">
+                        <span class="rank-number">4</span>
+                        <div>
+                            <div class="rank-title">글로벌 인플레이션 대응 전략</div>
+                            <div class="rank-views">👁 7,332</div>
+                        </div>
+                    </li>
+                    <li class="ranking-item">
+                        <span class="rank-number">5</span>
+                        <div>
+                            <div class="rank-title">AI 관련주 투자 분석</div>
+                            <div class="rank-views">👁 6,987</div>
+                        </div>
+                    </li>
+                </ul>
+            </aside>
+
+            <!-- 오른쪽 기존 핵심 기능 카드 -->
+            <div class="features-main">
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">📝</div>
+                        <h3>콘텐츠 리뷰</h3>
+                        <p>유튜브, 블로그 등 유료 경제 콘텐츠를 맛집 리뷰처럼 평가하세요. 실제 구독자들의 솔직한 후기와 평점으로 검증된 콘텐츠만 선택할 수 있습니다.</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon">📈</div>
+                        <h3>종목 차트 & 토론방</h3>
+                        <p>실시간 차트를 보면서 바로 아래 토론방에서 다른 투자자들과 의견을 나누세요. 차트 분석부터 매매 전략까지 실시간으로 공유합니다.</p>
+                    </div>
+
+                    <div class="feature-card" onclick="location.href='/news'">
+                        <div class="feature-icon">📰</div>
+                        <h3>뉴스 & 트위터 인사이트</h3>
+                        <p>중요한 경제 뉴스 요약과 유명 투자 인플루언서들의 트윗을 한눈에 모아보세요. 시장의 흐름을 빠르게 파악할 수 있습니다.</p>
+                    </div>
+
+                    <div class="feature-card" onclick="location.href='/portfolio'">
+                        <div class="feature-icon">💼</div>
+                        <h3>포트폴리오 & 투자자 비교</h3>
+                        <p>내 포트폴리오를 유명 투자자들과 비교 분석하세요. 수익률, 자산 배분, 투자 스타일을 비교하며 인사이트를 얻을 수 있습니다.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 콘텐츠 리뷰 섹션 -->
+<section class="content-review">
+    <div class="container">
+        <h2>콘텐츠 리뷰 미리보기</h2>
+        <div class="review-container">
+            <!-- 여기서는 이달의 자료 제거, 인기 뉴스만 유지 -->
+            <div class="ranking-sidebar">
+                <div class="ranking-section">
+                    <h3>📰 인기 뉴스</h3>
+                    <ul class="ranking-list">
+                        <li class="ranking-item">
+                            <span class="rank-number top">1</span>
+                            <div>
+                                <div class="rank-title">Fed 금리 동결 결정, 시장 반응은?</div>
+                                <div class="rank-views">👁 15,234</div>
+                            </div>
+                        </li>
+                        <li class="ranking-item">
+                            <span class="rank-number top">2</span>
+                            <div>
+                                <div class="rank-title">삼성전자 신규 반도체 공장 착공</div>
+                                <div class="rank-views">👁 11,567</div>
+                            </div>
+                        </li>
+                        <li class="ranking-item">
+                            <span class="rank-number top">3</span>
+                            <div>
+                                <div class="rank-title">비트코인 5만 달러 돌파 전망</div>
+                                <div class="rank-views">👁 10,432</div>
+                            </div>
+                        </li>
+                        <li class="ranking-item">
+                            <span class="rank-number">4</span>
+                            <div>
+                                <div class="rank-title">테슬라 신형 모델 공개 임박</div>
+                                <div class="rank-views">👁 9,123</div>
+                            </div>
+                        </li>
+                        <li class="ranking-item">
+                            <span class="rank-number">5</span>
+                            <div>
+                                <div class="rank-title">국내 증시 외국인 순매수 지속</div>
+                                <div class="rank-views">👁 8,456</div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="review-content">
+                <div class="review-cards">
+                    <div class="content-card">
+                        <div class="content-header">
+                            <div class="content-title">월급쟁이 투자자를 위한 미국 주식 ETF 완벽 가이드</div>
+                            <span class="paid-badge">유료</span>
+                        </div>
+                        <div class="creator">크리에이터: 투자의신</div>
+                        <div class="rating">
+                            <span class="stars">★★★★★</span>
+                            <span>4.8 / 5.0 (127명)</span>
+                        </div>
+                    </div>
+
+                    <div class="content-card">
+                        <div class="content-header">
+                            <div class="content-title">경제 지표로 읽는 시장 흐름 분석법</div>
+                            <span class="paid-badge">유료</span>
+                        </div>
+                        <div class="creator">크리에이터: 경제박사</div>
+                        <div class="rating">
+                            <span class="stars">★★★★☆</span>
+                            <span>4.5 / 5.0 (89명)</span>
+                        </div>
+                    </div>
+
+                    <div class="content-card">
+                        <div class="content-header">
+                            <div class="content-title">개인투자자를 위한 재무제표 읽기 실전편</div>
+                            <span class="paid-badge">유료</span>
+                        </div>
+                        <div class="creator">크리에이터: 가치투자왕</div>
+                        <div class="rating">
+                            <span class="stars">★★★★★</span>
+                            <span>4.9 / 5.0 (203명)</span>
+                        </div>
+                    </div>
+
+                    <div class="content-card">
+                        <div class="content-header">
+                            <div class="content-title">차트 분석 기초부터 실전까지</div>
+                            <span class="paid-badge">유료</span>
+                        </div>
+                        <div class="creator">크리에이터: 차트마스터</div>
+                        <div class="rating">
+                            <span class="stars">★★★★☆</span>
+                            <span>4.6 / 5.0 (156명)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="review-info">
+                    <h3>리뷰 상세 정보</h3>
+
+                    <div class="keyword-tags">
+                        <span class="tag">#ETF투자</span>
+                        <span class="tag">#초보자환영</span>
+                        <span class="tag">#실전전략</span>
+                        <span class="tag">#장기투자</span>
+                    </div>
+
+                    <div class="pros-cons">
+                        <h4>👍 장점</h4>
+                        <ul>
+                            <li>초보자도 이해하기 쉬운 설명</li>
+                            <li>실제 투자 사례가 풍부함</li>
+                            <li>정기적으로 업데이트되는 콘텐츠</li>
+                        </ul>
+                    </div>
+
+                    <div class="pros-cons">
+                        <h4>💡 개선 포인트</h4>
+                        <ul>
+                            <li>고급 전략은 다소 부족</li>
+                            <li>한국 시장 분석이 적음</li>
+                        </ul>
+                    </div>
+
+                    <button class="btn">전체 리뷰 보러가기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+</body>
+</html>
