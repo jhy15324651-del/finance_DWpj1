@@ -311,7 +311,52 @@
                 width: 100%;
                 justify-content: space-around;
             }
+
+
+
         }
+
+
+        .chart-layout {
+            display: flex;
+            gap: 20px;
+        }
+
+        .chart-left {
+            flex: 2;   /* 2:1 비율 → 좌측이 더 넓음 */
+        }
+
+        .chart-right {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .chart-overlay-controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255,255,255,0.9);
+            padding: 8px 12px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+
+        .chart-overlay-controls label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+        }
+
+        .chart-left {
+            position: relative;
+        }
+
     </style>
 </head>
 <body>
@@ -348,54 +393,137 @@
         </div>
     </div>
 
+
+    <div id="stock-info-container" style="display:none; margin: 20px 0;">
+        <div class="stock-info" id="stock-info">
+            <!-- 종목 정보 표시 -->
+        </div>
+
+        <div class="chart-controls">
+            <div class="timeframe-buttons">
+                <button class="timeframe-btn active" data-timeframe="D" onclick="changeTimeframe('D')">일봉</button>
+                <button class="timeframe-btn" data-timeframe="W" onclick="changeTimeframe('W')">주봉</button>
+                <button class="timeframe-btn" data-timeframe="M" onclick="changeTimeframe('M')">월봉</button>
+            </div>
+
+
+        </div>
+
+        <div class="date-range-controls">
+            <span style="color: #718096; font-size: 0.9rem;">기간:</span>
+            <input type="date" id="start-date" class="date-input">
+            <span>~</span>
+            <input type="date" id="end-date" class="date-input">
+            <button class="btn-small" onclick="applyDateRange()">적용</button>
+            <button class="btn-small btn-secondary" onclick="resetDateRange()">초기화</button>
+        </div>
+    </div>
+
+
+
     <!-- 차트 섹션 -->
     <div class="chart-section">
-        <div id="stock-info-container" style="display: none;">
-            <div class="stock-info" id="stock-info">
-                <!-- 종목 정보가 여기에 표시됩니다 -->
-            </div>
 
-            <div class="chart-controls">
-                <div class="timeframe-buttons">
-                    <button class="timeframe-btn active" data-timeframe="D" onclick="changeTimeframe('D')">일봉</button>
-                    <button class="timeframe-btn" data-timeframe="W" onclick="changeTimeframe('W')">주봉</button>
-                    <button class="timeframe-btn" data-timeframe="M" onclick="changeTimeframe('M')">월봉</button>
-                </div>
+        <!-- 📌 가로 두 칼럼 레이아웃 -->
+        <div class="chart-layout">
 
-                <div class="indicator-controls">
-                    <span style="color: #718096; font-size: 0.9rem;">이평선:</span>
-                    <label class="indicator-toggle">
+
+
+
+            <!-- 왼쪽: 차트 -->
+            <div class="chart-left">
+
+
+
+                <div class="chart-ma-controls">
+                    <span style="font-weight:600; margin-right:10px;">이평선:</span>
+
+                    <label style="margin-right:10px;">
                         <input type="checkbox" id="sma20-toggle" checked onchange="toggleSMA(20)">
-                        <span class="color-dot" style="background: #2962FF;"></span>
-                        <span>20일</span>
+                        <span class="color-dot" style="background:#2962FF;"></span> 20일
                     </label>
-                    <label class="indicator-toggle">
+
+                    <label style="margin-right:10px;">
                         <input type="checkbox" id="sma60-toggle" checked onchange="toggleSMA(60)">
-                        <span class="color-dot" style="background: #FF6D00;"></span>
-                        <span>60일</span>
+                        <span class="color-dot" style="background:#FF6D00;"></span> 60일
                     </label>
-                    <label class="indicator-toggle">
+
+                    <label>
                         <input type="checkbox" id="sma120-toggle" checked onchange="toggleSMA(120)">
-                        <span class="color-dot" style="background: #9C27B0;"></span>
-                        <span>120일</span>
+                        <span class="color-dot" style="background:#9C27B0;"></span> 120일
                     </label>
+                </div>
+
+                <div id="chart-container">
+                    <div class="loading">티커를 입력하여 차트를 조회하세요</div>
+                </div>
+
+
+            </div>
+
+
+            <div class="chart-right" id="side-detail-panel">
+                <h3 style="margin-bottom:10px;"> 종목 상세 정보</h3>
+
+                <div style="color:#718096; font-size:0.9rem;">
+                    아직 상세 정보가 없습니다.<br>
+                    추후 뉴스 / 재무 데이터 / 기업정보 등을 여기에 넣으면 됩니다.
+                </div>
+
+                <hr style="margin: 20px 0; border-color:#e2e8f0;">
+
+                <h3 style="margin-bottom:10px;"> 관련 뉴스</h3>
+                <div style="color:#adb5bd; font-size:0.9rem;">
+                    아직 뉴스 데이터가 없습니다.<br>
+                    나중에 API 연동하면 자동으로 들어갑니다.
                 </div>
             </div>
 
-            <div class="date-range-controls">
-                <span style="color: #718096; font-size: 0.9rem;">기간:</span>
-                <input type="date" id="start-date" class="date-input">
-                <span>~</span>
-                <input type="date" id="end-date" class="date-input">
-                <button class="btn-small" onclick="applyDateRange()">적용</button>
-                <button class="btn-small btn-secondary" onclick="resetDateRange()">초기화</button>
-            </div>
-            </div>
+
+        </div> <!-- chart-layout -->
+
+    </div> <!-- chart-section -->
+
+    <!-- 📌 종토방 (Stock Discussion Board) -->
+    <div class="board-section" style="margin-top: 40px;">
+        <h2 style="margin-bottom: 15px;">종목 토론방</h2>
+
+        <!-- 종목 정보 -->
+        <div id="board-stock-title"
+             style="font-size: 1.2rem; font-weight: 600; margin-bottom: 15px; color:#4a5568;">
+            종목을 선택하면 토론방이 표시됩니다.
         </div>
 
-        <div id="chart-container">
-            <div class="loading">티커를 입력하여 차트를 조회하세요</div>
+        <!-- 글쓰기 버튼 -->
+        <div style="margin-bottom: 20px;">
+            <button class="btn"
+                    id="board-write-btn"
+                    style="display:none;"
+                    onclick="">
+                 글쓰기
+            </button>
         </div>
+
+        <!-- 게시판 테이블 -->
+        <table id="board-table" style="width:100%; border-collapse:collapse; display:none;">
+            <thead>
+            <tr style="background:#f1f5f9;">
+                <th style="padding:12px; border-bottom:2px solid #e2e8f0;">번호</th>
+                <th style="padding:12px; border-bottom:2px solid #e2e8f0;">제목</th>
+                <th style="padding:12px; border-bottom:2px solid #e2e8f0;">작성자</th>
+                <th style="padding:12px; border-bottom:2px solid #e2e8f0;">작성일</th>
+            </tr>
+            </thead>
+            <tbody id="board-body">
+            </tbody>
+        </table>
+
+        <!-- 페이지 네비게이션 -->
+        <div id="board-pagination"
+             style="margin-top: 20px; text-align: center; display:none;">
+        </div>
+    </div>
+
     </div>
 </div>
 
@@ -725,6 +853,108 @@
 
         loadStock('005930');
     });
+
+    // 📌 종토방 자동 로드 (currentTicker가 바뀔 때 실행)
+    async function loadBoard() {
+        if (!currentTicker) return;
+
+        document.getElementById("board-stock-title").innerText =
+            ` ${currentTicker} 토론방`;
+
+        // 글쓰기 버튼 링크 세팅
+        const writeBtn = document.getElementById("board-write-btn");
+        writeBtn.style.display = "inline-block";
+        writeBtn.onclick = () => {
+            location.href = `/stock/board/${currentTicker}/write`;
+        };
+
+        // 게시글 목록 API 요청
+        try {
+            const res = await fetch(`/stock/api/board/${currentTicker}`);
+            const list = await res.json();
+
+            const table = document.getElementById("board-table");
+            const tbody = document.getElementById("board-body");
+            const pagination = document.getElementById("board-pagination");
+
+            table.style.display = "table";
+            pagination.style.display = "block";
+
+            tbody.innerHTML = "";
+
+            if (list.content.length === 0) {
+                tbody.innerHTML = `
+                <tr>
+                    <td colspan="4" style="text-align:center; padding:20px; color:#718096;">
+                        등록된 글이 없습니다.
+                    </td>
+                </tr>
+            `;
+                return;
+            }
+
+            // 테이블 렌더링
+            list.content.forEach(board => {
+                const row = `
+                <tr style="border-bottom:1px solid #edf2f7;">
+                    <td style="padding:10px;">${board.id}</td>
+                    <td style="padding:10px;">
+                        <a href="/stock/board/${currentTicker}/read/${board.id}"
+                           style="color:#2b6cb0; text-decoration:none;">
+                            ${board.title}
+                        </a>
+                    </td>
+                    <td style="padding:10px;">${board.writer}</td>
+                    <td style="padding:10px;">${board.regDate?.replace('T', ' ').substring(0,16)}</td>
+                </tr>
+            `;
+                tbody.insertAdjacentHTML("beforeend", row);
+            });
+
+            // 페이지네이션 표시
+            pagination.innerHTML = `
+            <button onclick="changeBoardPage(${list.number - 1})"
+                    class="quick-btn" ${list.first ? "disabled" : ""}>◀ 이전</button>
+            <span style="margin:0 10px;">
+                ${list.number + 1} / ${list.totalPages}
+            </span>
+            <button onclick="changeBoardPage(${list.number + 1})"
+                    class="quick-btn" ${list.last ? "disabled" : ""}>다음 ▶</button>
+        `;
+
+        } catch (err) {
+            console.error("게시판 로드 실패:", err);
+        }
+    }
+
+    // 📌 게시판 페이지 변경
+    function changeBoardPage(page) {
+        if (page < 0) return;
+        loadBoard(currentTicker, page);
+    }
+
+    // 📌 종목 불러올 때마다 게시판도 같이 로드
+    async function loadStock(ticker) {
+        currentTicker = ticker.toUpperCase();
+        document.getElementById('ticker-input').value = currentTicker;
+
+        try {
+            // 기존 로직 수행
+            const infoResponse = await fetch(`/stock/api/info/${currentTicker}`);
+            if (!infoResponse.ok) throw new Error('종목을 찾을 수 없습니다.');
+            const stockInfo = await infoResponse.json();
+            displayStockInfo(stockInfo);
+
+            await loadChartData();
+
+            // 📌 종목 토론방도 함께 로드
+            await loadBoard();
+
+        } catch (error) {
+            console.error('종목 로드 실패:', error);
+        }
+    }
+
 </script>
 </body>
 </html>
