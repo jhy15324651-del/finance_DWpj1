@@ -185,6 +185,36 @@ public class GPTService {
         }
     }
 
+    /**
+     * 범용 GPT 응답 생성 메서드
+     * @param prompt 프롬프트
+     * @return GPT 응답
+     */
+    public String generateResponse(String prompt) {
+        try {
+            OpenAiService service = new OpenAiService(apiKey, Duration.ofSeconds(60));
+
+            List<ChatMessage> messages = new ArrayList<>();
+            messages.add(new ChatMessage("user", prompt));
+
+            ChatCompletionRequest completionRequest = ChatCompletionRequest.builder()
+                    .model("gpt-3.5-turbo")
+                    .messages(messages)
+                    .temperature(0.7)
+                    .maxTokens(500)
+                    .build();
+
+            String response = service.createChatCompletion(completionRequest)
+                    .getChoices().get(0).getMessage().getContent();
+
+            service.shutdownExecutor();
+            return response;
+        } catch (Exception e) {
+            log.error("GPT API 호출 오류", e);
+            return "GPT 응답을 생성할 수 없습니다.";
+        }
+    }
+
     private String getInvestorName(String investorId) {
         return switch (investorId) {
             case "wood" -> "캐시 우드 (Cathie Wood)";

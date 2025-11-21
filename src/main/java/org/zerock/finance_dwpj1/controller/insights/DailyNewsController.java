@@ -1,0 +1,234 @@
+package org.zerock.finance_dwpj1.controller.insights;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.zerock.finance_dwpj1.dto.insights.CommentDTO;
+import org.zerock.finance_dwpj1.dto.insights.DailyNewsDTO;
+import org.zerock.finance_dwpj1.service.insights.DailyNewsService;
+import org.zerock.finance_dwpj1.service.insights.NewsSchedulerService;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * 데일리 뉴스 API 컨트롤러
+ */
+@RestController
+@RequestMapping("/api/news")
+@RequiredArgsConstructor
+@Slf4j
+public class DailyNewsController {
+
+    private final DailyNewsService dailyNewsService;
+    private final NewsSchedulerService schedulerService;
+
+    /**
+     * 데일리 뉴스 목록 조회 (24시간 이내)
+     */
+    @GetMapping("/daily")
+    public ResponseEntity<List<DailyNewsDTO>> getDailyNews() {
+        log.info("데일리 뉴스 조회 요청");
+        List<DailyNewsDTO> newsList = dailyNewsService.getDailyNews();
+        return ResponseEntity.ok(newsList);
+    }
+
+    /**
+     * 데일리 뉴스 페이징 조회
+     */
+    @GetMapping("/daily/page")
+    public ResponseEntity<Page<DailyNewsDTO>> getDailyNewsPage(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        log.info("데일리 뉴스 페이징 조회 - page: {}, size: {}", page, size);
+        Page<DailyNewsDTO> newsPage = dailyNewsService.getDailyNews(page, size);
+        return ResponseEntity.ok(newsPage);
+    }
+
+    /**
+     * 아카이브 뉴스 조회 (24시간 이상)
+     */
+    @GetMapping("/archive")
+    public ResponseEntity<Page<DailyNewsDTO>> getArchiveNews(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        log.info("아카이브 뉴스 조회 - page: {}, size: {}", page, size);
+        Page<DailyNewsDTO> newsPage = dailyNewsService.getArchiveNews(page, size);
+        return ResponseEntity.ok(newsPage);
+    }
+
+    /**
+     * 금주의 뉴스 (조회수 TOP 10)
+     */
+    @GetMapping("/weekly-top")
+    public ResponseEntity<List<DailyNewsDTO>> getWeeklyTopNews() {
+        log.info("금주의 뉴스 조회");
+        List<DailyNewsDTO> topNews = dailyNewsService.getWeeklyTopNews();
+        return ResponseEntity.ok(topNews);
+    }
+
+    /**
+     * 뉴스 상세 조회 (조회수 증가)
+     */
+    @GetMapping("/{newsId}")
+    public ResponseEntity<DailyNewsDTO> getNewsDetail(@PathVariable Long newsId) {
+        log.info("뉴스 상세 조회 - ID: {}", newsId);
+        DailyNewsDTO newsDTO = dailyNewsService.getNewsDetail(newsId);
+        return ResponseEntity.ok(newsDTO);
+    }
+
+    /**
+     * 뉴스 검색
+     */
+    @GetMapping("/search")
+    public ResponseEntity<Page<DailyNewsDTO>> searchNews(
+            @RequestParam String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        log.info("뉴스 검색 - keyword: {}, page: {}, size: {}", keyword, page, size);
+        Page<DailyNewsDTO> newsPage = dailyNewsService.searchNews(keyword, page, size);
+        return ResponseEntity.ok(newsPage);
+    }
+
+    /**
+     * 댓글 목록 조회
+     */
+    @GetMapping("/{newsId}/comments")
+    public ResponseEntity<List<CommentDTO>> getComments(@PathVariable Long newsId) {
+        log.info("댓글 조회 - 뉴스 ID: {}", newsId);
+        List<CommentDTO> comments = dailyNewsService.getComments(newsId);
+        return ResponseEntity.ok(comments);
+    }
+
+    /**
+     * 댓글 작성
+     */
+    @PostMapping("/{newsId}/comments")
+    public ResponseEntity<CommentDTO> addComment(
+            @PathVariable Long newsId,
+            @RequestBody CommentDTO commentDTO) {
+        log.info("댓글 작성 - 뉴스 ID: {}, 작성자: {}", newsId, commentDTO.getUserName());
+        commentDTO.setNewsId(newsId);
+        CommentDTO savedComment = dailyNewsService.addComment(commentDTO);
+        return ResponseEntity.ok(savedComment);
+    }
+
+    // ========== 관리자 전용 API ==========
+
+    /**
+     * 뉴스 수정 (관리자 전용)
+     */
+    @PutMapping("/admin/{newsId}")
+    public ResponseEntity<DailyNewsDTO> updateNews(
+            @PathVariable Long newsId,
+            @RequestBody DailyNewsDTO newsDTO) {
+        log.info("뉴스 수정 - ID: {}", newsId);
+        DailyNewsDTO updatedNews = dailyNewsService.updateNews(newsId, newsDTO);
+        return ResponseEntity.ok(updatedNews);
+    }
+
+    /**
+     * 뉴스 삭제 (관리자 전용)
+     */
+    @DeleteMapping("/admin/{newsId}")
+    public ResponseEntity<Map<String, String>> deleteNews(@PathVariable Long newsId) {
+        log.info("뉴스 삭제 - ID: {}", newsId);
+        dailyNewsService.deleteNews(newsId);
+
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "뉴스가 삭제되었습니다.");
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * 댓글 삭제 (관리자 전용)
+     */
+    @DeleteMapping("/admin/comments/{commentId}")
+    public ResponseEntity<Map<String, String>> deleteComment(@PathVariable Long commentId) {
+        log.info("댓글 삭제 - ID: {}", commentId);
+        dailyNewsService.deleteComment(commentId);
+
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "댓글이 삭제되었습니다.");
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * 수동 크롤링 실행 (관리자 전용, 테스트용)
+     */
+    @PostMapping("/admin/crawl")
+    public ResponseEntity<Map<String, String>> manualCrawl() {
+        log.info("수동 크롤링 실행");
+        schedulerService.manualCrawl();
+
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "크롤링이 시작되었습니다.");
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * 수동 아카이브 처리 (관리자 전용, 테스트용)
+     */
+    @PostMapping("/admin/archive")
+    public ResponseEntity<Map<String, String>> manualArchive() {
+        log.info("수동 아카이브 처리 실행");
+        schedulerService.manualArchive();
+
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "아카이브 처리가 완료되었습니다.");
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * 크롤러 테스트 (GPT 없이 크롤링만 테스트)
+     */
+    @GetMapping("/admin/test-crawler")
+    public ResponseEntity<Map<String, Object>> testCrawler() {
+        log.info("크롤러 테스트 실행 (GPT 비활성화)");
+
+        Map<String, Object> response = new HashMap<>();
+        try {
+            List<DailyNewsDTO> crawledNews = schedulerService.testCrawlerOnly();
+
+            response.put("success", true);
+            response.put("count", crawledNews.size());
+            response.put("news", crawledNews);
+            response.put("message", "크롤링 테스트 성공! " + crawledNews.size() + "개 뉴스 발견");
+
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("error", e.getMessage());
+            response.put("message", "크롤링 테스트 실패: " + e.getMessage());
+        }
+
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * 샘플 뉴스 데이터 생성 (테스트용)
+     * GET/POST 모두 지원 (브라우저 접근 가능)
+     */
+    @GetMapping("/admin/create-sample-news")
+    public ResponseEntity<Map<String, Object>> createSampleNews() {
+        log.info("샘플 뉴스 데이터 생성");
+
+        Map<String, Object> response = new HashMap<>();
+        try {
+            int count = dailyNewsService.createSampleNews();
+
+            response.put("success", true);
+            response.put("count", count);
+            response.put("message", count + "개의 샘플 뉴스가 생성되었습니다.");
+
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("error", e.getMessage());
+            response.put("message", "샘플 뉴스 생성 실패: " + e.getMessage());
+        }
+
+        return ResponseEntity.ok(response);
+    }
+}

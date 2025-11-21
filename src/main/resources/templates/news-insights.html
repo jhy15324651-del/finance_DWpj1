@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>뉴스 & 트위터 인사이트</title>
+    <title>뉴스 인사이트</title>
     <style>
         * {
             margin: 0;
@@ -117,11 +117,86 @@
             display: block;
         }
 
-        /* 뉴스 카드 스타일 */
         .news-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
             gap: 25px;
+        }
+
+        /* 금주의 뉴스 전용 그리드 (5열) */
+        .weekly-news-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 20px;
+            max-width: 100%;
+        }
+
+        /* 랭킹 배지 */
+        .rank-badge {
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: 700;
+            z-index: 10;
+        }
+
+        .rank-badge.gold {
+            font-size: 2rem;
+        }
+
+        .rank-badge.silver {
+            font-size: 2rem;
+        }
+
+        .rank-badge.bronze {
+            font-size: 2rem;
+        }
+
+        .rank-badge.number {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            width: 40px;
+            height: 40px;
+        }
+
+        /* 금주의 뉴스 카드 */
+        .weekly-news-card {
+            position: relative;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .weekly-news-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+        }
+
+        .weekly-news-card.rank-1 {
+            border-color: #FFD700;
+            box-shadow: 0 6px 20px rgba(255, 215, 0, 0.3);
+        }
+
+        .weekly-news-card.rank-2 {
+            border-color: #C0C0C0;
+            box-shadow: 0 6px 20px rgba(192, 192, 192, 0.3);
+        }
+
+        .weekly-news-card.rank-3 {
+            border-color: #CD7F32;
+            box-shadow: 0 6px 20px rgba(205, 127, 50, 0.3);
         }
 
         .news-card {
@@ -130,6 +205,7 @@
             padding: 25px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             transition: all 0.3s;
+            cursor: pointer;
         }
 
         .news-card:hover {
@@ -144,7 +220,7 @@
             margin-bottom: 15px;
         }
 
-        .news-category {
+        .news-badge {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 5px 12px;
@@ -172,159 +248,30 @@
             margin-bottom: 15px;
         }
 
-        .keywords {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 15px;
-        }
-
-        .keyword {
-            background: #fbbf24;
-            color: #78350f;
-            padding: 4px 10px;
-            border-radius: 4px;
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
-
         .summary {
             background: #f8f9fa;
             padding: 15px;
             border-left: 4px solid #667eea;
             border-radius: 4px;
             margin-bottom: 15px;
-        }
-
-        .summary-title {
-            font-weight: 700;
-            color: #2d3748;
-            margin-bottom: 8px;
-        }
-
-        .summary-list {
-            list-style: none;
-            padding: 0;
-        }
-
-        .summary-list li {
-            padding: 4px 0;
-            color: #4a5568;
             font-size: 0.95rem;
-        }
-
-        .summary-list li:before {
-            content: "• ";
-            color: #667eea;
-            font-weight: bold;
-            margin-right: 8px;
-        }
-
-        .read-more {
-            display: inline-block;
-            padding: 10px 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            text-decoration: none;
-            border-radius: 6px;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-
-        .read-more:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-
-        /* 트위터 카드 스타일 */
-        .twitter-card {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            transition: all 0.3s;
-            margin-bottom: 20px;
-        }
-
-        .twitter-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
-        }
-
-        .twitter-header {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-
-        .twitter-avatar {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            object-fit: cover;
-        }
-
-        .twitter-user-info {
-            flex: 1;
-        }
-
-        .twitter-name {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: #2d3748;
-        }
-
-        .twitter-handle {
-            color: #718096;
-            font-size: 0.9rem;
-        }
-
-        .twitter-verified {
-            color: #1DA1F2;
-            font-size: 1rem;
-            margin-left: 5px;
-        }
-
-        .twitter-content {
-            margin-bottom: 15px;
+            color: #4a5568;
             line-height: 1.6;
         }
 
-        .twitter-original {
-            color: #718096;
-            font-size: 0.95rem;
-            font-style: italic;
-            margin-bottom: 10px;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 6px;
-        }
-
-        .twitter-translated {
-            color: #2d3748;
-            font-size: 1rem;
-        }
-
-        .twitter-meta {
+        .news-stats {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            color: #718096;
+            gap: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e2e8f0;
             font-size: 0.9rem;
-        }
-
-        .twitter-date {
             color: #718096;
         }
 
-        .twitter-link {
-            color: #1DA1F2;
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        .twitter-link:hover {
-            text-decoration: underline;
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
 
         .loading {
@@ -334,21 +281,197 @@
             color: #667eea;
         }
 
+        /* 모달 스타일 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 800px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .modal-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #2d3748;
+        }
+
+        .close {
+            color: #718096;
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            background: none;
+        }
+
+        .close:hover {
+            color: #2d3748;
+        }
+
+        .modal-body {
+            margin-bottom: 20px;
+        }
+
+        .news-content {
+            line-height: 1.8;
+            color: #4a5568;
+            margin-bottom: 30px;
+            white-space: pre-wrap;
+        }
+
+        .comments-section {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 2px solid #e2e8f0;
+        }
+
+        .comments-header {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #2d3748;
+        }
+
+        .comment-form {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .comment-form input,
+        .comment-form textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+
+        .comment-form textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .btn-submit {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .comment-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .comment-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .comment-author {
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 5px;
+        }
+
+        .comment-date {
+            font-size: 0.85rem;
+            color: #718096;
+            margin-bottom: 10px;
+        }
+
+        .comment-content {
+            color: #4a5568;
+            line-height: 1.6;
+        }
+
+        .btn-delete {
+            padding: 5px 10px;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .admin-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-admin {
+            padding: 8px 16px;
+            background: #f59e0b;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-admin:hover {
+            background: #d97706;
+        }
+
+        @media (max-width: 1200px) {
+            .weekly-news-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 900px) {
+            .weekly-news-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
         @media (max-width: 768px) {
             .news-grid {
                 grid-template-columns: 1fr;
             }
 
-            .page-header h1 {
-                font-size: 2rem;
-            }
-
-            .tabs {
-                overflow-x: auto;
-            }
-
-            .tab {
-                white-space: nowrap;
+            .weekly-news-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -367,135 +490,380 @@
 
 <div class="container">
     <div class="page-header">
-        <h1>뉴스 & 트위터 인사이트</h1>
-        <p>최신 금융 뉴스와 전문가들의 트위터 인사이트를 한눈에 확인하세요</p>
+        <h1>뉴스 인사이트</h1>
+        <p>실시간 금융 뉴스와 AI 요약을 확인하세요</p>
     </div>
 
+    <!-- 탭 메뉴 -->
     <div class="tabs">
-        <button class="tab active" onclick="switchTab('weekly-news')">금주의 뉴스</button>
-        <button class="tab" onclick="switchTab('hot-topics')">핫토픽</button>
-        <button class="tab" onclick="switchTab('twitter')">트위터 인사이트</button>
+        <button class="tab active" onclick="switchTab('daily')">데일리 뉴스</button>
+        <button class="tab" onclick="switchTab('weekly')">금주의 뉴스</button>
+        <button class="tab" onclick="switchTab('archive')">아카이브</button>
+    </div>
+
+    <!-- 데일리 뉴스 탭 -->
+    <div id="daily-tab" class="tab-content active">
+        <div id="daily-news" class="news-grid">
+            <div class="loading">데일리 뉴스를 불러오는 중...</div>
+        </div>
     </div>
 
     <!-- 금주의 뉴스 탭 -->
-    <div id="weekly-news" class="tab-content active">
-        <div class="news-grid" id="weekly-news-container">
-            <div class="loading">뉴스를 불러오는 중...</div>
+    <div id="weekly-tab" class="tab-content">
+        <div id="weekly-news" class="weekly-news-grid">
+            <div class="loading">금주의 뉴스를 불러오는 중...</div>
         </div>
     </div>
 
-    <!-- 핫토픽 탭 -->
-    <div id="hot-topics" class="tab-content">
-        <div class="news-grid" id="hot-topics-container">
-            <div class="loading">핫토픽을 불러오는 중...</div>
+    <!-- 아카이브 탭 -->
+    <div id="archive-tab" class="tab-content">
+        <div id="archive-news" class="news-grid">
+            <div class="loading">아카이브를 불러오는 중...</div>
         </div>
     </div>
+</div>
 
-    <!-- 트위터 인사이트 탭 -->
-    <div id="twitter" class="tab-content">
-        <div id="twitter-container">
-            <div class="loading">트위터 인사이트를 불러오는 중...</div>
+<!-- 뉴스 상세 모달 -->
+<div id="newsModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title" id="modal-title"></h2>
+            <button class="close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div id="modal-meta" style="margin-bottom: 20px;"></div>
+            <div id="modal-summary" class="summary"></div>
+            <div id="modal-content" class="news-content"></div>
+
+            <!-- 관리자 버튼 (조건부 표시) -->
+            <div id="admin-buttons" class="admin-buttons" style="display: none;">
+                <button class="btn-admin" onclick="deleteNews()">뉴스 삭제</button>
+            </div>
+
+            <!-- 댓글 섹션 -->
+            <div class="comments-section">
+                <div class="comments-header">💬 댓글</div>
+
+                <!-- 댓글 작성 폼 -->
+                <div class="comment-form">
+                    <input type="text" id="comment-user-name" placeholder="이름" maxlength="50">
+                    <textarea id="comment-content" placeholder="댓글을 입력하세요"></textarea>
+                    <button class="btn-submit" onclick="submitComment()">댓글 작성</button>
+                </div>
+
+                <!-- 댓글 목록 -->
+                <div id="comment-list" class="comment-list"></div>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
+    let currentNewsId = null;
+    const isAdmin = false; // 실제 환경에서는 서버에서 관리자 여부를 받아와야 함
+
+    // 페이지 로드 시 데일리 뉴스 로드
+    window.addEventListener('DOMContentLoaded', () => {
+        loadDailyNews();
+    });
+
+    // 탭 전환
     function switchTab(tabName) {
-        // 모든 탭과 탭 콘텐츠 비활성화
+        // 모든 탭 비활성화
         document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
 
-        // 선택된 탭과 콘텐츠 활성화
-        event.target.classList.add('active');
-        document.getElementById(tabName).classList.add('active');
-    }
+        // 선택된 탭 활성화
+        document.querySelector(`button[onclick="switchTab('${tabName}')"]`).classList.add('active');
+        document.getElementById(`${tabName}-tab`).classList.add('active');
 
-    // 뉴스 데이터 로드
-    async function loadNews(category) {
-        try {
-            const response = await fetch(`/api/news/${category}`);
-            const newsData = await response.json();
-
-            const container = document.getElementById(`${category}-container`);
-            container.innerHTML = '';
-
-            newsData.forEach(news => {
-                const newsCard = `
-                    <div class="news-card">
-                        <div class="news-header">
-                            <span class="news-category">${news.category}</span>
-                            <span class="news-date">${news.date}</span>
-                        </div>
-                        <h3 class="news-title">${news.title}</h3>
-                        <div class="news-source">출처: ${news.source}</div>
-                        <div class="keywords">
-                            ${news.keywords.map(kw => `<span class="keyword">${kw}</span>`).join('')}
-                        </div>
-                        <div class="summary">
-                            <div class="summary-title">📝 3줄 요약</div>
-                            <ul class="summary-list">
-                                ${news.summary.map(line => `<li>${line}</li>`).join('')}
-                            </ul>
-                        </div>
-                        <a href="${news.url}" target="_blank" class="read-more">원문 읽기</a>
-                    </div>
-                `;
-                container.innerHTML += newsCard;
-            });
-        } catch (error) {
-            console.error('뉴스 로딩 오류:', error);
-            document.getElementById(`${category}-container`).innerHTML =
-                '<div class="loading">뉴스를 불러오는데 실패했습니다.</div>';
+        // 데이터 로드
+        if (tabName === 'daily') {
+            loadDailyNews();
+        } else if (tabName === 'weekly') {
+            loadWeeklyNews();
+        } else if (tabName === 'archive') {
+            loadArchiveNews();
         }
     }
 
-    // 트위터 데이터 로드
-    async function loadTwitter() {
+    // 데일리 뉴스 로드
+    async function loadDailyNews() {
         try {
-            const response = await fetch('/api/twitter/insights');
-            const tweets = await response.json();
-
-            const container = document.getElementById('twitter-container');
-            container.innerHTML = '';
-
-            tweets.forEach(tweet => {
-                const twitterCard = `
-                    <div class="twitter-card">
-                        <div class="twitter-header">
-                            <img src="${tweet.avatar}" alt="${tweet.name}" class="twitter-avatar">
-                            <div class="twitter-user-info">
-                                <div>
-                                    <span class="twitter-name">${tweet.name}</span>
-                                    ${tweet.verified ? '<span class="twitter-verified">✓</span>' : ''}
-                                </div>
-                                <div class="twitter-handle">@${tweet.handle}</div>
-                            </div>
-                        </div>
-                        <div class="twitter-content">
-                            ${tweet.originalText ? `<div class="twitter-original">${tweet.originalText}</div>` : ''}
-                            <div class="twitter-translated">${tweet.translatedText}</div>
-                        </div>
-                        <div class="twitter-meta">
-                            <span class="twitter-date">${tweet.date}</span>
-                            <a href="${tweet.url}" target="_blank" class="twitter-link">트윗 보기</a>
-                        </div>
-                    </div>
-                `;
-                container.innerHTML += twitterCard;
-            });
+            const response = await fetch('/api/news/daily');
+            const newsList = await response.json();
+            displayNews(newsList, 'daily-news');
         } catch (error) {
-            console.error('트위터 로딩 오류:', error);
-            document.getElementById('twitter-container').innerHTML =
-                '<div class="loading">트위터 인사이트를 불러오는데 실패했습니다.</div>';
+            console.error('데일리 뉴스 로드 실패:', error);
+            document.getElementById('daily-news').innerHTML = '<div class="loading">뉴스를 불러오는데 실패했습니다.</div>';
         }
     }
 
-    // 페이지 로드 시 데이터 불러오기
-    window.addEventListener('DOMContentLoaded', () => {
-        loadNews('weekly-news');
-        loadNews('hot-topics');
-        loadTwitter();
-    });
+    // 금주의 뉴스 로드
+    async function loadWeeklyNews() {
+        try {
+            const response = await fetch('/api/news/weekly-top');
+            const newsList = await response.json();
+            displayWeeklyNews(newsList);
+        } catch (error) {
+            console.error('금주의 뉴스 로드 실패:', error);
+            document.getElementById('weekly-news').innerHTML = '<div class="loading">뉴스를 불러오는데 실패했습니다.</div>';
+        }
+    }
+
+    // 금주의 뉴스 표시 (랭킹 포함)
+    function displayWeeklyNews(newsList) {
+        const container = document.getElementById('weekly-news');
+
+        if (!newsList || newsList.length === 0) {
+            container.innerHTML = '<div class="loading">등록된 뉴스가 없습니다.</div>';
+            return;
+        }
+
+        // 최대 10개로 제한
+        const top10 = newsList.slice(0, 10);
+
+        // 랭킹 아이콘 함수
+        function getRankBadge(rank) {
+            if (rank === 1) return '👑'; // 금관
+            if (rank === 2) return '🥈'; // 은관
+            if (rank === 3) return '🥉'; // 동관
+            return rank; // 4-10등은 숫자
+        }
+
+        // 랭크 클래스 함수
+        function getRankClass(rank) {
+            if (rank === 1) return 'rank-1';
+            if (rank === 2) return 'rank-2';
+            if (rank === 3) return 'rank-3';
+            return '';
+        }
+
+        // 배지 클래스 함수
+        function getBadgeClass(rank) {
+            if (rank === 1) return 'gold';
+            if (rank === 2) return 'silver';
+            if (rank === 3) return 'bronze';
+            return 'number';
+        }
+
+        container.innerHTML = top10.map((news, index) => {
+            const rank = index + 1;
+            return `
+                <div class="weekly-news-card ${getRankClass(rank)}" onclick="showNewsDetail(${news.id})">
+                    <div class="rank-badge ${getBadgeClass(rank)}">
+                        ${getRankBadge(rank)}
+                    </div>
+                    <div class="news-header" style="margin-top: 15px;">
+                        <span class="news-badge" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">TOP ${rank}</span>
+                        <span class="news-date">${news.createdAt}</span>
+                    </div>
+                    <div class="news-title" style="font-size: 1rem; min-height: 60px;">${news.title}</div>
+                    <div class="news-source">📰 ${news.source}</div>
+                    <div class="news-stats">
+                        <div class="stat-item">👁️ ${news.viewCount || 0}회</div>
+                        <div class="stat-item">💬 ${news.commentCount || 0}개</div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // 아카이브 뉴스 로드
+    async function loadArchiveNews() {
+        try {
+            const response = await fetch('/api/news/archive?page=0&size=20');
+            const data = await response.json();
+            displayNews(data.content, 'archive-news');
+        } catch (error) {
+            console.error('아카이브 로드 실패:', error);
+            document.getElementById('archive-news').innerHTML = '<div class="loading">뉴스를 불러오는데 실패했습니다.</div>';
+        }
+    }
+
+    // 뉴스 목록 표시
+    function displayNews(newsList, containerId) {
+        const container = document.getElementById(containerId);
+
+        if (!newsList || newsList.length === 0) {
+            container.innerHTML = '<div class="loading">등록된 뉴스가 없습니다.</div>';
+            return;
+        }
+
+        container.innerHTML = newsList.map(news => `
+            <div class="news-card" onclick="showNewsDetail(${news.id})">
+                <div class="news-header">
+                    <span class="news-badge">${news.status === 'DAILY' ? '데일리' : '아카이브'}</span>
+                    <span class="news-date">${news.createdAt}</span>
+                </div>
+                <div class="news-title">${news.title}</div>
+                <div class="news-source">📰 ${news.source}</div>
+                ${news.summary ? `<div class="summary">${news.summary}</div>` : ''}
+                <div class="news-stats">
+                    <div class="stat-item">👁️ ${news.viewCount || 0}회</div>
+                    <div class="stat-item">💬 ${news.commentCount || 0}개</div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // 뉴스 상세 보기
+    async function showNewsDetail(newsId) {
+        currentNewsId = newsId;
+
+        try {
+            // 뉴스 상세 정보 가져오기 (조회수 증가)
+            const response = await fetch(`/api/news/${newsId}`);
+            const news = await response.json();
+
+            // 모달에 뉴스 정보 표시
+            document.getElementById('modal-title').textContent = news.title;
+            document.getElementById('modal-meta').innerHTML = `
+                <div style="display: flex; justify-content: space-between; color: #718096;">
+                    <span>📰 ${news.source}</span>
+                    <span>${news.createdAt}</span>
+                </div>
+            `;
+            document.getElementById('modal-summary').textContent = news.summary || '';
+            document.getElementById('modal-content').textContent = news.content || '내용이 없습니다.';
+
+            // 관리자 버튼 표시
+            document.getElementById('admin-buttons').style.display = isAdmin ? 'flex' : 'none';
+
+            // 댓글 로드
+            loadComments(newsId);
+
+            // 모달 열기
+            document.getElementById('newsModal').style.display = 'block';
+        } catch (error) {
+            console.error('뉴스 상세 로드 실패:', error);
+            alert('뉴스를 불러오는데 실패했습니다.');
+        }
+    }
+
+    // 댓글 로드
+    async function loadComments(newsId) {
+        try {
+            const response = await fetch(`/api/news/${newsId}/comments`);
+            const comments = await response.json();
+
+            const commentList = document.getElementById('comment-list');
+            if (comments.length === 0) {
+                commentList.innerHTML = '<div style="text-align: center; color: #718096;">첫 댓글을 작성해보세요!</div>';
+                return;
+            }
+
+            commentList.innerHTML = comments.map(comment => `
+                <div class="comment-item">
+                    <div class="comment-author">${comment.userName}</div>
+                    <div class="comment-date">${comment.createdAt}</div>
+                    <div class="comment-content">${comment.content}</div>
+                    ${isAdmin ? `<button class="btn-delete" onclick="deleteComment(${comment.id})">삭제</button>` : ''}
+                </div>
+            `).join('');
+        } catch (error) {
+            console.error('댓글 로드 실패:', error);
+        }
+    }
+
+    // 댓글 작성
+    async function submitComment() {
+        const userName = document.getElementById('comment-user-name').value.trim();
+        const content = document.getElementById('comment-content').value.trim();
+
+        if (!userName || !content) {
+            alert('이름과 댓글 내용을 입력해주세요.');
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/news/${currentNewsId}/comments`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    userName: userName,
+                    content: content
+                })
+            });
+
+            if (response.ok) {
+                alert('댓글이 작성되었습니다.');
+                document.getElementById('comment-user-name').value = '';
+                document.getElementById('comment-content').value = '';
+                loadComments(currentNewsId);
+            } else {
+                alert('댓글 작성에 실패했습니다.');
+            }
+        } catch (error) {
+            console.error('댓글 작성 실패:', error);
+            alert('댓글 작성에 실패했습니다.');
+        }
+    }
+
+    // 뉴스 삭제 (관리자 전용)
+    async function deleteNews() {
+        if (!confirm('정말 이 뉴스를 삭제하시겠습니까?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/news/admin/${currentNewsId}`, {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                alert('뉴스가 삭제되었습니다.');
+                closeModal();
+                loadDailyNews();
+            } else {
+                alert('뉴스 삭제에 실패했습니다.');
+            }
+        } catch (error) {
+            console.error('뉴스 삭제 실패:', error);
+            alert('뉴스 삭제에 실패했습니다.');
+        }
+    }
+
+    // 댓글 삭제 (관리자 전용)
+    async function deleteComment(commentId) {
+        if (!confirm('정말 이 댓글을 삭제하시겠습니까?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/news/admin/comments/${commentId}`, {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                alert('댓글이 삭제되었습니다.');
+                loadComments(currentNewsId);
+            } else {
+                alert('댓글 삭제에 실패했습니다.');
+            }
+        } catch (error) {
+            console.error('댓글 삭제 실패:', error);
+            alert('댓글 삭제에 실패했습니다.');
+        }
+    }
+
+    // 모달 닫기
+    function closeModal() {
+        document.getElementById('newsModal').style.display = 'none';
+    }
+
+    // 모달 외부 클릭 시 닫기
+    window.onclick = function(event) {
+        const modal = document.getElementById('newsModal');
+        if (event.target === modal) {
+            closeModal();
+        }
+    }
+
+    // 닫기 버튼 클릭
+    document.querySelector('.close').addEventListener('click', closeModal);
 </script>
 </body>
 </html>
