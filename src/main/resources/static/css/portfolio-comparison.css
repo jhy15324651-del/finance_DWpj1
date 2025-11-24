@@ -1,0 +1,522 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothic', sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background: #f8f9fa;
+}
+
+.navbar {
+    background: white;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.navbar-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.navbar-logo {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #667eea;
+    cursor: pointer;
+}
+
+.navbar-buttons {
+    display: flex;
+    gap: 15px;
+}
+
+.btn-nav {
+    padding: 10px 20px;
+    background: white;
+    color: #667eea;
+    border: 2px solid #667eea;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-nav:hover {
+    background: #667eea;
+    color: white;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 30px 20px;
+}
+
+.page-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.page-header h1 {
+    font-size: 2.5rem;
+    color: #2d3748;
+    margin-bottom: 10px;
+}
+
+.page-header p {
+    font-size: 1.1rem;
+    color: #718096;
+}
+
+.investor-selector {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.investor-selector h2 {
+    font-size: 1.5rem;
+    color: #2d3748;
+    margin-bottom: 20px;
+}
+
+.investor-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.investor-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+}
+
+.investor-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 24px rgba(102, 126, 234, 0.3);
+}
+
+.investor-card.selected {
+    border: 3px solid #fbbf24;
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
+}
+
+.remove-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(255, 255, 255, 0.3);
+    border: none;
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.2rem;
+    display: none;
+}
+
+.investor-card.selected .remove-btn {
+    display: block;
+}
+
+.investor-name {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.investor-style {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.add-investor {
+    background: white;
+    border: 3px dashed #667eea;
+    color: #667eea;
+    padding: 20px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.add-investor:hover {
+    background: #f7fafc;
+}
+
+.comparison-section {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.comparison-section h2 {
+    font-size: 1.8rem;
+    color: #2d3748;
+    margin-bottom: 25px;
+}
+
+.philosophy-comparison {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+}
+
+.investor-philosophy {
+    background: #f8f9fa;
+    padding: 25px;
+    border-radius: 12px;
+}
+
+.investor-philosophy h3 {
+    font-size: 1.3rem;
+    color: #2d3748;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.philosophy-item {
+    margin-bottom: 20px;
+}
+
+.philosophy-label {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #4a5568;
+}
+
+.philosophy-bar {
+    background: #e2e8f0;
+    height: 25px;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+}
+
+.philosophy-fill {
+    height: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 10px;
+    color: white;
+    font-weight: 700;
+    font-size: 0.9rem;
+    transition: width 1s ease-out;
+}
+
+.insights-section {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 2px solid #e2e8f0;
+}
+
+.insights-section h4 {
+    font-size: 1.1rem;
+    color: #2d3748;
+    margin-bottom: 10px;
+}
+
+.insight-text {
+    color: #4a5568;
+    line-height: 1.8;
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid #667eea;
+}
+
+.loading {
+    text-align: center;
+    padding: 50px;
+    font-size: 1.2rem;
+    color: #667eea;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+    background-color: white;
+    margin: 5% auto;
+    padding: 30px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.modal-header h2 {
+    color: #2d3748;
+}
+
+.close {
+    color: #718096;
+    font-size: 2rem;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+    background: none;
+}
+
+.close:hover {
+    color: #2d3748;
+}
+
+.investor-list {
+    display: grid;
+    gap: 15px;
+}
+
+.investor-option {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: 2px solid transparent;
+}
+
+.investor-option:hover {
+    background: #e2e8f0;
+    border-color: #667eea;
+}
+
+.investor-option h3 {
+    color: #2d3748;
+    margin-bottom: 8px;
+}
+
+.investor-option p {
+    color: #718096;
+    font-size: 0.9rem;
+}
+
+.search-container {
+    margin-bottom: 25px;
+    padding-bottom: 25px;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.search-container h3 {
+    font-size: 1.1rem;
+    color: #2d3748;
+    margin-bottom: 15px;
+}
+
+.search-box {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.search-input-wrapper {
+    display: flex;
+    gap: 10px;
+}
+
+.search-input {
+    flex: 1;
+    padding: 12px 16px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.search-btn {
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.search-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.search-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.suggestions-dropdown {
+    display: none;
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    max-height: 300px;
+    overflow-y: auto;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    z-index: 100;
+}
+
+.suggestions-dropdown.show {
+    display: block;
+}
+
+.suggestion-item {
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.suggestion-item:hover {
+    background: #f7fafc;
+    border-left: 4px solid #667eea;
+}
+
+.suggestion-name {
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 4px;
+}
+
+.suggestion-style {
+    font-size: 0.85rem;
+    color: #667eea;
+    margin-bottom: 2px;
+}
+
+.suggestion-desc {
+    font-size: 0.8rem;
+    color: #718096;
+}
+
+.no-suggestions {
+    padding: 12px 16px;
+    text-align: center;
+    color: #718096;
+    font-size: 0.9rem;
+}
+
+.generate-btn {
+    padding: 12px 30px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.generate-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+}
+
+.generate-btn:disabled {
+    background: #cbd5e0;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.portfolio-content {
+    background: #f8f9fa;
+    padding: 25px;
+    border-radius: 12px;
+}
+
+.portfolio-section {
+    margin-bottom: 30px;
+}
+
+.portfolio-section h3 {
+    font-size: 1.3rem;
+    color: #2d3748;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.portfolio-text {
+    color: #4a5568;
+    line-height: 1.8;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    border-left: 4px solid #10b981;
+    white-space: pre-wrap;
+}
+
+@media (max-width: 768px) {
+    .page-header h1 {
+        font-size: 2rem;
+    }
+
+    .investor-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .philosophy-comparison {
+        grid-template-columns: 1fr;
+    }
+}
