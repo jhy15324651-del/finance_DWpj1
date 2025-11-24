@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="header">
+    <meta charset="UTF-8">
+    <title>Stock Project</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
+</head>
+
+<body th:fragment="bodyheader">
+<nav class="menu">
+    <ul>
+        <li><a th:href="@{/}">홈</a></li>
+        <li><a th:href="@{/category}">카테고리</a></li>
+        <li><a th:href="@{/newsletter}">뉴스레터</a></li>
+        <li><a th:href="@{/info}">정보</a></li>
+    </ul>
+</nav>
+
+<div class="content">

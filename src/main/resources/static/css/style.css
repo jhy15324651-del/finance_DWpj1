@@ -1,0 +1,373 @@
+/* ------------------------------
+   기본 레이아웃
+--------------------------------*/
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: #f5f5f5;
+}
+
+/* 상단 네비게이션 */
+.menu ul {
+    list-style: none;
+    display: flex;
+    gap: 20px;
+    padding: 15px 30px;
+    background: #ffffff;
+    margin: 0;
+    border-bottom: 1px solid #ddd;
+}
+
+.menu a {
+    text-decoration: none;
+    color: #333;
+    font-size: 17px;
+    font-weight: 500;
+}
+
+.menu a:hover {
+    color: #0070f3;
+}
+
+/* 공통 컨텐츠 영역 */
+.content {
+    max-width: 1200px;
+    margin: 30px auto;
+    display: flex;
+    gap: 30px;
+}
+
+/* 좌측 최신 콘텐츠 */
+.main-left {
+    flex: 3;
+}
+
+/* 우측 많이 본 콘텐츠 */
+.main-right {
+    flex: 1;
+}
+
+/* 섹션 타이틀 */
+.section-title {
+    font-size: 22px;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+
+/* ------------------------------
+   홈 - 최신 콘텐츠 카드
+--------------------------------*/
+.post-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 25px;
+}
+
+.post-card {
+    background: white;
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    height: 180px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.post-title {
+    font-size: 18px;
+    font-weight: bold;
+    color: #222;
+    margin-bottom: 10px;
+}
+
+.post-summary {
+    color: #666;
+    font-size: 14px;
+    line-height: 1.4;
+    margin-bottom: 8px;
+}
+
+.post-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: #555;
+}
+
+
+/* ------------------------------
+   홈 - 많이 본 콘텐츠
+--------------------------------*/
+.popular-box {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+}
+
+.popular-item {
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.popular-rank {
+    font-weight: bold;
+    font-size: 20px;
+    margin-right: 10px;
+}
+
+.popular-title {
+    font-size: 15px;
+    color: #333;
+}
+
+.popular-view {
+    font-size: 12px;
+    color: #777;
+}
+
+
+/* ------------------------------
+   게시글 상세 페이지
+--------------------------------*/
+.post-detail-container {
+    max-width: 800px;
+    margin: 50px auto;
+    background: white;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+}
+
+.post-detail-title {
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.post-detail-meta {
+    color: #777;
+    font-size: 14px;
+    margin-bottom: 25px;
+}
+
+.post-detail-content {
+    font-size: 16px;
+    line-height: 1.7;
+    color: #333;
+    white-space: pre-line;
+}
+
+
+/* ------------------------------
+   글쓰기 페이지
+--------------------------------*/
+.write-container {
+    width: 60%;
+    margin: 40px auto;
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+}
+
+.write-container h2 {
+    margin-bottom: 20px;
+    font-size: 26px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.write-form label {
+    display: block;
+    margin: 12px 0 5px;
+    font-weight: 600;
+}
+
+.write-form input[type="text"],
+.write-form textarea,
+.write-form select {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    margin-bottom: 15px;
+    font-size: 14px;
+}
+
+.write-form textarea {
+    height: 200px;
+    resize: none;
+}
+
+.write-form button {
+    width: 100%;
+    padding: 12px;
+    background: #0066ff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.write-form button:hover {
+    background: #0055dd;
+}
+
+
+/* ------------------------------
+   카테고리 페이지 (최신 정리본)
+--------------------------------*/
+.category-page {
+    width: 80%;
+    margin: 0 auto;
+    padding-top: 40px;
+}
+
+.category-title {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+
+/* 탭 컨테이너 - 고정 높이 */
+.category-tabs-container {
+    display: flex;
+    gap: 14px;
+    padding: 20px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    margin-bottom: 10px;
+    height: 30px;
+    align-items: center;
+}
+
+/* 탭 버튼 */
+.category-tab {
+    padding: 10px 20px;
+    border-radius: 12px;
+    background: #f5f5f5;
+    color: #444;
+    font-weight: 600;
+    text-decoration: none;
+    transition: 0.2s;
+}
+
+.category-tab:hover {
+    background: #e9e9e9;
+}
+
+/* 활성화 탭 */
+.category-tab.active {
+    background: #006cff;
+    color: white;
+}
+
+/* 카테고리 게시글 리스트 */
+.category-post-list {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 25px;
+}
+
+/* 게시글 카드 */
+.category-post-card {
+    padding: 20px;
+    background: #ffffff;
+    border-radius: 14px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+}
+
+.category-post-card .meta {
+    margin-top: 10px;
+    font-size: 13px;
+    color: #888;
+}
+
+/* 게시글 없음 표시 */
+.no-posts {
+    font-size: 18px;
+    color: #777;
+    padding: 40px;
+    text-align: center;
+}
+
+.board-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.board-table th {
+    background: #f7f7f7;
+    padding: 15px;
+    font-size: 14px;
+    color: #333;
+    border-bottom: 1px solid #eee;
+}
+
+.board-table td {
+    padding: 15px;
+    font-size: 14px;
+    color: #444;
+    border-bottom: 1px solid #f2f2f2;
+}
+
+.board-table tr:hover {
+    background: #fafafa;
+}
+
+.pagination {
+    text-align: center;
+    margin: 30px 0;
+}
+
+.pagination a {
+    padding: 8px 14px;
+    margin: 0 5px;
+    background: #f0f0f0;
+    border-radius: 6px;
+    text-decoration: none;
+    color: #333;
+    font-size: 14px;
+}
+
+.pagination a.active-page {
+    background: #0070f3;
+    color: #fff;
+}
+
+.pagination a:hover {
+    background: #e2e2e2;
+}
+
+.page-bottom-area {
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.write-btn {
+    background: #0066ff;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: 0.2s;
+}
+
+.write-btn:hover {
+    background: #0052cc;
+}

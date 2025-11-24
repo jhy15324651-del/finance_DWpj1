@@ -1,0 +1,17 @@
+<th:block th:replace="layout/header :: header"></th:block>
+<th:block th:replace="layout/header :: bodyheader"></th:block>
+
+<h2 style="margin-bottom:20px;">뉴스레터</h2>
+
+<div class="newsletter-grid">
+    <div class="newsletter-card" th:each="n : ${newsletters}">
+        <div class="newsletter-title" th:text="${n.title}"></div>
+        <div class="newsletter-summary" th:text="${n.summary}"></div>
+        <div class="newsletter-meta">
+            <span th:text="${n.createdDate}"></span>
+            <a th:href="@{'/newsletter/' + ${n.id}}" class="newsletter-more">더보기 →</a>
+        </div>
+    </div>
+</div>
+
+<th:block th:replace="layout/footer :: footer"></th:block>

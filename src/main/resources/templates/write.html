@@ -1,0 +1,34 @@
+<th:block th:replace="layout/header :: header"></th:block>
+<th:block th:replace="layout/header :: bodyheader"></th:block>
+
+<div class="write-container">
+    <h2>새 글 작성</h2>
+
+    <form class="write-form" th:action="@{/post/write}" method="post" enctype="multipart/form-data">
+
+        <label>제목</label>
+        <input type="text" name="title" required>
+
+        <label>요약</label>
+        <input type="text" name="summary" required>
+
+        <label>본문</label>
+        <textarea name="content" required></textarea>
+
+        <label>카테고리</label>
+        <select name="category">
+            <option value="공지">공지</option>
+            <option value="거시경제">거시경제</option>
+            <option value="원유">원유</option>
+            <option value="엔비디아">엔비디아</option>
+            <option value="테슬라">테슬라</option>
+        </select>
+
+        <label>이미지 첨부</label>
+        <input type="file" name="image">
+
+        <button type="submit">작성하기</button>
+    </form>
+</div>
+
+<th:block th:replace="layout/footer :: footer"></th:block>

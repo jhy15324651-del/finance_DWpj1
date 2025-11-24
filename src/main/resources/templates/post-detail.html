@@ -1,0 +1,24 @@
+<th:block th:replace="layout/header :: header"></th:block>
+<th:block th:replace="layout/header :: bodyheader"></th:block>
+
+<div class="post-detail-container">
+
+    <h1 class="post-detail-title" th:text="${post.title}"></h1>
+
+    <div class="post-detail-meta">
+        <span th:text="${#temporals.format(post.createdDate, 'yyyy.MM.dd')}"></span>
+        <span> · 조회수 <span th:text="${post.viewCount}"></span></span>
+    </div>
+
+    <div class="post-detail-content" th:utext="${post.content}">
+        <!-- HTML 본문 렌더링 -->
+    </div>
+
+    <div th:if="${post.imgUrl}">
+        <img th:src="${post.imgUrl}" style="width:100%; border-radius:10px; margin-bottom:20px;">
+    </div>
+
+
+</div>
+
+<th:block th:replace="layout/footer :: footer"></th:block>

@@ -1,0 +1,126 @@
+<!-- header -->
+<th:block th:replace="layout/header :: header"></th:block>
+<th:block th:replace="layout/header :: bodyheader"></th:block>
+
+<div class="category-page">
+
+    <!-- 페이지 제목 -->
+    <h2 class="category-title">카테고리</h2>
+
+    <!-- 카테고리 탭 영역 -->
+    <div class="category-tabs-container">
+
+        <a th:href="@{/category(category='전체')}"
+           th:classappend="${activeCategory} == '전체' ? 'active'"
+           class="category-tab">
+            전체 (<span th:text="${totalCount}"></span>)
+        </a>
+
+        <a th:href="@{/category(category='공지')}"
+           th:classappend="${activeCategory} == '공지' ? 'active'"
+           class="category-tab">
+            공지 (<span th:text="${noticeCount}"></span>)
+        </a>
+
+        <a th:href="@{/category(category='거시경제')}"
+           th:classappend="${activeCategory} == '거시경제' ? 'active'"
+           class="category-tab">
+            거시경제 (<span th:text="${macroCount}"></span>)
+        </a>
+
+        <a th:href="@{/category(category='원유')}"
+           th:classappend="${activeCategory} == '원유' ? 'active'"
+           class="category-tab">
+            원유 (<span th:text="${oilCount}"></span>)
+        </a>
+
+        <a th:href="@{/category(category='엔비디아')}"
+           th:classappend="${activeCategory} == '엔비디아' ? 'active'"
+           class="category-tab">
+            엔비디아 (<span th:text="${nvidiaCount}"></span>)
+        </a>
+
+        <a th:href="@{/category(category='테슬라')}"
+           th:classappend="${activeCategory} == '테슬라' ? 'active'"
+           class="category-tab">
+            테슬라 (<span th:text="${teslaCount}"></span>)
+        </a>
+
+    </div>
+
+
+    <!-- 게시글 목록 테이블 -->
+    <table class="board-table">
+        <thead>
+        <tr>
+            <th>번호</th>
+            <th>제목</th>
+            <th>작성일</th>
+            <th>조회수</th>
+        </tr>
+        </thead>
+
+        <tbody>
+
+        <!-- 게시글 출력 -->
+        <tr th:each="post, iter : ${posts.content}">
+            <!-- 번호 계산 -->
+            <td th:text="${posts.totalElements - (posts.number * posts.size) - iter.index}"></td>
+
+            <td>
+                <a th:href="@{'/post/' + ${post.id}}" th:text="${post.title}"></a>
+            </td>
+
+            <td th:text="${#temporals.format(post.createdDate, 'yyyy.MM.dd')}"></td>
+            <td th:text="${post.viewCount}"></td>
+        </tr>
+
+        <!-- 게시글 없음 -->
+        <tr th:if="${posts.totalElements == 0}">
+            <td colspan="4" style="text-align:center; padding:30px;">게시글이 없습니다.</td>
+        </tr>
+
+        </tbody>
+    </table>
+
+    <!-- ⭐⭐ 페이징 + 글쓰기 버튼을 한 줄에 정렬 ⭐⭐ -->
+    <div class="page-bottom-area">
+
+        <!-- ⭐ 페이징 - 블록 단위 (10개씩) ⭐ -->
+        <div class="pagination" th:if="${totalPages > 1}">
+
+            <!-- ⏮ 가장 첫 페이지 -->
+            <a th:href="@{/category(category=${activeCategory}, page=0)}">⏮</a>
+
+            <!-- ◀ 이전 블록 -->
+            <a th:if="${prevBlock >= 0}"
+               th:href="@{/category(category=${activeCategory}, page=${prevBlock})}">
+                ◀
+            </a>
+
+            <!-- 숫자 페이지 버튼 -->
+            <a th:each="i : ${#numbers.sequence(blockStart, blockEnd)}"
+               th:href="@{/category(category=${activeCategory}, page=${i})}"
+               th:text="${i + 1}"
+               th:classappend="${i == currentPage} ? 'active-page'">
+            </a>
+
+            <!-- ▶ 다음 블록 -->
+            <a th:if="${nextBlock < totalPages}"
+               th:href="@{/category(category=${activeCategory}, page=${nextBlock})}">
+                ▶
+            </a>
+
+            <!-- ⏭ 마지막 페이지 -->
+            <a th:href="@{/category(category=${activeCategory}, page=${totalPages - 1})}">⏭</a>
+        </div>
+
+        <!-- ⭐ 오른쪽 글쓰기 버튼 ⭐ -->
+        <a href="/write" class="write-btn">글쓰기</a>
+
+    </div>
+
+</div>
+
+<!-- footer -->
+<th:block th:replace="layout/footer :: footer"></th:block>

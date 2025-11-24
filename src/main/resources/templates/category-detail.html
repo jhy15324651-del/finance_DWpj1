@@ -1,0 +1,24 @@
+<th:block th:replace="layout/header :: header"></th:block>
+<th:block th:replace="layout/header :: bodyheader"></th:block>
+
+<h2 th:text="${currentCategory} + ' 카테고리'"></h2>
+
+<div class="post-grid">
+    <div class="post-card" th:each="post : ${posts}">
+        <div>
+            <div class="post-title">
+                <a th:href="@{'/post/' + ${post.id}}"
+                   th:text="${post.title}"
+                   style="text-decoration:none; color:inherit;"></a>
+            </div>
+            <div class="post-summary" th:text="${post.summary}"></div>
+        </div>
+
+        <div class="post-meta">
+            <span th:text="${#temporals.format(post.createdDate, 'yyyy.MM.dd')}"></span>
+            <span>👁 <span th:text="${post.viewCount}"></span></span>
+        </div>
+    </div>
+</div>
+
+<th:block th:replace="layout/footer :: footer"></th:block>

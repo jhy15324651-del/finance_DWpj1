@@ -1,0 +1,14 @@
+<div th:fragment="list">
+    <div class="category-list">
+        <div class="post-card" th:each="post : ${posts}">
+            <div class="post-title">
+                <a th:href="@{'/post/' + ${post.id}}"
+                   th:text="${post.title}"></a>
+            </div>
+            <div class="post-meta">
+                <span th:text="${#temporals.format(post.createdDate, 'yyyy.MM.dd')}"></span>
+                <span>👁 <span th:text="${post.viewCount}"></span></span>
+            </div>
+        </div>
+    </div>
+</div>
