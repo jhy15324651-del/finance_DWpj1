@@ -13,11 +13,11 @@ public class PageController {
 
     @GetMapping("/news")
     public String newsInsights() {
-        return "news-insights";
+        return "insights/news-insights";
     }
 
     @GetMapping("/portfolio")
     public String portfolioComparison() {
-        return "portfolio-comparison";
+        return "portfolio/portfolio-comparison";
     }
 }

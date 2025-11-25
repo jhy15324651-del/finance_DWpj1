@@ -1,0 +1,22 @@
+<th:block th:replace="content/layout/header :: header"></th:block>
+<th:block th:replace="content/layout/header :: bodyheader"></th:block>
+
+<div class="newsletter-container">
+    <h2 style="margin-bottom:20px;">뉴스레터</h2>
+
+    <div class="newsletter-grid" th:if="${newsletters != null and !newsletters.isEmpty()}">
+        <div class="newsletter-card" th:each="n : ${newsletters}">
+            <div class="newsletter-title" th:text="${n.title}"></div>
+            <div class="newsletter-summary" th:text="${n.summary}"></div>
+            <div class="newsletter-meta">
+                <span th:text="${n.createdDate}"></span>
+            </div>
+        </div>
+    </div>
+
+    <div th:if="${newsletters == null or newsletters.isEmpty()}" style="text-align:center; padding:50px;">
+        <p>등록된 뉴스레터가 없습니다.</p>
+    </div>
+</div>
+
+<th:block th:replace="content/layout/footer :: footer"></th:block>
