@@ -15,6 +15,6 @@ public class NewsViewController {
      */
     @GetMapping("/news-insights")
     public String newsInsights() {
-        return "news-insights";
+        return "insights/news-insights";
     }
 }
