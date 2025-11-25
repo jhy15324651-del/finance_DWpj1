@@ -473,7 +473,7 @@
                 <hr style="margin: 20px 0; border-color:#e2e8f0;">
 
                 <h3 style="margin-bottom:10px;"> 관련 뉴스</h3>
-                <div style="color:#adb5bd; font-size:0.9rem;">
+                <div id="news-area" style="color:#adb5bd; font-size:0.9rem;">
                     아직 뉴스 데이터가 없습니다.<br>
                     나중에 API 연동하면 자동으로 들어갑니다.
                 </div>
@@ -616,6 +616,8 @@
 
             // 차트 데이터 로드
             await loadChartData();
+            await loadNews();
+
 
         } catch (error) {
             console.error('종목 로드 실패:', error);
@@ -933,27 +935,71 @@
         loadBoard(currentTicker, page);
     }
 
-    // 📌 종목 불러올 때마다 게시판도 같이 로드
-    async function loadStock(ticker) {
-        currentTicker = ticker.toUpperCase();
-        document.getElementById('ticker-input').value = currentTicker;
+    // // 📌 종목 불러올 때마다 게시판도 같이 로드
+    // async function loadStock(ticker) {
+    //     currentTicker = ticker.toUpperCase();
+    //     document.getElementById('ticker-input').value = currentTicker;
+    //
+    //     try {
+    //         // 기존 로직 수행
+    //         const infoResponse = await fetch(`/stock/api/info/${currentTicker}`);
+    //         if (!infoResponse.ok) throw new Error('종목을 찾을 수 없습니다.');
+    //         const stockInfo = await infoResponse.json();
+    //         displayStockInfo(stockInfo);
+    //
+    //         await loadChartData();
+    //
+    //         // 📌 종목 토론방도 함께 로드
+    //         await loadBoard();
+    //
+    //     } catch (error) {
+    //         console.error('종목 로드 실패:', error);
+    //     }
+    // }
+
+    async function loadNews() {
+        if (!currentTicker) return;
+
+        const newsArea = document.getElementById("news-area");
+        newsArea.innerHTML = "<div style='color:#718096;'>뉴스 로딩 중...</div>";
 
         try {
-            // 기존 로직 수행
-            const infoResponse = await fetch(`/stock/api/info/${currentTicker}`);
-            if (!infoResponse.ok) throw new Error('종목을 찾을 수 없습니다.');
-            const stockInfo = await infoResponse.json();
-            displayStockInfo(stockInfo);
+            const res = await fetch(`/stock/api/news/${currentTicker}`);
+            const data = await res.json();
+            const list = data.news;
 
-            await loadChartData();
+            if (!list || list.length === 0) {
+                newsArea.innerHTML = "<div style='color:#999;'>관련 뉴스가 없습니다.</div>";
+                return;
+            }
 
-            // 📌 종목 토론방도 함께 로드
-            await loadBoard();
+            newsArea.innerHTML = "";
 
-        } catch (error) {
-            console.error('종목 로드 실패:', error);
+            list.slice(0, 8).forEach(n => {
+                const time = n.providerPublishTime
+                    ? new Date(n.providerPublishTime * 1000).toLocaleString()
+                    : "";
+
+                const item = `
+                <div style="padding:10px 0; border-bottom:1px solid #eee;">
+                    <a href="${n.link}" target="_blank"
+                       style="font-weight:600; color:#2b6cb0; text-decoration:none;">
+                        ${n.title}
+                    </a>
+                    <div style="font-size:0.8rem; color:#666;">
+                        ${n.publisher ?? ""} · ${time}
+                    </div>
+                </div>
+            `;
+                newsArea.insertAdjacentHTML("beforeend", item);
+            });
+
+        } catch (e) {
+            console.error(e);
+            newsArea.innerHTML = "<div style='color:red;'>뉴스 로드 실패</div>";
         }
     }
+
 
 </script>
 </body>
