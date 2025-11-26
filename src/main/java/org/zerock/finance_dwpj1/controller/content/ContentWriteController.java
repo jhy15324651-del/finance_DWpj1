@@ -18,7 +18,7 @@ import java.nio.file.Paths;
 
 /**
  * 콘텐츠 작성 컨트롤러
- * 콘텐츠 작성 폼 및 저장 처리
+ * 콘텐츠 리뷰 작성 및 저장 처리
  */
 @Slf4j
 @Controller
@@ -29,7 +29,7 @@ public class ContentWriteController {
     private final ContentReviewService contentReviewService;
 
     /**
-     * 콘텐츠 작성 폼
+     * 작성 폼 페이지
      */
     @GetMapping("/write")
     public String writeForm() {
@@ -38,49 +38,56 @@ public class ContentWriteController {
     }
 
     /**
-     * 콘텐츠 저장
+     * 콘텐츠 저장 처리
      */
     @PostMapping("/write")
     public String writeContent(
             @RequestParam String title,
             @RequestParam String summary,
             @RequestParam String content,
-            @RequestParam String category,
+            @RequestParam(required = false) String hashtags,
             @RequestParam(required = false) MultipartFile image
     ) throws IOException {
-        log.debug("콘텐츠 저장 요청: title={}, category={}", title, category);
 
-        ContentReview contentReview = ContentReview.builder()
+        log.debug("콘텐츠 저장 요청: title={}, hashtags={}", title, hashtags);
+
+        ContentReview post = ContentReview.builder()
                 .title(title)
                 .summary(summary)
                 .content(content)
-                .category(category)
+                .hashtags(hashtags)  // 💡 category 대신 hashtags 입력
                 .viewCount(0)
                 .type("review")
                 .isDeleted(false)
                 .build();
 
-        // 이미지 저장
+        // 🔥 이미지 저장 처리
         if (image != null && !image.isEmpty()) {
+
             String uploadDir = "src/main/resources/static/upload/";
+            Path uploadPath = Paths.get(uploadDir);
 
             // 디렉토리가 없으면 생성
-            Path uploadPath = Paths.get(uploadDir);
             if (!Files.exists(uploadPath)) {
                 Files.createDirectories(uploadPath);
             }
 
+            // 파일명 생성
             String fileName = System.currentTimeMillis() + "_" + image.getOriginalFilename();
-            Path filePath = Paths.get(uploadDir + fileName);
-            Files.write(filePath, image.getBytes());
+            Path filePath = uploadPath.resolve(fileName);
 
-            contentReview.setImgUrl("/upload/" + fileName);
-            log.debug("이미지 저장 완료: {}", fileName);
+            // 이미지 저장
+            Files.write(filePath, image.getBytes());
+            post.setImgUrl("/upload/" + fileName);
+
+            log.debug("이미지 저장 완료: {}", post.getImgUrl());
         }
 
-        contentReviewService.saveContent(contentReview);
-        log.info("콘텐츠 저장 완료: id={}, title={}", contentReview.getId(), contentReview.getTitle());
+        // DB 저장
+        contentReviewService.saveContent(post);
+        log.info("콘텐츠 저장 성공: id={}, title={}", post.getId(), post.getTitle());
 
+        // 저장 후 목록으로 이동
         return "redirect:/content/category";
     }
 }

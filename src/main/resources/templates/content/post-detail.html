@@ -1,27 +1,96 @@
+<!-- header -->
 <th:block th:replace="content/layout/header :: header"></th:block>
 <th:block th:replace="content/layout/header :: bodyheader"></th:block>
 
 <div class="post-detail-container">
 
+    <!-- 제목 -->
     <h1 class="post-detail-title" th:text="${post.title}"></h1>
 
+    <!-- 날짜 · 조회수 -->
     <div class="post-detail-meta">
         <span th:text="${#temporals.format(post.createdDate, 'yyyy.MM.dd')}"></span>
         <span> · 조회수 <span th:text="${post.viewCount}"></span></span>
     </div>
 
+    <!-- 이미지 -->
     <div th:if="${post.imgUrl}">
-        <img th:src="${post.imgUrl}" style="width:100%; border-radius:10px; margin-bottom:20px;">
+        <img th:src="${post.imgUrl}"
+             style="width:100%; border-radius:10px; margin-bottom:20px;">
     </div>
 
+    <!-- 본문 -->
     <div class="post-detail-content" th:utext="${post.content}">
-        <!-- HTML 본문 렌더링 -->
     </div>
 
+    <!-- 해시태그 -->
+    <div class="post-hashtags"
+         th:if="${post.hashtags != null and #strings.length(post.hashtags) > 0}">
+        <span th:each="tag : ${#strings.arraySplit(post.hashtags, ' ')}">
+            <a th:href="@{/content/category(keyword=${tag})}"
+               class="tag-item"
+               th:text="${tag}">
+            </a>
+        </span>
+    </div>
+
+
+    <!-- ===========================================================
+          💬 댓글 영역
+     ============================================================ -->
+    <div class="comment-section">
+
+        <h3 class="comment-title">댓글</h3>
+
+        <!-- 댓글 목록 -->
+        <div id="comment-list">
+            <div th:each="c : ${comments}" class="comment-item">
+
+                <!-- 댓글 -->
+                <div th:if="${c.parentId == null}" class="comment">
+                    <b th:text="${c.writer}"></b>
+                    <span class="comment-date"
+                          th:text="${#temporals.format(c.createdDate, 'yyyy-MM-dd HH:mm')}"></span>
+                    <p th:text="${c.content}"></p>
+
+                    <button class="reply-btn" th:attr="data-id=${c.id}">답글쓰기</button>
+                    <button class="delete-btn" th:attr="data-id=${c.id}">삭제</button>
+                </div>
+
+                <!-- 대댓글 -->
+                <div th:if="${c.parentId != null}" class="reply" style="margin-left:20px;">
+                    ↳ <b th:text="${c.writer}"></b>
+                    <span class="comment-date"
+                          th:text="${#temporals.format(c.createdDate, 'yyyy-MM-dd HH:mm')}"></span>
+                    <p th:text="${c.content}"></p>
+
+                    <button class="delete-btn" th:attr="data-id=${c.id}">삭제</button>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- 댓글 작성 -->
+        <div class="comment-write-box">
+            <h4>댓글 작성</h4>
+            <input type="text" id="writer" placeholder="작성자">
+            <textarea id="content" placeholder="내용"></textarea>
+            <input type="password" id="password" placeholder="비밀번호">
+            <button id="comment-submit">등록</button>
+        </div>
+
+    </div>
+    <!-- =========================================================== -->
+
+
+    <!-- 목록으로 버튼 -->
     <div style="text-align:center; margin-top:30px;">
         <a th:href="@{/content/category}" class="btn-back">목록으로</a>
     </div>
 
 </div>
 
+<!-- footer -->
 <th:block th:replace="content/layout/footer :: footer"></th:block>
+
+</script>
