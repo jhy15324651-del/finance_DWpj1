@@ -3,6 +3,7 @@ package org.zerock.finance_dwpj1.repository.content;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 import org.zerock.finance_dwpj1.entity.content.ContentReview;
 
@@ -11,58 +12,79 @@ import java.util.Optional;
 
 /**
  * ContentReview Repository
- * 콘텐츠 리뷰 데이터 접근 인터페이스
+ * - DB에 직접 접근하는 계층
+ * - Spring Data JPA의 메서드 이름 기반 쿼리 자동 생성 활용
+ * - ⚡ Specification 사용 가능하도록 JpaSpecificationExecutor 추가됨
  */
 @Repository
-public interface ContentReviewRepository extends JpaRepository<ContentReview, Long> {
+public interface ContentReviewRepository
+        extends JpaRepository<ContentReview, Long>,
+        JpaSpecificationExecutor<ContentReview> {   // ← 여기 추가됨!!
 
-    /**
-     * 최신 콘텐츠 N개 조회
-     */
+    // ---------------------------------------------------------
+    // 🔥 1) 홈 화면용 최신/인기 목록
+    // ---------------------------------------------------------
+
     List<ContentReview> findTop8ByIsDeletedFalseOrderByCreatedDateDesc();
 
-    /**
-     * 인기 콘텐츠 N개 조회 (조회수 높은 순)
-     */
     List<ContentReview> findTop5ByIsDeletedFalseOrderByViewCountDesc();
 
-    /**
-     * 특정 타입별 콘텐츠 조회 (뉴스레터, 정보 등)
-     */
+
+    // ---------------------------------------------------------
+    // 🔥 2) 타입 기반 조회
+    // ---------------------------------------------------------
+
     List<ContentReview> findByTypeAndIsDeletedFalseOrderByCreatedDateDesc(String type);
 
-    /**
-     * 카테고리별 콘텐츠 조회 (최신순)
-     */
-    List<ContentReview> findByCategoryAndIsDeletedFalseOrderByCreatedDateDesc(String category);
 
-    /**
-     * 카테고리별 콘텐츠 수 조회
-     */
-    int countByCategoryAndIsDeletedFalse(String category);
+    // ---------------------------------------------------------
+    // 🔥 3) 상세 조회 (삭제 제외)
+    // ---------------------------------------------------------
 
-    /**
-     * 전체 콘텐츠 수 조회 (삭제되지 않은 것만)
-     */
-    long countByIsDeletedFalse();
-
-    /**
-     * 카테고리별 콘텐츠 목록 조회
-     */
-    List<ContentReview> findByCategoryAndIsDeletedFalse(String category);
-
-    /**
-     * ID로 콘텐츠 조회 (삭제되지 않은 것만)
-     */
     Optional<ContentReview> findByIdAndIsDeletedFalse(Long id);
 
-    /**
-     * 전체 페이징 조회 (삭제되지 않은 것만)
-     */
+
+    // ---------------------------------------------------------
+    // 🔥 4) 전체 게시글 수
+    // ---------------------------------------------------------
+
+    long countByIsDeletedFalse();
+
+
+    // ---------------------------------------------------------
+    // 🔥 5) 전체 글 페이징
+    // ---------------------------------------------------------
+
     Page<ContentReview> findByIsDeletedFalse(Pageable pageable);
 
-    /**
-     * 카테고리별 페이징 조회 (삭제되지 않은 것만)
-     */
-    Page<ContentReview> findByCategoryAndIsDeletedFalse(String category, Pageable pageable);
+
+    // ---------------------------------------------------------
+    // 🔥 6) 해시태그 검색(단일)
+    // ---------------------------------------------------------
+
+    List<ContentReview> findByHashtagsContainingAndIsDeletedFalseOrderByCreatedDateDesc(String hashtag);
+
+    Page<ContentReview> findByHashtagsContainingAndIsDeletedFalse(String hashtag, Pageable pageable);
+
+    int countByHashtagsContainingAndIsDeletedFalse(String hashtag);
+
+
+    // ---------------------------------------------------------
+    // 🔥 7) 제목 / 내용 검색
+    // ---------------------------------------------------------
+
+    Page<ContentReview> findByTitleContainingAndIsDeletedFalse(String keyword, Pageable pageable);
+
+    Page<ContentReview> findByContentContainingAndIsDeletedFalse(String keyword, Pageable pageable);
+
+
+    // ---------------------------------------------------------
+    // 🔥 8) 특정 해시태그 내 검색 (단일 태그 + 제목/내용)
+    // ---------------------------------------------------------
+
+    Page<ContentReview> findByHashtagsContainingAndTitleContainingAndIsDeletedFalse(
+            String tag, String keyword, Pageable pageable);
+
+    Page<ContentReview> findByHashtagsContainingAndContentContainingAndIsDeletedFalse(
+            String tag, String keyword, Pageable pageable);
 }

@@ -6,27 +6,29 @@
 
     <form class="write-form" th:action="@{/content/write}" method="post" enctype="multipart/form-data">
 
+        <!-- 제목 -->
         <label>제목</label>
         <input type="text" name="title" required>
 
+        <!-- 요약 -->
         <label>요약</label>
         <input type="text" name="summary" required>
 
+        <!-- 본문 -->
         <label>본문</label>
         <textarea name="content" rows="15" required></textarea>
 
-        <label>카테고리</label>
-        <select name="category">
-            <option value="공지">공지</option>
-            <option value="거시경제">거시경제</option>
-            <option value="원유">원유</option>
-            <option value="엔비디아">엔비디아</option>
-            <option value="테슬라">테슬라</option>
-        </select>
+        <!-- 해시태그 입력 -->
+        <label>해시태그</label>
+        <input type="text" name="hashtags"
+               placeholder="#원유 #엔비디아 #경제 (공백으로 구분)"
+               style="font-size:14px;">
 
+        <!-- 이미지 첨부 -->
         <label>이미지 첨부</label>
         <input type="file" name="image" accept="image/*">
 
+        <!-- 버튼 영역 -->
         <div style="text-align:center; margin-top:20px;">
             <button type="submit" class="btn-submit">작성하기</button>
             <a th:href="@{/content/category}" class="btn-cancel">취소</a>
