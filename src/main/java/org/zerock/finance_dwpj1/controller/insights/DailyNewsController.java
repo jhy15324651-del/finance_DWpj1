@@ -5,8 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.zerock.finance_dwpj1.dto.insights.CommentDTO;
-import org.zerock.finance_dwpj1.dto.insights.DailyNewsDTO;
+import org.zerock.finance_dwpj1.dto.insights.InsightsCommentDTO;
+import org.zerock.finance_dwpj1.dto.insights.InsightsDailyNewsDTO;
 import org.zerock.finance_dwpj1.service.insights.DailyNewsService;
 import org.zerock.finance_dwpj1.service.insights.NewsSchedulerService;
 
@@ -30,9 +30,9 @@ public class DailyNewsController {
      * 데일리 뉴스 목록 조회 (24시간 이내)
      */
     @GetMapping("/daily")
-    public ResponseEntity<List<DailyNewsDTO>> getDailyNews() {
+    public ResponseEntity<List<InsightsDailyNewsDTO>> getDailyNews() {
         log.info("데일리 뉴스 조회 요청");
-        List<DailyNewsDTO> newsList = dailyNewsService.getDailyNews();
+        List<InsightsDailyNewsDTO> newsList = dailyNewsService.getDailyNews();
         return ResponseEntity.ok(newsList);
     }
 
@@ -40,11 +40,11 @@ public class DailyNewsController {
      * 데일리 뉴스 페이징 조회
      */
     @GetMapping("/daily/page")
-    public ResponseEntity<Page<DailyNewsDTO>> getDailyNewsPage(
+    public ResponseEntity<Page<InsightsDailyNewsDTO>> getDailyNewsPage(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
         log.info("데일리 뉴스 페이징 조회 - page: {}, size: {}", page, size);
-        Page<DailyNewsDTO> newsPage = dailyNewsService.getDailyNews(page, size);
+        Page<InsightsDailyNewsDTO> newsPage = dailyNewsService.getDailyNews(page, size);
         return ResponseEntity.ok(newsPage);
     }
 
@@ -52,11 +52,11 @@ public class DailyNewsController {
      * 아카이브 뉴스 조회 (24시간 이상)
      */
     @GetMapping("/archive")
-    public ResponseEntity<Page<DailyNewsDTO>> getArchiveNews(
+    public ResponseEntity<Page<InsightsDailyNewsDTO>> getArchiveNews(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
         log.info("아카이브 뉴스 조회 - page: {}, size: {}", page, size);
-        Page<DailyNewsDTO> newsPage = dailyNewsService.getArchiveNews(page, size);
+        Page<InsightsDailyNewsDTO> newsPage = dailyNewsService.getArchiveNews(page, size);
         return ResponseEntity.ok(newsPage);
     }
 
@@ -64,9 +64,9 @@ public class DailyNewsController {
      * 금주의 뉴스 (조회수 TOP 10)
      */
     @GetMapping("/weekly-top")
-    public ResponseEntity<List<DailyNewsDTO>> getWeeklyTopNews() {
+    public ResponseEntity<List<InsightsDailyNewsDTO>> getWeeklyTopNews() {
         log.info("금주의 뉴스 조회");
-        List<DailyNewsDTO> topNews = dailyNewsService.getWeeklyTopNews();
+        List<InsightsDailyNewsDTO> topNews = dailyNewsService.getWeeklyTopNews();
         return ResponseEntity.ok(topNews);
     }
 
@@ -74,9 +74,9 @@ public class DailyNewsController {
      * 뉴스 상세 조회 (조회수 증가)
      */
     @GetMapping("/{newsId}")
-    public ResponseEntity<DailyNewsDTO> getNewsDetail(@PathVariable Long newsId) {
+    public ResponseEntity<InsightsDailyNewsDTO> getNewsDetail(@PathVariable Long newsId) {
         log.info("뉴스 상세 조회 - ID: {}", newsId);
-        DailyNewsDTO newsDTO = dailyNewsService.getNewsDetail(newsId);
+        InsightsDailyNewsDTO newsDTO = dailyNewsService.getNewsDetail(newsId);
         return ResponseEntity.ok(newsDTO);
     }
 
@@ -84,12 +84,12 @@ public class DailyNewsController {
      * 뉴스 검색
      */
     @GetMapping("/search")
-    public ResponseEntity<Page<DailyNewsDTO>> searchNews(
+    public ResponseEntity<Page<InsightsDailyNewsDTO>> searchNews(
             @RequestParam String keyword,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
         log.info("뉴스 검색 - keyword: {}, page: {}, size: {}", keyword, page, size);
-        Page<DailyNewsDTO> newsPage = dailyNewsService.searchNews(keyword, page, size);
+        Page<InsightsDailyNewsDTO> newsPage = dailyNewsService.searchNews(keyword, page, size);
         return ResponseEntity.ok(newsPage);
     }
 
@@ -97,9 +97,9 @@ public class DailyNewsController {
      * 댓글 목록 조회
      */
     @GetMapping("/{newsId}/comments")
-    public ResponseEntity<List<CommentDTO>> getComments(@PathVariable Long newsId) {
+    public ResponseEntity<List<InsightsCommentDTO>> getComments(@PathVariable Long newsId) {
         log.info("댓글 조회 - 뉴스 ID: {}", newsId);
-        List<CommentDTO> comments = dailyNewsService.getComments(newsId);
+        List<InsightsCommentDTO> comments = dailyNewsService.getComments(newsId);
         return ResponseEntity.ok(comments);
     }
 
@@ -107,12 +107,12 @@ public class DailyNewsController {
      * 댓글 작성 (일반 댓글 및 답글)
      */
     @PostMapping("/{newsId}/comments")
-    public ResponseEntity<CommentDTO> addComment(
+    public ResponseEntity<InsightsCommentDTO> addComment(
             @PathVariable Long newsId,
-            @RequestBody CommentDTO commentDTO) {
+            @RequestBody InsightsCommentDTO commentDTO) {
         log.info("댓글 작성 - 뉴스 ID: {}, 작성자: {}", newsId, commentDTO.getUserName());
         commentDTO.setNewsId(newsId);
-        CommentDTO savedComment = dailyNewsService.addComment(commentDTO);
+        InsightsCommentDTO savedComment = dailyNewsService.addComment(commentDTO);
         return ResponseEntity.ok(savedComment);
     }
 
@@ -120,9 +120,9 @@ public class DailyNewsController {
      * 댓글 좋아요
      */
     @PostMapping("/comments/{commentId}/like")
-    public ResponseEntity<CommentDTO> likeComment(@PathVariable Long commentId) {
+    public ResponseEntity<InsightsCommentDTO> likeComment(@PathVariable Long commentId) {
         log.info("댓글 좋아요 - ID: {}", commentId);
-        CommentDTO updatedComment = dailyNewsService.likeComment(commentId);
+        InsightsCommentDTO updatedComment = dailyNewsService.likeComment(commentId);
         return ResponseEntity.ok(updatedComment);
     }
 
@@ -130,9 +130,9 @@ public class DailyNewsController {
      * 댓글 싫어요
      */
     @PostMapping("/comments/{commentId}/dislike")
-    public ResponseEntity<CommentDTO> dislikeComment(@PathVariable Long commentId) {
+    public ResponseEntity<InsightsCommentDTO> dislikeComment(@PathVariable Long commentId) {
         log.info("댓글 싫어요 - ID: {}", commentId);
-        CommentDTO updatedComment = dailyNewsService.dislikeComment(commentId);
+        InsightsCommentDTO updatedComment = dailyNewsService.dislikeComment(commentId);
         return ResponseEntity.ok(updatedComment);
     }
 
@@ -142,11 +142,11 @@ public class DailyNewsController {
      * 뉴스 수정 (관리자 전용)
      */
     @PutMapping("/admin/{newsId}")
-    public ResponseEntity<DailyNewsDTO> updateNews(
+    public ResponseEntity<InsightsDailyNewsDTO> updateNews(
             @PathVariable Long newsId,
-            @RequestBody DailyNewsDTO newsDTO) {
+            @RequestBody InsightsDailyNewsDTO newsDTO) {
         log.info("뉴스 수정 - ID: {}", newsId);
-        DailyNewsDTO updatedNews = dailyNewsService.updateNews(newsId, newsDTO);
+        InsightsDailyNewsDTO updatedNews = dailyNewsService.updateNews(newsId, newsDTO);
         return ResponseEntity.ok(updatedNews);
     }
 
@@ -211,7 +211,7 @@ public class DailyNewsController {
 
         Map<String, Object> response = new HashMap<>();
         try {
-            List<DailyNewsDTO> crawledNews = schedulerService.testCrawlerOnly();
+            List<InsightsDailyNewsDTO> crawledNews = schedulerService.testCrawlerOnly();
 
             response.put("success", true);
             response.put("count", crawledNews.size());

@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Comment {
+public class InsightsComment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,12 +27,12 @@ public class Comment {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "news_id", nullable = false, foreignKey = @ForeignKey(name = "fk_comment_news"))
-    private News news;
+    private InsightsNews news;
 
     // 답글용 부모 댓글 (답글 기능)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_comment_id", foreignKey = @ForeignKey(name = "fk_comment_parent"))
-    private Comment parentComment;
+    private InsightsComment parentComment;
 
     @Column(name = "user_name", nullable = false, length = 100)
     private String userName; // 댓글 작성자 이름

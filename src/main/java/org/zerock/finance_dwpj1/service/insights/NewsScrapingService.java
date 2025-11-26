@@ -7,7 +7,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.stereotype.Service;
-import org.zerock.finance_dwpj1.dto.insights.NewsDTO;
+import org.zerock.finance_dwpj1.dto.insights.InsightsNewsDTO;
 import org.zerock.finance_dwpj1.service.common.GPTService;
 
 import java.time.LocalDateTime;
@@ -23,8 +23,8 @@ public class NewsScrapingService {
 
     private final GPTService gptService;
 
-    public List<NewsDTO> scrapeYahooFinanceNews(String category) {
-        List<NewsDTO> newsList = new ArrayList<>();
+    public List<InsightsNewsDTO> scrapeYahooFinanceNews(String category) {
+        List<InsightsNewsDTO> newsList = new ArrayList<>();
 
         try {
             String url = category.equals("hot-topics")
@@ -56,7 +56,7 @@ public class NewsScrapingService {
                     String gptResponse = gptService.translateAndSummarizeNews(
                             "Title: " + title + "\n\nContent: " + content.substring(0, Math.min(500, content.length())));
 
-                    NewsDTO newsDTO = parseGPTResponse(gptResponse, newsUrl, category);
+                    InsightsNewsDTO newsDTO = parseGPTResponse(gptResponse, newsUrl, category);
                     if (newsDTO != null) {
                         newsList.add(newsDTO);
                         count++;
@@ -92,7 +92,7 @@ public class NewsScrapingService {
         }
     }
 
-    private NewsDTO parseGPTResponse(String gptResponse, String url, String category) {
+    private InsightsNewsDTO parseGPTResponse(String gptResponse, String url, String category) {
         try {
             String[] lines = gptResponse.split("\n");
             String title = "";
@@ -112,7 +112,7 @@ public class NewsScrapingService {
                 }
             }
 
-            return NewsDTO.builder()
+            return InsightsNewsDTO.builder()
                     .title(title.isEmpty() ? "뉴스 제목" : title)
                     .category(category.equals("hot-topics") ? "핫토픽" : "금주의 뉴스")
                     .date(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
@@ -127,12 +127,12 @@ public class NewsScrapingService {
         }
     }
 
-    private List<NewsDTO> getSampleNews(String category) {
-        List<NewsDTO> sampleNews = new ArrayList<>();
+    private List<InsightsNewsDTO> getSampleNews(String category) {
+        List<InsightsNewsDTO> sampleNews = new ArrayList<>();
 
         String cat = category.equals("hot-topics") ? "핫토픽" : "금주의 뉴스";
 
-        sampleNews.add(NewsDTO.builder()
+        sampleNews.add(InsightsNewsDTO.builder()
                 .title("연준, 금리 동결 결정...시장 안정 신호")
                 .category(cat)
                 .date("2025-01-15")
@@ -145,7 +145,7 @@ public class NewsScrapingService {
                         "시장은 긍정적으로 반응하며 주요 지수 상승"))
                 .build());
 
-        sampleNews.add(NewsDTO.builder()
+        sampleNews.add(InsightsNewsDTO.builder()
                 .title("엔비디아, AI 칩 수요 급증으로 실적 기대 이상")
                 .category(cat)
                 .date("2025-01-14")
@@ -158,7 +158,7 @@ public class NewsScrapingService {
                         "향후 AI 시장 성장에 따른 추가 성장 전망"))
                 .build());
 
-        sampleNews.add(NewsDTO.builder()
+        sampleNews.add(InsightsNewsDTO.builder()
                 .title("테슬라, 자율주행 기술 업데이트 발표")
                 .category(cat)
                 .date("2025-01-13")

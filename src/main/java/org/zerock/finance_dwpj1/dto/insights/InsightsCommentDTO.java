@@ -4,8 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.zerock.finance_dwpj1.entity.insights.Comment;
-import org.zerock.finance_dwpj1.entity.insights.News;
+import org.zerock.finance_dwpj1.entity.insights.InsightsComment;
+import org.zerock.finance_dwpj1.entity.insights.InsightsNews;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -17,7 +17,7 @@ import java.time.format.DateTimeFormatter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CommentDTO {
+public class InsightsCommentDTO {
 
     private Long id;
     private Long newsId;
@@ -34,8 +34,8 @@ public class CommentDTO {
     /**
      * Entity → DTO 변환
      */
-    public static CommentDTO fromEntity(Comment comment) {
-        return CommentDTO.builder()
+    public static InsightsCommentDTO fromEntity(InsightsComment comment) {
+        return InsightsCommentDTO.builder()
                 .id(comment.getId())
                 .newsId(comment.getNews().getId())
                 .parentCommentId(comment.getParentComment() != null ?
@@ -52,8 +52,8 @@ public class CommentDTO {
     /**
      * DTO → Entity 변환
      */
-    public Comment toEntity(News news) {
-        return Comment.builder()
+    public InsightsComment toEntity(InsightsNews news) {
+        return InsightsComment.builder()
                 .news(news)
                 .userName(this.userName)
                 .content(this.content)
@@ -63,8 +63,8 @@ public class CommentDTO {
     /**
      * DTO → Entity 변환 (답글인 경우)
      */
-    public Comment toEntity(News news, Comment parentComment) {
-        return Comment.builder()
+    public InsightsComment toEntity(InsightsNews news, InsightsComment parentComment) {
+        return InsightsComment.builder()
                 .news(news)
                 .parentComment(parentComment)
                 .userName(this.userName)

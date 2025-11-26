@@ -7,7 +7,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.stereotype.Service;
-import org.zerock.finance_dwpj1.dto.insights.DailyNewsDTO;
+import org.zerock.finance_dwpj1.dto.insights.InsightsDailyNewsDTO;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -29,10 +29,10 @@ public class YahooFinanceCrawlerService {
     /**
      * Yahoo Finance에서 최신 뉴스 크롤링
      *
-     * @return 크롤링한 뉴스 목록 (DailyNewsDTO)
+     * @return 크롤링한 뉴스 목록 (InsightsDailyNewsDTO)
      */
-    public List<DailyNewsDTO> crawlLatestNews() {
-        List<DailyNewsDTO> newsList = new ArrayList<>();
+    public List<InsightsDailyNewsDTO> crawlLatestNews() {
+        List<InsightsDailyNewsDTO> newsList = new ArrayList<>();
 
         try {
             log.info("Yahoo Finance 뉴스 크롤링 시작: {}", YAHOO_FINANCE_NEWS_URL);
@@ -80,7 +80,7 @@ public class YahooFinanceCrawlerService {
                     }
 
                     // 뉴스 상세 페이지 크롤링
-                    DailyNewsDTO newsDTO = crawlNewsDetail(url, title);
+                    InsightsDailyNewsDTO newsDTO = crawlNewsDetail(url, title);
                     if (newsDTO != null) {
                         newsList.add(newsDTO);
                     }
@@ -109,9 +109,9 @@ public class YahooFinanceCrawlerService {
      *
      * @param url 뉴스 URL
      * @param title 뉴스 제목
-     * @return DailyNewsDTO
+     * @return InsightsDailyNewsDTO
      */
-    private DailyNewsDTO crawlNewsDetail(String url, String title) {
+    private InsightsDailyNewsDTO crawlNewsDetail(String url, String title) {
         try {
             log.debug("뉴스 상세 크롤링: {}", url);
 
@@ -147,7 +147,7 @@ public class YahooFinanceCrawlerService {
             }
 
             // DTO 생성 (GPT 요약은 나중에 추가)
-            return DailyNewsDTO.builder()
+            return InsightsDailyNewsDTO.builder()
                     .title(title)
                     .content(content.isEmpty() ? "내용을 가져올 수 없습니다." : content)
                     .url(url)
@@ -168,8 +168,8 @@ public class YahooFinanceCrawlerService {
      * @param keyword 검색 키워드
      * @return 크롤링한 뉴스 목록
      */
-    public List<DailyNewsDTO> crawlNewsByKeyword(String keyword) {
-        List<DailyNewsDTO> newsList = new ArrayList<>();
+    public List<InsightsDailyNewsDTO> crawlNewsByKeyword(String keyword) {
+        List<InsightsDailyNewsDTO> newsList = new ArrayList<>();
 
         try {
             String searchUrl = "https://finance.yahoo.com/search?p=" + keyword;
@@ -191,7 +191,7 @@ public class YahooFinanceCrawlerService {
                     continue;
                 }
 
-                DailyNewsDTO newsDTO = crawlNewsDetail(url, title);
+                InsightsDailyNewsDTO newsDTO = crawlNewsDetail(url, title);
                 if (newsDTO != null) {
                     newsList.add(newsDTO);
                 }

@@ -4,7 +4,9 @@
       "Bash(xargs cat:*)",
       "Bash(cat:*)",
       "Bash(src/main/resources/static/upload/.gitkeep)",
-      "Bash(./gradlew clean build:*)"
+      "Bash(./gradlew clean build:*)",
+      "Bash(./gradlew clean:*)",
+      "Bash(git mv:*)"
     ],
     "deny": [],
     "ask": []
