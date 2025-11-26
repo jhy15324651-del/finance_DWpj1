@@ -31,7 +31,10 @@ public class News {
     private String title;
 
     @Column(columnDefinition = "TEXT")
-    private String content;
+    private String content; // 한국어 번역 본문
+
+    @Column(columnDefinition = "TEXT")
+    private String originalContent; // 영어 원문
 
     @Column(columnDefinition = "TEXT")
     private String summary; // GPT 요약

@@ -23,7 +23,7 @@ import java.util.List;
 @Slf4j
 public class YahooFinanceCrawlerService {
 
-    private static final String YAHOO_FINANCE_URL = "https://finance.yahoo.com/topic/stock-market-news/";
+    private static final String YAHOO_FINANCE_NEWS_URL = "https://finance.yahoo.com/news/";
     private static final int TIMEOUT = 10000; // 10초
 
     /**
@@ -35,25 +35,31 @@ public class YahooFinanceCrawlerService {
         List<DailyNewsDTO> newsList = new ArrayList<>();
 
         try {
-            log.info("Yahoo Finance 뉴스 크롤링 시작: {}", YAHOO_FINANCE_URL);
+            log.info("Yahoo Finance 뉴스 크롤링 시작: {}", YAHOO_FINANCE_NEWS_URL);
 
-            Document doc = Jsoup.connect(YAHOO_FINANCE_URL)
-                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+            Document doc = Jsoup.connect(YAHOO_FINANCE_NEWS_URL)
+                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
                     .timeout(TIMEOUT)
+                    .followRedirects(true)
                     .get();
 
-            // 뉴스 목록 선택자 (여러 선택자 시도)
-            Elements newsItems = doc.select("div.js-stream-content a");
+            // 뉴스 목록 선택자 (2024년 최신 구조)
+            Elements newsItems = doc.select("h3 a");
 
             // 선택자가 작동하지 않으면 대체 선택자 사용
             if (newsItems.isEmpty()) {
                 log.warn("첫 번째 선택자로 뉴스를 찾지 못함. 대체 선택자 시도...");
-                newsItems = doc.select("a[data-test='article-link']");
+                newsItems = doc.select("a[data-testid='card-link']");
             }
 
             if (newsItems.isEmpty()) {
                 log.warn("두 번째 선택자로도 뉴스를 찾지 못함. 세 번째 선택자 시도...");
-                newsItems = doc.select("h3 a");
+                newsItems = doc.select("div[data-testid='storyitem'] a");
+            }
+
+            if (newsItems.isEmpty()) {
+                log.warn("세 번째 선택자로도 뉴스를 찾지 못함. 마지막 선택자 시도...");
+                newsItems = doc.select("li.stream-item a");
             }
 
             log.info("크롤링한 뉴스 항목 개수: {} (선택자 결과)", newsItems.size());

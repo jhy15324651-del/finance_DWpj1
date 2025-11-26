@@ -29,11 +29,26 @@ public class Comment {
     @JoinColumn(name = "news_id", nullable = false, foreignKey = @ForeignKey(name = "fk_comment_news"))
     private News news;
 
+    // 답글용 부모 댓글 (답글 기능)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_comment_id", foreignKey = @ForeignKey(name = "fk_comment_parent"))
+    private Comment parentComment;
+
     @Column(name = "user_name", nullable = false, length = 100)
     private String userName; // 댓글 작성자 이름
 
     @Column(columnDefinition = "TEXT", nullable = false)
     private String content; // 댓글 내용
+
+    // 좋아요 수
+    @Column(name = "like_count")
+    @Builder.Default
+    private Integer likeCount = 0;
+
+    // 싫어요 수
+    @Column(name = "dislike_count")
+    @Builder.Default
+    private Integer dislikeCount = 0;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -48,5 +63,26 @@ public class Comment {
      */
     public void softDelete() {
         this.isDeleted = true;
+    }
+
+    /**
+     * 좋아요 증가
+     */
+    public void incrementLike() {
+        this.likeCount++;
+    }
+
+    /**
+     * 싫어요 증가
+     */
+    public void incrementDislike() {
+        this.dislikeCount++;
+    }
+
+    /**
+     * 답글인지 확인
+     */
+    public boolean isReply() {
+        return this.parentComment != null;
     }
 }

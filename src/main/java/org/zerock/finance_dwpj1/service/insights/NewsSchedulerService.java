@@ -11,6 +11,7 @@ import org.zerock.finance_dwpj1.repository.insights.NewsRepository;
 import org.zerock.finance_dwpj1.service.common.GPTService;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -22,23 +23,43 @@ import java.util.List;
 @Slf4j
 public class NewsSchedulerService {
 
-    private final YahooFinanceCrawlerService crawlerService;
+    private final YahooFinanceCrawlerService yahooFinanceCrawlerService;
+    private final RssNewsCrawlerService rssNewsCrawlerService;
     private final NewsRepository newsRepository;
     private final GPTService gptService;
 
     /**
      * 하루에 한 번 뉴스 크롤링
-     * cron: 매일 오전 9시에 실행
+     * cron: 매일 오전 10시에 실행
      */
-    @Scheduled(cron = "0 0 9 * * *")
+    @Scheduled(cron = "0 0 10 * * *")
     @Transactional
     public void crawlNewsDaily() {
-        log.info("===== 일일 뉴스 크롤링 시작 (매일 오전 9시) =====");
+        log.info("===== 일일 뉴스 크롤링 시작 (매일 오전 10시) =====");
 
         try {
-            // Yahoo Finance에서 최신 뉴스 크롤링
-            List<DailyNewsDTO> crawledNews = crawlerService.crawlLatestNews();
-            log.info("크롤링한 뉴스 개수: {}", crawledNews.size());
+            // Yahoo Finance + RSS 피드에서 최신 뉴스 크롤링
+            List<DailyNewsDTO> crawledNews = new ArrayList<>();
+
+            // 1. Yahoo Finance 크롤링
+            try {
+                List<DailyNewsDTO> yahooNews = yahooFinanceCrawlerService.crawlLatestNews();
+                crawledNews.addAll(yahooNews);
+                log.info("Yahoo Finance 크롤링 완료: {}개", yahooNews.size());
+            } catch (Exception e) {
+                log.error("Yahoo Finance 크롤링 실패", e);
+            }
+
+            // 2. RSS 피드 크롤링
+            try {
+                List<DailyNewsDTO> rssNews = rssNewsCrawlerService.crawlAllRssFeeds();
+                crawledNews.addAll(rssNews);
+                log.info("RSS 피드 크롤링 완료: {}개", rssNews.size());
+            } catch (Exception e) {
+                log.error("RSS 피드 크롤링 실패", e);
+            }
+
+            log.info("전체 크롤링한 뉴스 개수: {}", crawledNews.size());
 
             int savedCount = 0;
             int duplicateCount = 0;
@@ -52,13 +73,26 @@ public class NewsSchedulerService {
                         continue;
                     }
 
-                    // GPT 요약 생성 (실패해도 계속 진행)
+                    String originalContent = newsDTO.getContent(); // 크롤링한 영어 원문
+
+                    // GPT 번역 및 요약 생성 (실패해도 계속 진행)
                     try {
-                        String summary = generateSummary(newsDTO.getContent());
+                        // 한국어 번역
+                        String translatedContent = gptService.translateNewsToKorean(originalContent);
+                        newsDTO.setContent(translatedContent);
+
+                        // 요약 생성 (번역된 내용 기반)
+                        String summary = gptService.summarizeNews(translatedContent);
                         newsDTO.setSummary(summary);
+
+                        // 영어 원문 저장
+                        newsDTO.setOriginalContent(originalContent);
+
                     } catch (Exception gptError) {
-                        log.warn("GPT 요약 생성 실패, 기본 요약 사용: {}", gptError.getMessage());
-                        newsDTO.setSummary("GPT API 키를 설정하면 자동 요약이 생성됩니다.");
+                        log.warn("GPT 처리 실패, 원문 사용: {}", gptError.getMessage());
+                        newsDTO.setContent(originalContent); // 번역 실패 시 원문 사용
+                        newsDTO.setOriginalContent(originalContent);
+                        newsDTO.setSummary("GPT API 키를 설정하면 자동 번역 및 요약이 생성됩니다.");
                     }
 
                     // Entity로 변환 후 저장
@@ -82,9 +116,9 @@ public class NewsSchedulerService {
 
     /**
      * 하루에 한 번 24시간 경과한 뉴스를 아카이브 처리
-     * cron: 매일 오전 9시 10분에 실행
+     * cron: 매일 오전 10시 10분에 실행
      */
-    @Scheduled(cron = "0 10 9 * * *")
+    @Scheduled(cron = "0 10 10 * * *")
     @Transactional
     public void archiveOldNews() {
         log.info("===== 24시간 경과 뉴스 아카이브 처리 시작 =====");
@@ -161,12 +195,23 @@ public class NewsSchedulerService {
         log.info("===== 크롤러 테스트 시작 (GPT/DB 비활성화) =====");
 
         try {
-            List<DailyNewsDTO> crawledNews = crawlerService.crawlLatestNews();
-            log.info("크롤러 테스트 완료 - 발견한 뉴스: {}개", crawledNews.size());
+            List<DailyNewsDTO> crawledNews = new ArrayList<>();
 
-            // 발견한 뉴스의 제목만 로그 출력
-            for (int i = 0; i < Math.min(crawledNews.size(), 5); i++) {
-                log.info("뉴스 {}: {}", i + 1, crawledNews.get(i).getTitle());
+            // Yahoo Finance 크롤링
+            List<DailyNewsDTO> yahooNews = yahooFinanceCrawlerService.crawlLatestNews();
+            crawledNews.addAll(yahooNews);
+            log.info("Yahoo Finance 크롤러 테스트 완료 - 발견한 뉴스: {}개", yahooNews.size());
+
+            // RSS 피드 크롤링
+            List<DailyNewsDTO> rssNews = rssNewsCrawlerService.crawlAllRssFeeds();
+            crawledNews.addAll(rssNews);
+            log.info("RSS 피드 크롤러 테스트 완료 - 발견한 뉴스: {}개", rssNews.size());
+
+            log.info("전체 크롤러 테스트 완료 - 총 발견한 뉴스: {}개", crawledNews.size());
+
+            // 발견한 뉴스의 제목만 로그 출력 (최대 10개)
+            for (int i = 0; i < Math.min(crawledNews.size(), 10); i++) {
+                log.info("뉴스 {}: [{}] {}", i + 1, crawledNews.get(i).getSource(), crawledNews.get(i).getTitle());
             }
 
             return crawledNews;

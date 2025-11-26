@@ -21,7 +21,8 @@ public class DailyNewsDTO {
 
     private Long id;
     private String title;
-    private String content;
+    private String content; // 한국어 번역 본문
+    private String originalContent; // 영어 원문
     private String summary; // GPT 요약
     private String url;
     private String source;
@@ -41,6 +42,7 @@ public class DailyNewsDTO {
                 .id(news.getId())
                 .title(news.getTitle())
                 .content(news.getContent())
+                .originalContent(news.getOriginalContent())
                 .summary(news.getSummary())
                 .url(news.getUrl())
                 .source(news.getSource())
@@ -68,6 +70,7 @@ public class DailyNewsDTO {
         return News.builder()
                 .title(this.title)
                 .content(this.content)
+                .originalContent(this.originalContent)
                 .summary(this.summary)
                 .url(this.url)
                 .source(this.source)

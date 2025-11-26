@@ -56,33 +56,82 @@
 <!-- 뉴스 상세 모달 -->
 <div id="newsModal" class="modal">
     <div class="modal-content">
-        <div class="modal-header">
-            <h2 class="modal-title" id="modal-title"></h2>
-            <button class="close">&times;</button>
-        </div>
-        <div class="modal-body">
-            <div id="modal-meta" style="margin-bottom: 20px;"></div>
-            <div id="modal-summary" class="summary"></div>
-            <div id="modal-content" class="news-content"></div>
+        <button class="close">&times;</button>
 
-            <!-- 관리자 버튼 (조건부 표시) -->
-            <div id="admin-buttons" class="admin-buttons" style="display: none;">
-                <button class="btn-admin" onclick="deleteNews()">뉴스 삭제</button>
+        <!-- 제목과 출처 -->
+        <div class="modal-header-section">
+            <h2 class="modal-title" id="modal-title"></h2>
+            <p class="modal-source" id="modal-source"></p>
+        </div>
+
+        <!-- 의견 등록하기 버튼 -->
+        <button class="btn-scroll-to-comment" onclick="scrollToCommentForm()">
+            💬 의견 등록하기
+        </button>
+
+        <!-- 뉴스 내용 탭 (요약/번역/원문) -->
+        <div class="news-content-tabs">
+            <button class="news-tab active" onclick="switchNewsTab('summary')">요약</button>
+            <button class="news-tab" onclick="switchNewsTab('translated')">번역 (전체)</button>
+            <button class="news-tab" onclick="switchNewsTab('original')">원문</button>
+        </div>
+
+        <!-- 탭 내용 -->
+        <div class="news-tab-content">
+            <div id="tab-summary" class="news-tab-pane active">
+                <div class="news-content" id="modal-summary"></div>
+            </div>
+            <div id="tab-translated" class="news-tab-pane">
+                <div class="news-content" id="modal-translated"></div>
+            </div>
+            <div id="tab-original" class="news-tab-pane">
+                <div class="news-content" id="modal-original"></div>
+            </div>
+        </div>
+
+        <!-- 이미 등록된 의견 (댓글 목록) -->
+        <div class="comments-section">
+            <div class="comments-header">
+                <h3>💬 이미 등록된 의견</h3>
+                <p class="comments-count">총 <span id="comments-total">0</span>개</p>
             </div>
 
-            <!-- 댓글 섹션 -->
-            <div class="comments-section">
-                <div class="comments-header">💬 댓글</div>
+            <!-- 댓글 목록 -->
+            <div id="comment-list" class="comment-list"></div>
 
-                <!-- 댓글 작성 폼 -->
-                <div class="comment-form">
-                    <input type="text" id="comment-user-name" placeholder="이름" maxlength="50">
-                    <textarea id="comment-content" placeholder="댓글을 입력하세요"></textarea>
-                    <button class="btn-submit" onclick="submitComment()">댓글 작성</button>
-                </div>
+            <!-- 더보기 버튼 -->
+            <div class="load-more-container" id="load-more-container" style="display: none;">
+                <button class="btn-load-more" onclick="loadMoreComments()">
+                    더보기 (10개씩)
+                </button>
+            </div>
+        </div>
 
-                <!-- 댓글 목록 -->
-                <div id="comment-list" class="comment-list"></div>
+        <!-- 댓글 작성 폼 -->
+        <div class="comment-form-section" id="comment-form-section">
+            <h3 class="form-title">의견 등록하기</h3>
+            <div class="comment-form">
+                <input type="text" id="comment-user-name" placeholder="이름" maxlength="50">
+                <textarea id="comment-content" placeholder="의견을 입력하세요" rows="4"></textarea>
+                <button class="btn-submit" onclick="submitComment()">등록하기</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 답글 작성 모달 -->
+<div id="replyModal" class="modal">
+    <div class="modal-content reply-modal">
+        <div class="modal-header">
+            <h3>답글 작성</h3>
+            <button class="close" onclick="closeReplyModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="reply-to" id="reply-to-user"></div>
+            <div class="comment-form">
+                <input type="text" id="reply-user-name" placeholder="이름" maxlength="50">
+                <textarea id="reply-content" placeholder="답글을 입력하세요" rows="4"></textarea>
+                <button class="btn-submit" onclick="submitReply()">답글 등록</button>
             </div>
         </div>
     </div>
