@@ -3,7 +3,7 @@ package org.zerock.finance_dwpj1.service.insights;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
-import org.zerock.finance_dwpj1.dto.insights.TwitterDTO;
+import org.zerock.finance_dwpj1.dto.insights.InsightsTwitterDTO;
 import org.zerock.finance_dwpj1.service.common.GPTService;
 
 import java.util.ArrayList;
@@ -17,13 +17,13 @@ public class TwitterService {
 
     private final GPTService gptService;
 
-    public List<TwitterDTO> getTwitterInsights() {
+    public List<InsightsTwitterDTO> getTwitterInsights() {
         // 실제로는 Twitter API를 사용하여 트윗을 가져와야 하지만,
         // 현재는 샘플 데이터를 사용합니다
-        List<TwitterDTO> tweets = getSampleTweets();
+        List<InsightsTwitterDTO> tweets = getSampleTweets();
 
         // 각 트윗을 GPT API로 번역
-        for (TwitterDTO tweet : tweets) {
+        for (InsightsTwitterDTO tweet : tweets) {
             if (tweet.getOriginalText() != null && !tweet.getOriginalText().isEmpty()) {
                 String translated = gptService.translateTweet(tweet.getOriginalText());
                 tweet.setTranslatedText(translated);
@@ -33,10 +33,10 @@ public class TwitterService {
         return tweets;
     }
 
-    private List<TwitterDTO> getSampleTweets() {
-        List<TwitterDTO> tweets = new ArrayList<>();
+    private List<InsightsTwitterDTO> getSampleTweets() {
+        List<InsightsTwitterDTO> tweets = new ArrayList<>();
 
-        tweets.add(TwitterDTO.builder()
+        tweets.add(InsightsTwitterDTO.builder()
                 .name("Cathie Wood")
                 .handle("CathieDWood")
                 .avatar("https://pbs.twimg.com/profile_images/1356372753708810241/9TtX1Y0R_400x400.jpg")
@@ -47,7 +47,7 @@ public class TwitterService {
                 .url("https://twitter.com/CathieDWood")
                 .build());
 
-        tweets.add(TwitterDTO.builder()
+        tweets.add(InsightsTwitterDTO.builder()
                 .name("Michael Burry")
                 .handle("michaeljburry")
                 .avatar("https://pbs.twimg.com/profile_images/1461546042581856257/h8Xq3E3__400x400.jpg")
@@ -58,7 +58,7 @@ public class TwitterService {
                 .url("https://twitter.com/michaeljburry")
                 .build());
 
-        tweets.add(TwitterDTO.builder()
+        tweets.add(InsightsTwitterDTO.builder()
                 .name("Bill Ackman")
                 .handle("BillAckman")
                 .avatar("https://pbs.twimg.com/profile_images/1590086977031352320/cFWULKEd_400x400.jpg")
@@ -69,7 +69,7 @@ public class TwitterService {
                 .url("https://twitter.com/BillAckman")
                 .build());
 
-        tweets.add(TwitterDTO.builder()
+        tweets.add(InsightsTwitterDTO.builder()
                 .name("Ray Dalio")
                 .handle("RayDalio")
                 .avatar("https://pbs.twimg.com/profile_images/1339006396365189120/--ws4_8r_400x400.jpg")
@@ -80,7 +80,7 @@ public class TwitterService {
                 .url("https://twitter.com/RayDalio")
                 .build());
 
-        tweets.add(TwitterDTO.builder()
+        tweets.add(InsightsTwitterDTO.builder()
                 .name("Howard Marks")
                 .handle("howardmarksbook")
                 .avatar("https://pbs.twimg.com/profile_images/1357383068502441984/Hx0gCOd-_400x400.jpg")

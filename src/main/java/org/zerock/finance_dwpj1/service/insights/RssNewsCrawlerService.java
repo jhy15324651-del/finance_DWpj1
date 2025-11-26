@@ -7,7 +7,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.stereotype.Service;
-import org.zerock.finance_dwpj1.dto.insights.DailyNewsDTO;
+import org.zerock.finance_dwpj1.dto.insights.InsightsDailyNewsDTO;
 
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
@@ -40,13 +40,13 @@ public class RssNewsCrawlerService {
      *
      * @return 크롤링한 뉴스 목록
      */
-    public List<DailyNewsDTO> crawlAllRssFeeds() {
-        List<DailyNewsDTO> allNews = new ArrayList<>();
+    public List<InsightsDailyNewsDTO> crawlAllRssFeeds() {
+        List<InsightsDailyNewsDTO> allNews = new ArrayList<>();
 
         for (RssFeedSource feed : RSS_FEEDS) {
             try {
                 log.info("RSS 피드 크롤링 시작: {} ({})", feed.name, feed.url);
-                List<DailyNewsDTO> news = crawlRssFeed(feed);
+                List<InsightsDailyNewsDTO> news = crawlRssFeed(feed);
                 allNews.addAll(news);
                 log.info("{} RSS 피드에서 {}개 뉴스 수집", feed.name, news.size());
             } catch (Exception e) {
@@ -64,8 +64,8 @@ public class RssNewsCrawlerService {
      * @param feedSource RSS 피드 소스
      * @return 크롤링한 뉴스 목록
      */
-    private List<DailyNewsDTO> crawlRssFeed(RssFeedSource feedSource) {
-        List<DailyNewsDTO> newsList = new ArrayList<>();
+    private List<InsightsDailyNewsDTO> crawlRssFeed(RssFeedSource feedSource) {
+        List<InsightsDailyNewsDTO> newsList = new ArrayList<>();
 
         try {
             Document doc = Jsoup.connect(feedSource.url)
@@ -93,7 +93,7 @@ public class RssNewsCrawlerService {
                     LocalDateTime publishedAt = parsePublishDate(pubDate);
 
                     // DTO 생성
-                    DailyNewsDTO newsDTO = DailyNewsDTO.builder()
+                    InsightsDailyNewsDTO newsDTO = InsightsDailyNewsDTO.builder()
                             .title(cleanHtmlTags(title))
                             .content(cleanHtmlTags(description))
                             .url(link)

@@ -14,7 +14,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class AdminUser {
+public class InsightsAdminUser {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

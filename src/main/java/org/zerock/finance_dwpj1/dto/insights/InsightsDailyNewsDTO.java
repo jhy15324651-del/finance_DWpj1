@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.zerock.finance_dwpj1.entity.insights.News;
+import org.zerock.finance_dwpj1.entity.insights.InsightsNews;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -17,7 +17,7 @@ import java.time.format.DateTimeFormatter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class DailyNewsDTO {
+public class InsightsDailyNewsDTO {
 
     private Long id;
     private String title;
@@ -37,8 +37,8 @@ public class DailyNewsDTO {
     /**
      * Entity → DTO 변환
      */
-    public static DailyNewsDTO fromEntity(News news) {
-        return DailyNewsDTO.builder()
+    public static InsightsDailyNewsDTO fromEntity(InsightsNews news) {
+        return InsightsDailyNewsDTO.builder()
                 .id(news.getId())
                 .title(news.getTitle())
                 .content(news.getContent())
@@ -57,8 +57,8 @@ public class DailyNewsDTO {
     /**
      * Entity → DTO 변환 (댓글 개수 포함)
      */
-    public static DailyNewsDTO fromEntity(News news, Long commentCount) {
-        DailyNewsDTO dto = fromEntity(news);
+    public static InsightsDailyNewsDTO fromEntity(InsightsNews news, Long commentCount) {
+        InsightsDailyNewsDTO dto = fromEntity(news);
         dto.setCommentCount(commentCount);
         return dto;
     }
@@ -66,8 +66,8 @@ public class DailyNewsDTO {
     /**
      * DTO → Entity 변환
      */
-    public News toEntity() {
-        return News.builder()
+    public InsightsNews toEntity() {
+        return InsightsNews.builder()
                 .title(this.title)
                 .content(this.content)
                 .originalContent(this.originalContent)

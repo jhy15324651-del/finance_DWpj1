@@ -5,17 +5,19 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class TwitterDTO {
-    private String name;
-    private String handle;
-    private String avatar;
-    private boolean verified;
-    private String originalText;
-    private String translatedText;
+public class InsightsNewsDTO {
+    private String title;
+    private String category;
     private String date;
+    private String source;
     private String url;
+    private List<String> keywords;
+    private List<String> summary;
+    private String originalText;
 }

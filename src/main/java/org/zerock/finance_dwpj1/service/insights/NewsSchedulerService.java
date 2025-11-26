@@ -5,9 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.zerock.finance_dwpj1.dto.insights.DailyNewsDTO;
-import org.zerock.finance_dwpj1.entity.insights.News;
-import org.zerock.finance_dwpj1.repository.insights.NewsRepository;
+import org.zerock.finance_dwpj1.dto.insights.InsightsDailyNewsDTO;
+import org.zerock.finance_dwpj1.entity.insights.InsightsNews;
+import org.zerock.finance_dwpj1.repository.insights.InsightsNewsRepository;
 import org.zerock.finance_dwpj1.service.common.GPTService;
 
 import java.time.LocalDateTime;
@@ -25,7 +25,7 @@ public class NewsSchedulerService {
 
     private final YahooFinanceCrawlerService yahooFinanceCrawlerService;
     private final RssNewsCrawlerService rssNewsCrawlerService;
-    private final NewsRepository newsRepository;
+    private final InsightsNewsRepository newsRepository;
     private final GPTService gptService;
 
     /**
@@ -39,11 +39,11 @@ public class NewsSchedulerService {
 
         try {
             // Yahoo Finance + RSS 피드에서 최신 뉴스 크롤링
-            List<DailyNewsDTO> crawledNews = new ArrayList<>();
+            List<InsightsDailyNewsDTO> crawledNews = new ArrayList<>();
 
             // 1. Yahoo Finance 크롤링
             try {
-                List<DailyNewsDTO> yahooNews = yahooFinanceCrawlerService.crawlLatestNews();
+                List<InsightsDailyNewsDTO> yahooNews = yahooFinanceCrawlerService.crawlLatestNews();
                 crawledNews.addAll(yahooNews);
                 log.info("Yahoo Finance 크롤링 완료: {}개", yahooNews.size());
             } catch (Exception e) {
@@ -52,7 +52,7 @@ public class NewsSchedulerService {
 
             // 2. RSS 피드 크롤링
             try {
-                List<DailyNewsDTO> rssNews = rssNewsCrawlerService.crawlAllRssFeeds();
+                List<InsightsDailyNewsDTO> rssNews = rssNewsCrawlerService.crawlAllRssFeeds();
                 crawledNews.addAll(rssNews);
                 log.info("RSS 피드 크롤링 완료: {}개", rssNews.size());
             } catch (Exception e) {
@@ -64,7 +64,7 @@ public class NewsSchedulerService {
             int savedCount = 0;
             int duplicateCount = 0;
 
-            for (DailyNewsDTO newsDTO : crawledNews) {
+            for (InsightsDailyNewsDTO newsDTO : crawledNews) {
                 try {
                     // 중복 체크 (URL 기준)
                     if (newsRepository.existsByUrl(newsDTO.getUrl())) {
@@ -96,7 +96,7 @@ public class NewsSchedulerService {
                     }
 
                     // Entity로 변환 후 저장
-                    News newsEntity = newsDTO.toEntity();
+                    InsightsNews newsEntity = newsDTO.toEntity();
                     newsRepository.save(newsEntity);
 
                     savedCount++;
@@ -125,11 +125,11 @@ public class NewsSchedulerService {
 
         try {
             LocalDateTime threshold = LocalDateTime.now().minusHours(24);
-            List<News> newsToArchive = newsRepository.findNewsToArchive(threshold);
+            List<InsightsNews> newsToArchive = newsRepository.findNewsToArchive(threshold);
 
             log.info("아카이브 대상 뉴스: {}개", newsToArchive.size());
 
-            for (News news : newsToArchive) {
+            for (InsightsNews news : newsToArchive) {
                 news.archiveNews();
                 log.debug("뉴스 아카이브 처리: {}", news.getTitle());
             }
@@ -191,19 +191,19 @@ public class NewsSchedulerService {
      * 크롤러만 테스트 (GPT 없이, DB 저장 없이)
      * @return 크롤링한 뉴스 목록
      */
-    public List<DailyNewsDTO> testCrawlerOnly() {
+    public List<InsightsDailyNewsDTO> testCrawlerOnly() {
         log.info("===== 크롤러 테스트 시작 (GPT/DB 비활성화) =====");
 
         try {
-            List<DailyNewsDTO> crawledNews = new ArrayList<>();
+            List<InsightsDailyNewsDTO> crawledNews = new ArrayList<>();
 
             // Yahoo Finance 크롤링
-            List<DailyNewsDTO> yahooNews = yahooFinanceCrawlerService.crawlLatestNews();
+            List<InsightsDailyNewsDTO> yahooNews = yahooFinanceCrawlerService.crawlLatestNews();
             crawledNews.addAll(yahooNews);
             log.info("Yahoo Finance 크롤러 테스트 완료 - 발견한 뉴스: {}개", yahooNews.size());
 
             // RSS 피드 크롤링
-            List<DailyNewsDTO> rssNews = rssNewsCrawlerService.crawlAllRssFeeds();
+            List<InsightsDailyNewsDTO> rssNews = rssNewsCrawlerService.crawlAllRssFeeds();
             crawledNews.addAll(rssNews);
             log.info("RSS 피드 크롤러 테스트 완료 - 발견한 뉴스: {}개", rssNews.size());
 
