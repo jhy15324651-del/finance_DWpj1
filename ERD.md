@@ -44,8 +44,9 @@ erDiagram
     NEWS {
         BIGINT id PK "AUTO_INCREMENT"
         VARCHAR(500) title "NOT NULL"
-        TEXT content
-        TEXT summary "GPT 요약"
+        TEXT content "한국어 번역 본문"
+        TEXT original_content "영어 원문"
+        TEXT summary "GPT 요약 (3-4문장)"
         VARCHAR(1000) url UK "NOT NULL, 중복 방지"
         VARCHAR(100) source "Yahoo Finance"
         DATETIME published_at "기사 발행 시간"
@@ -58,8 +59,11 @@ erDiagram
     COMMENT {
         BIGINT id PK "AUTO_INCREMENT"
         BIGINT news_id FK "NOT NULL"
+        BIGINT parent_comment_id FK "답글용 부모 댓글"
         VARCHAR(100) user_name "NOT NULL"
         TEXT content "NOT NULL"
+        INT like_count "DEFAULT 0, 좋아요 수"
+        INT dislike_count "DEFAULT 0, 싫어요 수"
         DATETIME created_at "NOT NULL"
         BOOLEAN is_deleted "DEFAULT false"
     }
@@ -93,6 +97,7 @@ erDiagram
 
     %% 관계
     NEWS ||--o{ COMMENT : "has many"
+    COMMENT ||--o{ COMMENT : "has replies (self-referencing)"
 ```
 
 ---
@@ -123,6 +128,15 @@ NEWS (1) ──── (N) COMMENT
 - 하나의 뉴스는 여러 댓글을 가질 수 있음
 - **외래키**: `COMMENT.news_id` → `NEWS.id`
 - **Fetch 전략**: LAZY (지연 로딩)
+
+### COMMENT ↔ COMMENT (1:N, Self-Referencing)
+```
+COMMENT (1) ──── (N) COMMENT (답글)
+```
+- 하나의 댓글은 여러 답글을 가질 수 있음 (답글 기능)
+- **외래키**: `COMMENT.parent_comment_id` → `COMMENT.id`
+- **Fetch 전략**: LAZY (지연 로딩)
+- **설명**: 댓글에 대한 답글을 작성할 수 있으며, 답글도 좋아요/싫어요 가능
 
 ---
 

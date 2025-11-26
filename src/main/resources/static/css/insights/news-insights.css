@@ -467,3 +467,325 @@ body {
         grid-template-columns: 1fr;
     }
 }
+
+/* 새로운 뉴스 모달 스타일 */
+.modal-header-section {
+    margin-bottom: 20px;
+}
+
+.modal-header-section .modal-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #2d3748;
+    margin-bottom: 10px;
+    line-height: 1.4;
+}
+
+.modal-source {
+    font-size: 0.9rem;
+    color: #718096;
+    font-weight: 500;
+}
+
+.btn-scroll-to-comment {
+    width: 100%;
+    padding: 12px 20px;
+    background: #f8f9fa;
+    color: #667eea;
+    border: 2px solid #667eea;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-bottom: 25px;
+}
+
+.btn-scroll-to-comment:hover {
+    background: #667eea;
+    color: white;
+}
+
+/* 뉴스 내용 탭 스타일 */
+.news-content-tabs {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.news-tab {
+    padding: 12px 20px;
+    background: transparent;
+    border: none;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    color: #718096;
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s;
+}
+
+.news-tab.active {
+    color: #667eea;
+    border-bottom-color: #667eea;
+}
+
+.news-tab:hover {
+    color: #667eea;
+}
+
+.news-tab-content {
+    margin-bottom: 30px;
+}
+
+.news-tab-pane {
+    display: none;
+}
+
+.news-tab-pane.active {
+    display: block;
+}
+
+/* 댓글 섹션 헤더 */
+.comments-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.comments-header h3 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #2d3748;
+    margin: 0;
+}
+
+.comments-count {
+    font-size: 0.95rem;
+    color: #718096;
+    margin: 0;
+}
+
+/* 댓글 아이템 */
+.comment-item {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 3px solid #667eea;
+}
+
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.comment-user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.comment-author {
+    font-weight: 700;
+    color: #2d3748;
+    font-size: 0.95rem;
+}
+
+.comment-date {
+    font-size: 0.85rem;
+    color: #718096;
+}
+
+.comment-content {
+    color: #4a5568;
+    line-height: 1.6;
+    margin-bottom: 12px;
+}
+
+/* 댓글 액션 버튼 (좋아요/싫어요/답글) */
+.comment-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.btn-action {
+    padding: 6px 12px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.btn-action:hover {
+    background: #f8f9fa;
+    border-color: #cbd5e0;
+}
+
+.btn-action.liked {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+}
+
+.btn-action.disliked {
+    background: #ef4444;
+    color: white;
+    border-color: #ef4444;
+}
+
+.btn-reply {
+    padding: 6px 12px;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-reply:hover {
+    background: #5568d3;
+}
+
+/* 답글 스타일 */
+.reply-item {
+    background: white;
+    padding: 12px;
+    border-radius: 8px;
+    border-left: 3px solid #a0aec0;
+    margin-top: 10px;
+    margin-left: 30px;
+}
+
+.reply-badge {
+    display: inline-block;
+    background: #667eea;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-right: 8px;
+}
+
+/* 더보기 버튼 */
+.load-more-container {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.btn-load-more {
+    padding: 10px 30px;
+    background: white;
+    color: #667eea;
+    border: 2px solid #667eea;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-load-more:hover {
+    background: #667eea;
+    color: white;
+}
+
+/* 댓글 작성 폼 섹션 */
+.comment-form-section {
+    margin-top: 30px;
+    padding: 25px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    border: 2px solid #e2e8f0;
+}
+
+.form-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #2d3748;
+    margin-bottom: 15px;
+}
+
+/* 답글 모달 스타일 */
+.reply-modal {
+    max-width: 600px;
+}
+
+.reply-modal .modal-header {
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 15px;
+}
+
+.reply-modal .modal-header h3 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #2d3748;
+    margin: 0;
+}
+
+.reply-to {
+    background: #f8f9fa;
+    padding: 12px 15px;
+    border-left: 4px solid #667eea;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    color: #4a5568;
+    font-size: 0.95rem;
+}
+
+/* 모달 닫기 버튼 위치 조정 */
+.modal-content > .close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #f8f9fa;
+    transition: all 0.3s;
+}
+
+.modal-content > .close:hover {
+    background: #e2e8f0;
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+    .modal-content {
+        width: 95%;
+        padding: 20px;
+        margin: 3% auto;
+    }
+
+    .modal-header-section .modal-title {
+        font-size: 1.5rem;
+    }
+
+    .news-content-tabs {
+        gap: 2px;
+    }
+
+    .news-tab {
+        padding: 10px 15px;
+        font-size: 0.9rem;
+    }
+
+    .reply-item {
+        margin-left: 15px;
+    }
+}

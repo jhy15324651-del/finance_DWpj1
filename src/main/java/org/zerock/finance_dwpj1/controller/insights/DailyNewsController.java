@@ -104,7 +104,7 @@ public class DailyNewsController {
     }
 
     /**
-     * 댓글 작성
+     * 댓글 작성 (일반 댓글 및 답글)
      */
     @PostMapping("/{newsId}/comments")
     public ResponseEntity<CommentDTO> addComment(
@@ -114,6 +114,26 @@ public class DailyNewsController {
         commentDTO.setNewsId(newsId);
         CommentDTO savedComment = dailyNewsService.addComment(commentDTO);
         return ResponseEntity.ok(savedComment);
+    }
+
+    /**
+     * 댓글 좋아요
+     */
+    @PostMapping("/comments/{commentId}/like")
+    public ResponseEntity<CommentDTO> likeComment(@PathVariable Long commentId) {
+        log.info("댓글 좋아요 - ID: {}", commentId);
+        CommentDTO updatedComment = dailyNewsService.likeComment(commentId);
+        return ResponseEntity.ok(updatedComment);
+    }
+
+    /**
+     * 댓글 싫어요
+     */
+    @PostMapping("/comments/{commentId}/dislike")
+    public ResponseEntity<CommentDTO> dislikeComment(@PathVariable Long commentId) {
+        log.info("댓글 싫어요 - ID: {}", commentId);
+        CommentDTO updatedComment = dailyNewsService.dislikeComment(commentId);
+        return ResponseEntity.ok(updatedComment);
     }
 
     // ========== 관리자 전용 API ==========
