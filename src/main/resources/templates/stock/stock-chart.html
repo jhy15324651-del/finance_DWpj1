@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>종목 차트 & 토론방</title>
+    <link rel="stylesheet" href="/css/stock/stock-chart.css">
+
+    <!-- TradingView Lightweight Charts (v3.8.0 - stable API) -->
+    <script src="https://unpkg.com/lightweight-charts@3.8.0/dist/lightweight-charts.standalone.production.js"></script>
+</head>
+<body>
+<!-- 네비게이션 바 -->
+<div class="navbar">
+    <div class="navbar-content">
+        <div class="navbar-logo" onclick="location.href='/'">📈 Finance Platform</div>
+        <div>
+            <button class="btn" onclick="location.href='/news-insights'">뉴스 인사이트</button>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- 검색 섹션 -->
+    <div class="search-section">
+        <h2 style="margin-bottom: 15px;">종목 검색</h2>
+        <div class="search-box">
+            <input type="text"
+                   id="ticker-input"
+                   class="search-input"
+                   placeholder="티커 또는 종목명 입력 (예: 005930, AAPL, 삼성전자)"
+                   onkeypress="handleSearchKeyPress(event)">
+            <button class="btn" onclick="searchStock()">검색</button>
+        </div>
+        <div class="quick-search">
+            <span style="color: #718096; margin-right: 10px;">빠른 검색:</span>
+            <button class="quick-btn" onclick="loadStock('005930')">삼성전자</button>
+            <button class="quick-btn" onclick="loadStock('035420')">NAVER</button>
+            <button class="quick-btn" onclick="loadStock('035720')">카카오</button>
+            <button class="quick-btn" onclick="loadStock('AAPL')">Apple</button>
+            <button class="quick-btn" onclick="loadStock('TSLA')">Tesla</button>
+            <button class="quick-btn" onclick="loadStock('NVDA')">NVIDIA</button>
+        </div>
+    </div>
+
+    <!-- 차트 섹션 -->
+    <div class="chart-section">
+        <div id="stock-info-container" style="display: none;">
+            <div class="stock-info" id="stock-info">
+                <!-- 종목 정보가 여기에 표시됩니다 -->
+            </div>
+
+            <div class="chart-controls">
+                <div class="timeframe-buttons">
+                    <button class="timeframe-btn active" data-timeframe="D" onclick="changeTimeframe('D')">일봉</button>
+                    <button class="timeframe-btn" data-timeframe="W" onclick="changeTimeframe('W')">주봉</button>
+                    <button class="timeframe-btn" data-timeframe="M" onclick="changeTimeframe('M')">월봉</button>
+                </div>
+
+                <div class="indicator-controls">
+                    <span style="color: #718096; font-size: 0.9rem;">이평선:</span>
+                    <label class="indicator-toggle">
+                        <input type="checkbox" id="sma20-toggle" checked onchange="toggleSMA(20)">
+                        <span class="color-dot" style="background: #2962FF;"></span>
+                        <span>20일</span>
+                    </label>
+                    <label class="indicator-toggle">
+                        <input type="checkbox" id="sma60-toggle" checked onchange="toggleSMA(60)">
+                        <span class="color-dot" style="background: #FF6D00;"></span>
+                        <span>60일</span>
+                    </label>
+                    <label class="indicator-toggle">
+                        <input type="checkbox" id="sma120-toggle" checked onchange="toggleSMA(120)">
+                        <span class="color-dot" style="background: #9C27B0;"></span>
+                        <span>120일</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="date-range-controls">
+                <span style="color: #718096; font-size: 0.9rem;">기간:</span>
+                <input type="date" id="start-date" class="date-input">
+                <span>~</span>
+                <input type="date" id="end-date" class="date-input">
+                <button class="btn-small" onclick="applyDateRange()">적용</button>
+                <button class="btn-small btn-secondary" onclick="resetDateRange()">초기화</button>
+            </div>
+            </div>
+        </div>
+
+        <div id="chart-container">
+            <div class="loading">티커를 입력하여 차트를 조회하세요</div>
+        </div>
+    </div>
+</div>
+
+<script src="/js/stock/stock-chart.js"></script>
+</body>
+</html>

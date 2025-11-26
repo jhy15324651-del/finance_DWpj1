@@ -186,6 +186,86 @@ public class GPTService {
     }
 
     /**
+     * 뉴스 요약 생성
+     * @param content 뉴스 본문
+     * @return GPT 요약 (3-4문장)
+     */
+    public String summarizeNews(String content) {
+        try {
+            if (content == null || content.isEmpty()) {
+                return "요약을 생성할 수 없습니다.";
+            }
+
+            // 내용이 너무 길면 앞부분만 사용 (GPT 토큰 제한)
+            String truncatedContent = content.length() > 2000 ?
+                    content.substring(0, 2000) + "..." : content;
+
+            OpenAiService service = new OpenAiService(apiKey, Duration.ofSeconds(60));
+
+            List<ChatMessage> messages = new ArrayList<>();
+            messages.add(new ChatMessage("system", "당신은 금융 뉴스 요약 전문가입니다. 핵심 내용과 시장 영향을 중심으로 요약해주세요."));
+            messages.add(new ChatMessage("user", String.format(
+                    "다음 금융 뉴스를 3-4문장으로 요약해주세요:\n\n%s", truncatedContent)));
+
+            ChatCompletionRequest completionRequest = ChatCompletionRequest.builder()
+                    .model("gpt-3.5-turbo")
+                    .messages(messages)
+                    .temperature(0.7)
+                    .maxTokens(300)
+                    .build();
+
+            String response = service.createChatCompletion(completionRequest)
+                    .getChoices().get(0).getMessage().getContent();
+
+            service.shutdownExecutor();
+            return response;
+        } catch (Exception e) {
+            log.error("GPT 요약 생성 중 오류", e);
+            return "요약 생성에 실패했습니다.";
+        }
+    }
+
+    /**
+     * 뉴스 한국어 번역
+     * @param englishContent 영어 원문
+     * @return 한국어 번역본
+     */
+    public String translateNewsToKorean(String englishContent) {
+        try {
+            if (englishContent == null || englishContent.isEmpty()) {
+                return "번역할 내용이 없습니다.";
+            }
+
+            // 내용이 너무 길면 앞부분만 사용
+            String truncatedContent = englishContent.length() > 3000 ?
+                    englishContent.substring(0, 3000) + "..." : englishContent;
+
+            OpenAiService service = new OpenAiService(apiKey, Duration.ofSeconds(90));
+
+            List<ChatMessage> messages = new ArrayList<>();
+            messages.add(new ChatMessage("system", "당신은 금융 뉴스 번역 전문가입니다. 영어 뉴스를 자연스러운 한국어로 번역해주세요."));
+            messages.add(new ChatMessage("user", String.format(
+                    "다음 금융 뉴스를 한국어로 번역해주세요:\n\n%s", truncatedContent)));
+
+            ChatCompletionRequest completionRequest = ChatCompletionRequest.builder()
+                    .model("gpt-3.5-turbo")
+                    .messages(messages)
+                    .temperature(0.5)
+                    .maxTokens(1000)
+                    .build();
+
+            String response = service.createChatCompletion(completionRequest)
+                    .getChoices().get(0).getMessage().getContent();
+
+            service.shutdownExecutor();
+            return response;
+        } catch (Exception e) {
+            log.error("GPT 번역 중 오류", e);
+            return englishContent; // 번역 실패 시 원문 반환
+        }
+    }
+
+    /**
      * 범용 GPT 응답 생성 메서드
      * @param prompt 프롬프트
      * @return GPT 응답

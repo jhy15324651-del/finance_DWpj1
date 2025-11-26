@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>뉴스 인사이트</title>
+    <link rel="stylesheet" href="/css/insights/news-insights.css">
+</head>
+<body>
+<!-- 네비게이션 바 -->
+<nav class="navbar">
+    <div class="navbar-content">
+        <div class="navbar-logo" onclick="location.href='/'">📊 InvestHub</div>
+        <div class="navbar-buttons">
+            <button class="btn-nav" onclick="location.href='/'">홈으로</button>
+            <button class="btn-nav" onclick="location.href='/portfolio'">포트폴리오 비교</button>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="page-header">
+        <h1>뉴스 인사이트</h1>
+        <p>실시간 금융 뉴스와 AI 요약을 확인하세요</p>
+    </div>
+
+    <!-- 탭 메뉴 -->
+    <div class="tabs">
+        <button class="tab active" onclick="switchTab('daily')">데일리 뉴스</button>
+        <button class="tab" onclick="switchTab('weekly')">금주의 뉴스</button>
+        <button class="tab" onclick="switchTab('archive')">아카이브</button>
+    </div>
+
+    <!-- 데일리 뉴스 탭 -->
+    <div id="daily-tab" class="tab-content active">
+        <div id="daily-news" class="news-grid">
+            <div class="loading">데일리 뉴스를 불러오는 중...</div>
+        </div>
+    </div>
+
+    <!-- 금주의 뉴스 탭 -->
+    <div id="weekly-tab" class="tab-content">
+        <div id="weekly-news" class="weekly-news-grid">
+            <div class="loading">금주의 뉴스를 불러오는 중...</div>
+        </div>
+    </div>
+
+    <!-- 아카이브 탭 -->
+    <div id="archive-tab" class="tab-content">
+        <div id="archive-news" class="news-grid">
+            <div class="loading">아카이브를 불러오는 중...</div>
+        </div>
+    </div>
+</div>
+
+<!-- 뉴스 상세 모달 -->
+<div id="newsModal" class="modal">
+    <div class="modal-content">
+        <button class="close">&times;</button>
+
+        <!-- 제목과 출처 -->
+        <div class="modal-header-section">
+            <h2 class="modal-title" id="modal-title"></h2>
+            <p class="modal-source" id="modal-source"></p>
+        </div>
+
+        <!-- 의견 등록하기 버튼 -->
+        <button class="btn-scroll-to-comment" onclick="scrollToCommentForm()">
+            💬 의견 등록하기
+        </button>
+
+        <!-- 뉴스 내용 탭 (요약/번역/원문) -->
+        <div class="news-content-tabs">
+            <button class="news-tab active" onclick="switchNewsTab('summary')">요약</button>
+            <button class="news-tab" onclick="switchNewsTab('translated')">번역 (전체)</button>
+            <button class="news-tab" onclick="switchNewsTab('original')">원문</button>
+        </div>
+
+        <!-- 탭 내용 -->
+        <div class="news-tab-content">
+            <div id="tab-summary" class="news-tab-pane active">
+                <div class="news-content" id="modal-summary"></div>
+            </div>
+            <div id="tab-translated" class="news-tab-pane">
+                <div class="news-content" id="modal-translated"></div>
+            </div>
+            <div id="tab-original" class="news-tab-pane">
+                <div class="news-content" id="modal-original"></div>
+            </div>
+        </div>
+
+        <!-- 이미 등록된 의견 (댓글 목록) -->
+        <div class="comments-section">
+            <div class="comments-header">
+                <h3>💬 이미 등록된 의견</h3>
+                <p class="comments-count">총 <span id="comments-total">0</span>개</p>
+            </div>
+
+            <!-- 댓글 목록 -->
+            <div id="comment-list" class="comment-list"></div>
+
+            <!-- 더보기 버튼 -->
+            <div class="load-more-container" id="load-more-container" style="display: none;">
+                <button class="btn-load-more" onclick="loadMoreComments()">
+                    더보기 (10개씩)
+                </button>
+            </div>
+        </div>
+
+        <!-- 댓글 작성 폼 -->
+        <div class="comment-form-section" id="comment-form-section">
+            <h3 class="form-title">의견 등록하기</h3>
+            <div class="comment-form">
+                <input type="text" id="comment-user-name" placeholder="이름" maxlength="50">
+                <textarea id="comment-content" placeholder="의견을 입력하세요" rows="4"></textarea>
+                <button class="btn-submit" onclick="submitComment()">등록하기</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 답글 작성 모달 -->
+<div id="replyModal" class="modal">
+    <div class="modal-content reply-modal">
+        <div class="modal-header">
+            <h3>답글 작성</h3>
+            <button class="close" onclick="closeReplyModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="reply-to" id="reply-to-user"></div>
+            <div class="comment-form">
+                <input type="text" id="reply-user-name" placeholder="이름" maxlength="50">
+                <textarea id="reply-content" placeholder="답글을 입력하세요" rows="4"></textarea>
+                <button class="btn-submit" onclick="submitReply()">답글 등록</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/js/insights/news-insights.js"></script>
+</body>
+</html>

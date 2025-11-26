@@ -30,7 +30,7 @@ public class StockChartController {
      */
     @GetMapping("/chart")
     public String chartPage() {
-        return "stock-chart";
+        return "stock/stock-chart";
     }
 
     /**

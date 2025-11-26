@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="header">
+    <meta charset="UTF-8">
+    <title>Finance Review - Content</title>
+    <link rel="stylesheet" th:href="@{/css/content/content-review.css}" />
+</head>
+
+<body th:fragment="bodyheader">
+<nav class="menu">
+    <ul>
+        <li><a th:href="@{/content/home}">홈</a></li>
+        <li><a th:href="@{/content/category}">카테고리</a></li>
+        <li><a th:href="@{/content/newsletter}">뉴스레터</a></li>
+        <li><a th:href="@{/content/info}">정보</a></li>
+        <li><a th:href="@{/}">메인으로</a></li>
+    </ul>
+</nav>
+
+<div class="content">

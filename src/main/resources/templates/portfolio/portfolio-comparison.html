@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>포트폴리오 & 투자자 비교</title>
+    <link rel="stylesheet" href="/css/portfolio/portfolio-comparison.css">
+</head>
+<body>
+<!-- 네비게이션 바 -->
+<nav class="navbar">
+    <div class="navbar-content">
+        <div class="navbar-logo" onclick="location.href='/'">📊 InvestHub</div>
+        <div class="navbar-buttons">
+            <button class="btn-nav" onclick="location.href='/'">홈으로</button>
+            <button class="btn-nav" onclick="location.href='/news'">뉴스 인사이트</button>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="page-header">
+        <h1>포트폴리오 & 투자자 비교</h1>
+        <p>유명 투자자들의 투자 철학을 비교하고 인사이트를 얻어보세요</p>
+    </div>
+
+    <!-- 투자자 선택 섹션 -->
+    <div class="investor-selector">
+        <h2>비교할 투자자 선택 (최대 4명)</h2>
+        <div class="investor-grid" id="selected-investors">
+            <!-- 선택된 투자자들이 여기에 표시됩니다 -->
+        </div>
+    </div>
+
+    <!-- 투자 철학 비교 섹션 -->
+    <div class="comparison-section">
+        <h2>투자 철학 비교</h2>
+        <div class="philosophy-comparison" id="philosophy-container">
+            <div class="loading">투자자를 선택하면 비교 분석이 시작됩니다</div>
+        </div>
+    </div>
+
+    <!-- 포트폴리오 추천 섹션 -->
+    <div class="comparison-section">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+            <h2 style="margin: 0;">AI 추천 포트폴리오</h2>
+            <button id="generateBtn" class="generate-btn" disabled>
+                포트폴리오 생성
+            </button>
+        </div>
+        <div id="portfolio-container">
+            <div class="loading">4명의 투자자를 선택하면 추천 포트폴리오를 생성할 수 있습니다</div>
+        </div>
+    </div>
+</div>
+
+<!-- 투자자 추가 모달 -->
+<div id="investorModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>투자자 선택</h2>
+            <button class="close">&times;</button>
+        </div>
+
+        <!-- 검색 기능 -->
+        <div class="search-container">
+            <h3>🔍 투자자 이름으로 검색</h3>
+            <div class="search-box">
+                <div class="search-input-wrapper">
+                    <input type="text" id="investorSearch" class="search-input"
+                           placeholder="투자자 이름을 입력하세요 (예: Warren Buffett, 워렌 버핏)"
+                           autocomplete="off">
+                    <button class="search-btn" id="searchBtn">추가</button>
+                </div>
+                <div id="suggestions" class="suggestions-dropdown"></div>
+            </div>
+        </div>
+
+        <h3 style="margin-bottom: 15px; color: #2d3748;">또는 목록에서 선택</h3>
+        <div class="investor-list" id="investor-list">
+            <!-- 투자자 목록이 여기에 표시됩니다 -->
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript 모듈 로드 -->
+<script type="module" src="/js/portfolio/main.js"></script>
+</body>
+</html>

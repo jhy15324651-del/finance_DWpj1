@@ -1,0 +1,198 @@
+<!-- header 불러오기 -->
+<th:block th:replace="content/layout/header :: header"></th:block>
+<th:block th:replace="content/layout/header :: bodyheader"></th:block>
+
+<div class="category-page">
+
+    <!-- 페이지 제목 -->
+    <h2 class="category-title">카테고리</h2>
+
+    <!-- 🔥 태그 + 검색창 통합 박스 -->
+    <div class="category-tabs-container">
+
+        <!-- ▣ 해시태그 리스트 -->
+        <div class="tag-list">
+
+            <!-- 👉 초기화 버튼 (전체 초기화) -->
+            <button type="button"
+                    class="category-tab reset-tags-btn">
+                초기화
+            </button>
+
+            <!-- 👉 반복되는 해시태그 버튼들 -->
+            <button type="button"
+                    class="category-tab tag-select-btn"
+                    data-tag="#공지"
+                    th:classappend="${keyword != null and #strings.contains(keyword, '#공지')} ? ' active'">
+                #공지
+            </button>
+
+            <button type="button"
+                    class="category-tab tag-select-btn"
+                    data-tag="#거시경제"
+                    th:classappend="${keyword != null and #strings.contains(keyword, '#거시경제')} ? ' active'">
+                #거시경제
+            </button>
+
+            <button type="button"
+                    class="category-tab tag-select-btn"
+                    data-tag="#원유"
+                    th:classappend="${keyword != null and #strings.contains(keyword, '#원유')} ? ' active'">
+                #원유
+            </button>
+
+            <button type="button"
+                    class="category-tab tag-select-btn"
+                    data-tag="#엔비디아"
+                    th:classappend="${keyword != null and #strings.contains(keyword, '#엔비디아')} ? ' active'">
+                #엔비디아
+            </button>
+
+            <button type="button"
+                    class="category-tab tag-select-btn"
+                    data-tag="#테슬라"
+                    th:classappend="${keyword != null and #strings.contains(keyword, '#테슬라')} ? ' active'">
+                #테슬라
+            </button>
+
+        </div>
+
+        <!-- ▣ 검색 폼 -->
+        <form th:action="@{/content/category}" method="get" class="search-form-inline">
+            <select name="searchType" class="search-select-inline">
+                <option value="hashtag" th:selected="${searchType} == 'hashtag'">#해시태그</option>
+                <option value="title" th:selected="${searchType} == 'title'">제목</option>
+                <option value="content" th:selected="${searchType} == 'content'">내용</option>
+            </select>
+
+            <input type="text"
+                   name="keyword"
+                   class="search-input-inline"
+                   placeholder="검색어 입력"
+                   th:value="${keyword}">
+
+            <button type="submit" class="search-btn-inline">검색</button>
+        </form>
+
+    </div> <!-- category-tabs-container END -->
+
+
+
+    <!-- 📄 게시글 테이블 -->
+    <table class="board-table">
+        <thead>
+        <tr>
+            <th>번호</th>
+            <th>제목</th>
+            <th>작성일</th>
+            <th>조회수</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr th:each="post, iter : ${posts.content}">
+            <td th:text="${posts.totalElements - (posts.number * posts.size) - iter.index}"></td>
+            <td><a th:href="@{'/content/post/' + ${post.id}}" th:text="${post.title}"></a></td>
+            <td th:text="${#temporals.format(post.createdDate, 'yyyy.MM.dd')}"></td>
+            <td th:text="${post.viewCount}"></td>
+        </tr>
+
+        <tr th:if="${posts.totalElements == 0}">
+            <td colspan="4" style="text-align:center; padding:30px;">게시글이 없습니다.</td>
+        </tr>
+        </tbody>
+    </table>
+
+
+
+    <!-- 📌 페이징 + 글쓰기 -->
+    <div class="page-bottom-area">
+
+        <div class="pagination" th:if="${totalPages > 1}">
+            <a th:href="@{/content/category(page=0, keyword=${keyword}, searchType=${searchType})}">⏮</a>
+
+            <a th:if="${prevBlock >= 0}"
+               th:href="@{/content/category(page=${prevBlock}, keyword=${keyword}, searchType=${searchType})}">◀</a>
+
+            <a th:each="i : ${#numbers.sequence(blockStart, blockEnd)}"
+               th:href="@{/content/category(page=${i}, keyword=${keyword}, searchType=${searchType})}"
+               th:text="${i + 1}"
+               th:classappend="${i == currentPage} ? 'active-page'">
+            </a>
+
+            <a th:if="${nextBlock < totalPages}"
+               th:href="@{/content/category(page=${nextBlock}, keyword=${keyword}, searchType=${searchType})}">▶</a>
+
+            <a th:href="@{/content/category(page=${totalPages - 1}, keyword=${keyword}, searchType=${searchType})}">⏭</a>
+        </div>
+
+        <a href="/content/write" class="write-btn">글쓰기</a>
+    </div>
+
+</div> <!-- category-page END -->
+
+
+
+<!-- ============================= -->
+<!-- 🔥 JS : 해시태그 멀티 선택 기능 -->
+<!-- ============================= -->
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+
+        const selectedTags = new Set();
+        const tagButtons = document.querySelectorAll(".tag-select-btn");
+        const resetBtn = document.querySelector(".reset-tags-btn");
+        const searchInput = document.querySelector(".search-input-inline");
+        const searchTypeSelect = document.querySelector(".search-select-inline");
+        const searchForm = document.querySelector(".search-form-inline");
+
+        /* 1️⃣ 페이지 로드 시: keyword에서 태그 복원 */
+        if (searchInput && searchInput.value.trim().length > 0) {
+            searchInput.value.split(" ")
+                .map(t => t.trim())
+                .filter(t => t.startsWith("#"))
+                .forEach(tag => selectedTags.add(tag));
+
+            tagButtons.forEach(btn => {
+                const tag = btn.dataset.tag;
+                if (selectedTags.has(tag)) {
+                    btn.classList.add("active");
+                }
+            });
+        }
+
+        /* 2️⃣ 태그 클릭 시 선택/해제 + 검색창 업데이트 + 자동 submit */
+        tagButtons.forEach(btn => {
+            btn.addEventListener("click", () => {
+                const tag = btn.dataset.tag;
+
+                if (selectedTags.has(tag)) {
+                    selectedTags.delete(tag);
+                    btn.classList.remove("active");
+                } else {
+                    selectedTags.add(tag);
+                    btn.classList.add("active");
+                }
+
+                searchInput.value = Array.from(selectedTags).join(" ");
+                searchTypeSelect.value = "hashtag";
+                searchForm.submit();
+            });
+        });
+
+        /* 3️⃣ 초기화 버튼 클릭 → 전체 리셋 */
+        resetBtn.addEventListener("click", () => {
+            selectedTags.clear();
+
+            tagButtons.forEach(btn => btn.classList.remove("active"));
+
+            searchInput.value = "";
+            searchForm.submit();
+        });
+
+    });
+</script>
+
+
+<!-- footer 포함 -->
+<th:block th:replace="content/layout/footer :: footer"></th:block>

@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs cat:*)",
+      "Bash(cat:*)",
+      "Bash(src/main/resources/static/upload/.gitkeep)",
+      "Bash(./gradlew clean build:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

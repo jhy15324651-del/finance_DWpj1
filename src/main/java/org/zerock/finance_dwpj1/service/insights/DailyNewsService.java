@@ -158,16 +158,57 @@ public class DailyNewsService {
     }
 
     /**
-     * 댓글 작성
+     * 댓글 작성 (일반 댓글 및 답글)
      */
     @Transactional
     public CommentDTO addComment(CommentDTO commentDTO) {
         News news = newsRepository.findById(commentDTO.getNewsId())
                 .orElseThrow(() -> new IllegalArgumentException("뉴스를 찾을 수 없습니다: " + commentDTO.getNewsId()));
 
-        Comment comment = commentDTO.toEntity(news);
+        Comment comment;
+
+        // 답글인 경우
+        if (commentDTO.getParentCommentId() != null) {
+            Comment parentComment = commentRepository.findById(commentDTO.getParentCommentId())
+                    .orElseThrow(() -> new IllegalArgumentException("부모 댓글을 찾을 수 없습니다: " + commentDTO.getParentCommentId()));
+            comment = commentDTO.toEntity(news, parentComment);
+            log.info("답글 작성 완료 - 부모 댓글 ID: {}, 작성자: {}", parentComment.getId(), commentDTO.getUserName());
+        } else {
+            // 일반 댓글인 경우
+            comment = commentDTO.toEntity(news);
+            log.info("댓글 작성 완료 - 뉴스 ID: {}, 작성자: {}", news.getId(), commentDTO.getUserName());
+        }
+
         commentRepository.save(comment);
-        log.info("댓글 작성 완료 - 뉴스 ID: {}, 작성자: {}", news.getId(), commentDTO.getUserName());
+        return CommentDTO.fromEntity(comment);
+    }
+
+    /**
+     * 댓글 좋아요
+     */
+    @Transactional
+    public CommentDTO likeComment(Long commentId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new IllegalArgumentException("댓글을 찾을 수 없습니다: " + commentId));
+
+        comment.incrementLike();
+        commentRepository.save(comment);
+        log.info("댓글 좋아요 - ID: {}, 현재 좋아요: {}", commentId, comment.getLikeCount());
+
+        return CommentDTO.fromEntity(comment);
+    }
+
+    /**
+     * 댓글 싫어요
+     */
+    @Transactional
+    public CommentDTO dislikeComment(Long commentId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new IllegalArgumentException("댓글을 찾을 수 없습니다: " + commentId));
+
+        comment.incrementDislike();
+        commentRepository.save(comment);
+        log.info("댓글 싫어요 - ID: {}, 현재 싫어요: {}", commentId, comment.getDislikeCount());
 
         return CommentDTO.fromEntity(comment);
     }
