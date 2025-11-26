@@ -4,10 +4,360 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>종목 차트 & 토론방</title>
-    <link rel="stylesheet" href="/css/stock/stock-chart.css">
 
     <!-- TradingView Lightweight Charts (v3.8.0 - stable API) -->
     <script src="https://unpkg.com/lightweight-charts@3.8.0/dist/lightweight-charts.standalone.production.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothic', sans-serif;
+            background: #f8f9fa;
+            color: #333;
+        }
+
+        .navbar {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar-logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #667eea;
+            cursor: pointer;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .search-section {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .quick-search {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .quick-btn {
+            padding: 8px 15px;
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .quick-btn:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .chart-section {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .stock-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f7fafc;
+            border-radius: 8px;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .info-label {
+            font-size: 0.85rem;
+            color: #718096;
+        }
+
+        .info-value {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .price-up {
+            color: #e53e3e;
+        }
+
+        .price-down {
+            color: #3182ce;
+        }
+
+        .chart-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .timeframe-buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        .timeframe-btn {
+            padding: 8px 15px;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .timeframe-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .indicator-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .indicator-label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 10px;
+            background: #f7fafc;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .indicator-toggle {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 10px;
+            background: #f7fafc;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .indicator-toggle:hover {
+            background: #edf2f7;
+        }
+
+        .indicator-toggle input {
+            cursor: pointer;
+        }
+
+        .color-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .date-range-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .date-input {
+            padding: 8px 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .date-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn-small {
+            padding: 8px 15px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .btn-small:hover {
+            background: #5568d3;
+        }
+
+        .btn-secondary {
+            background: #718096;
+        }
+
+        .btn-secondary:hover {
+            background: #4a5568;
+        }
+
+        #chart-container {
+            width: 100%;
+            height: 600px;
+            position: relative;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #718096;
+            font-size: 1.1rem;
+        }
+
+        .error {
+            text-align: center;
+            padding: 40px;
+            color: #e53e3e;
+            font-size: 1.1rem;
+        }
+
+        @media (max-width: 768px) {
+            .stock-info {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            #chart-container {
+                height: 400px;
+            }
+
+            .chart-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .timeframe-buttons {
+                width: 100%;
+                justify-content: space-around;
+            }
+
+
+
+        }
+
+
+        .chart-layout {
+            display: flex;
+            gap: 20px;
+        }
+
+        .chart-left {
+            flex: 2;   /* 2:1 비율 → 좌측이 더 넓음 */
+        }
+
+        .chart-right {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .chart-overlay-controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255,255,255,0.9);
+            padding: 8px 12px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+
+        .chart-overlay-controls label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+        }
+
+        .chart-left {
+            position: relative;
+        }
+
+    </style>
 </head>
 <body>
 <!-- 네비게이션 바 -->
@@ -43,57 +393,615 @@
         </div>
     </div>
 
-    <!-- 차트 섹션 -->
-    <div class="chart-section">
-        <div id="stock-info-container" style="display: none;">
-            <div class="stock-info" id="stock-info">
-                <!-- 종목 정보가 여기에 표시됩니다 -->
-            </div>
 
-            <div class="chart-controls">
-                <div class="timeframe-buttons">
-                    <button class="timeframe-btn active" data-timeframe="D" onclick="changeTimeframe('D')">일봉</button>
-                    <button class="timeframe-btn" data-timeframe="W" onclick="changeTimeframe('W')">주봉</button>
-                    <button class="timeframe-btn" data-timeframe="M" onclick="changeTimeframe('M')">월봉</button>
-                </div>
-
-                <div class="indicator-controls">
-                    <span style="color: #718096; font-size: 0.9rem;">이평선:</span>
-                    <label class="indicator-toggle">
-                        <input type="checkbox" id="sma20-toggle" checked onchange="toggleSMA(20)">
-                        <span class="color-dot" style="background: #2962FF;"></span>
-                        <span>20일</span>
-                    </label>
-                    <label class="indicator-toggle">
-                        <input type="checkbox" id="sma60-toggle" checked onchange="toggleSMA(60)">
-                        <span class="color-dot" style="background: #FF6D00;"></span>
-                        <span>60일</span>
-                    </label>
-                    <label class="indicator-toggle">
-                        <input type="checkbox" id="sma120-toggle" checked onchange="toggleSMA(120)">
-                        <span class="color-dot" style="background: #9C27B0;"></span>
-                        <span>120일</span>
-                    </label>
-                </div>
-            </div>
-
-            <div class="date-range-controls">
-                <span style="color: #718096; font-size: 0.9rem;">기간:</span>
-                <input type="date" id="start-date" class="date-input">
-                <span>~</span>
-                <input type="date" id="end-date" class="date-input">
-                <button class="btn-small" onclick="applyDateRange()">적용</button>
-                <button class="btn-small btn-secondary" onclick="resetDateRange()">초기화</button>
-            </div>
-            </div>
+    <div id="stock-info-container" style="display:none; margin: 20px 0;">
+        <div class="stock-info" id="stock-info">
+            <!-- 종목 정보 표시 -->
         </div>
 
-        <div id="chart-container">
-            <div class="loading">티커를 입력하여 차트를 조회하세요</div>
+        <div class="chart-controls">
+            <div class="timeframe-buttons">
+                <button class="timeframe-btn active" data-timeframe="D" onclick="changeTimeframe('D')">일봉</button>
+                <button class="timeframe-btn" data-timeframe="W" onclick="changeTimeframe('W')">주봉</button>
+                <button class="timeframe-btn" data-timeframe="M" onclick="changeTimeframe('M')">월봉</button>
+            </div>
+
+
+        </div>
+
+        <div class="date-range-controls">
+            <span style="color: #718096; font-size: 0.9rem;">기간:</span>
+            <input type="date" id="start-date" class="date-input">
+            <span>~</span>
+            <input type="date" id="end-date" class="date-input">
+            <button class="btn-small" onclick="applyDateRange()">적용</button>
+            <button class="btn-small btn-secondary" onclick="resetDateRange()">초기화</button>
         </div>
     </div>
+
+
+
+    <!-- 차트 섹션 -->
+    <div class="chart-section">
+
+        <!-- 📌 가로 두 칼럼 레이아웃 -->
+        <div class="chart-layout">
+
+
+
+
+            <!-- 왼쪽: 차트 -->
+            <div class="chart-left">
+
+
+
+                <div class="chart-ma-controls">
+                    <span style="font-weight:600; margin-right:10px;">이평선:</span>
+
+                    <label style="margin-right:10px;">
+                        <input type="checkbox" id="sma20-toggle" checked onchange="toggleSMA(20)">
+                        <span class="color-dot" style="background:#2962FF;"></span> 20일
+                    </label>
+
+                    <label style="margin-right:10px;">
+                        <input type="checkbox" id="sma60-toggle" checked onchange="toggleSMA(60)">
+                        <span class="color-dot" style="background:#FF6D00;"></span> 60일
+                    </label>
+
+                    <label>
+                        <input type="checkbox" id="sma120-toggle" checked onchange="toggleSMA(120)">
+                        <span class="color-dot" style="background:#9C27B0;"></span> 120일
+                    </label>
+                </div>
+
+                <div id="chart-container">
+                    <div class="loading">티커를 입력하여 차트를 조회하세요</div>
+                </div>
+
+
+            </div>
+
+
+            <div class="chart-right" id="side-detail-panel">
+                <h3 style="margin-bottom:10px;"> 종목 상세 정보</h3>
+
+                <div style="color:#718096; font-size:0.9rem;">
+                    아직 상세 정보가 없습니다.<br>
+                    추후 뉴스 / 재무 데이터 / 기업정보 등을 여기에 넣으면 됩니다.
+                </div>
+
+                <hr style="margin: 20px 0; border-color:#e2e8f0;">
+
+                <h3 style="margin-bottom:10px;"> 관련 뉴스</h3>
+                <div id="news-area" style="color:#adb5bd; font-size:0.9rem;">
+                    아직 뉴스 데이터가 없습니다.<br>
+                    나중에 API 연동하면 자동으로 들어갑니다.
+                </div>
+            </div>
+
+
+        </div> <!-- chart-layout -->
+
+    </div> <!-- chart-section -->
+
+    <!-- 📌 종토방 (Stock Discussion Board) -->
+    <div class="board-section" style="margin-top: 40px;">
+        <h2 style="margin-bottom: 15px;">종목 토론방</h2>
+
+        <!-- 종목 정보 -->
+        <div id="board-stock-title"
+             style="font-size: 1.2rem; font-weight: 600; margin-bottom: 15px; color:#4a5568;">
+            종목을 선택하면 토론방이 표시됩니다.
+        </div>
+
+        <!-- 글쓰기 버튼 -->
+        <div style="margin-bottom: 20px;">
+            <button class="btn"
+                    id="board-write-btn"
+                    style="display:none;"
+                    onclick="">
+                글쓰기
+            </button>
+        </div>
+
+        <!-- 게시판 테이블 -->
+        <table id="board-table" style="width:100%; border-collapse:collapse; display:none;">
+            <thead>
+            <tr style="background:#f1f5f9;">
+                <th style="padding:12px; border-bottom:2px solid #e2e8f0;">번호</th>
+                <th style="padding:12px; border-bottom:2px solid #e2e8f0;">제목</th>
+                <th style="padding:12px; border-bottom:2px solid #e2e8f0;">작성자</th>
+                <th style="padding:12px; border-bottom:2px solid #e2e8f0;">작성일</th>
+            </tr>
+            </thead>
+            <tbody id="board-body">
+            </tbody>
+        </table>
+
+        <!-- 페이지 네비게이션 -->
+        <div id="board-pagination"
+             style="margin-top: 20px; text-align: center; display:none;">
+        </div>
+    </div>
+
+</div>
 </div>
 
-<script src="/js/stock/stock-chart.js"></script>
+<script>
+    let chart = null;
+    let candlestickSeries = null;
+    let sma20Series = null;
+    let sma60Series = null;
+    let sma120Series = null;
+    let currentTicker = null;
+    let currentTimeframe = 'D';
+
+    // 차트 초기화
+    function initChart() {
+        const chartContainer = document.getElementById('chart-container');
+        chartContainer.innerHTML = '';
+
+        chart = LightweightCharts.createChart(chartContainer, {
+            width: chartContainer.clientWidth,
+            height: 600,
+            layout: {
+                background: { color: '#ffffff' },
+                textColor: '#333',
+            },
+            grid: {
+                vertLines: { color: '#f0f0f0' },
+                horzLines: { color: '#f0f0f0' },
+            },
+            crosshair: {
+                mode: LightweightCharts.CrosshairMode.Normal,
+            },
+            rightPriceScale: {
+                borderColor: '#e0e0e0',
+            },
+            timeScale: {
+                borderColor: '#e0e0e0',
+                timeVisible: true,
+            },
+        });
+
+        // 캔들스틱 시리즈
+        candlestickSeries = chart.addCandlestickSeries({
+            upColor: '#ef5350',
+            downColor: '#26a69a',
+            borderVisible: false,
+            wickUpColor: '#ef5350',
+            wickDownColor: '#26a69a',
+        });
+
+        // 이동평균선 시리즈
+        sma20Series = chart.addLineSeries({
+            color: '#2962FF',
+            lineWidth: 2,
+            title: 'SMA 20',
+        });
+
+        sma60Series = chart.addLineSeries({
+            color: '#FF6D00',
+            lineWidth: 2,
+            title: 'SMA 60',
+        });
+
+        sma120Series = chart.addLineSeries({
+            color: '#9C27B0',
+            lineWidth: 2,
+            title: 'SMA 120',
+        });
+
+        // 반응형 크기 조정
+        window.addEventListener('resize', () => {
+            chart.applyOptions({
+                width: chartContainer.clientWidth,
+            });
+        });
+    }
+
+    // 종목 로드
+    async function loadStock(ticker) {
+        currentTicker = ticker.toUpperCase();
+        document.getElementById('ticker-input').value = currentTicker;
+
+        try {
+            // 종목 정보 로드
+            const infoResponse = await fetch(`/stock/api/info/${currentTicker}`);
+            if (!infoResponse.ok) {
+                throw new Error('종목을 찾을 수 없습니다.');
+            }
+            const stockInfo = await infoResponse.json();
+            displayStockInfo(stockInfo);
+
+            // 차트 데이터 로드
+            await loadChartData();
+            await loadNews();
+            await loadBoard();
+
+
+        } catch (error) {
+            console.error('종목 로드 실패:', error);
+            resetChart();  // 에러 시 차트 변수 리셋
+            document.getElementById('chart-container').innerHTML = `
+                <div class="error">${error.message}</div>
+            `;
+        }
+    }
+
+    // 차트 변수 리셋 함수
+    function resetChart() {
+        chart = null;
+        candlestickSeries = null;
+        sma20Series = null;
+        sma60Series = null;
+        sma120Series = null;
+    }
+
+    // 차트 데이터 로드
+    async function loadChartData() {
+        if (!currentTicker) return;
+
+        try {
+            const response = await fetch(
+                `/stock/api/candles/${currentTicker}?timeframe=${currentTimeframe}&count=120`
+            );
+
+            if (!response.ok) {
+                throw new Error('차트 데이터를 불러올 수 없습니다.');
+            }
+
+            const candles = await response.json();
+
+            // 차트가 없거나 DOM이 제거된 경우 재초기화
+            const chartContainer = document.getElementById('chart-container');
+            if (!chart || !candlestickSeries || !chartContainer.querySelector('canvas')) {
+                initChart();
+            }
+
+            // 캔들 데이터 변환
+            const candleData = candles.map(c => ({
+                time: c.date,
+                open: c.open,
+                high: c.high,
+                low: c.low,
+                close: c.close,
+            }));
+
+            // 이동평균 데이터 변환
+            const sma20Data = candles
+                .filter(c => c.sma20)
+                .map(c => ({ time: c.date, value: c.sma20 }));
+
+            const sma60Data = candles
+                .filter(c => c.sma60)
+                .map(c => ({ time: c.date, value: c.sma60 }));
+
+            const sma120Data = candles
+                .filter(c => c.sma120)
+                .map(c => ({ time: c.date, value: c.sma120 }));
+
+            // 차트 업데이트
+            candlestickSeries.setData(candleData);
+            sma20Series.setData(sma20Data);
+            sma60Series.setData(sma60Data);
+            sma120Series.setData(sma120Data);
+
+            chart.timeScale().fitContent();
+
+        } catch (error) {
+            console.error('차트 로드 실패:', error);
+            resetChart();  // 에러 시 차트 변수 리셋
+            document.getElementById('chart-container').innerHTML = `
+                <div class="error">${error.message}</div>
+            `;
+        }
+    }
+
+    // 종목 정보 표시
+    function displayStockInfo(info) {
+        document.getElementById('stock-info-container').style.display = 'block';
+
+        const priceClass = info.changeRate >= 0 ? 'price-up' : 'price-down';
+        const priceSymbol = info.changeRate >= 0 ? '▲' : '▼';
+
+        document.getElementById('stock-info').innerHTML = `
+            <div class="info-item">
+                <span class="info-label">종목명</span>
+                <span class="info-value">${info.name}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">현재가</span>
+                <span class="info-value ${priceClass}">
+                    ${formatNumber(info.currentPrice)}
+                </span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">전일대비</span>
+                <span class="info-value ${priceClass}">
+                    ${priceSymbol} ${formatNumber(Math.abs(info.changeAmount))} (${info.changeRate.toFixed(2)}%)
+                </span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">거래량</span>
+                <span class="info-value">${formatNumber(info.tradingVolume)}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">시가총액</span>
+                <span class="info-value">${formatMarketCap(info.marketCap)}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">52주 최고/최저</span>
+                <span class="info-value" style="font-size: 1rem;">
+                    ${formatNumber(info.high52Week)} / ${formatNumber(info.low52Week)}
+                </span>
+            </div>
+        `;
+    }
+
+    // 시간프레임 변경
+    function changeTimeframe(timeframe) {
+        currentTimeframe = timeframe;
+
+        // 버튼 활성화 상태 변경
+        document.querySelectorAll('.timeframe-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        document.querySelector(`[data-timeframe="${timeframe}"]`).classList.add('active');
+
+        // 차트 다시 로드
+        loadChartData();
+    }
+
+    // 검색
+    function searchStock() {
+        const ticker = document.getElementById('ticker-input').value.trim();
+        if (ticker) {
+            loadStock(ticker);
+        }
+    }
+
+    // 엔터키 검색
+    function handleSearchKeyPress(event) {
+        if (event.key === 'Enter') {
+            searchStock();
+        }
+    }
+
+    // 숫자 포맷
+    function formatNumber(num) {
+        if (!num) return '0';
+        return num.toLocaleString('ko-KR', {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 2
+        });
+    }
+
+    // 시가총액 포맷
+    function formatMarketCap(num) {
+        if (!num) return '0';
+        if (num >= 1e12) return (num / 1e12).toFixed(1) + '조';
+        if (num >= 1e8) return (num / 1e8).toFixed(0) + '억';
+        return formatNumber(num);
+    }
+
+    // 이평선 토글
+    function toggleSMA(period) {
+        if (!chart) return;
+
+        const isChecked = document.getElementById(`sma${period}-toggle`).checked;
+
+        switch(period) {
+            case 20:
+                if (sma20Series) {
+                    sma20Series.applyOptions({ visible: isChecked });
+                }
+                break;
+            case 60:
+                if (sma60Series) {
+                    sma60Series.applyOptions({ visible: isChecked });
+                }
+                break;
+            case 120:
+                if (sma120Series) {
+                    sma120Series.applyOptions({ visible: isChecked });
+                }
+                break;
+        }
+    }
+
+    // 날짜 범위 적용
+    function applyDateRange() {
+        if (!chart) return;
+
+        const startDate = document.getElementById('start-date').value;
+        const endDate = document.getElementById('end-date').value;
+
+        if (!startDate || !endDate) {
+            alert('시작 날짜와 종료 날짜를 모두 선택해주세요.');
+            return;
+        }
+
+        if (startDate > endDate) {
+            alert('시작 날짜가 종료 날짜보다 늦을 수 없습니다.');
+            return;
+        }
+
+        // 차트 시간 범위 설정
+        chart.timeScale().setVisibleRange({
+            from: startDate,
+            to: endDate
+        });
+    }
+
+    // 날짜 범위 초기화 (전체 데이터 표시)
+    function resetDateRange() {
+        if (!chart) return;
+
+        document.getElementById('start-date').value = '';
+        document.getElementById('end-date').value = '';
+
+        chart.timeScale().fitContent();
+    }
+
+    // 페이지 로드 시 기본 종목 표시 (삼성전자)
+    window.addEventListener('load', () => {
+        // 날짜 입력 기본값 설정 (최근 6개월)
+        const today = new Date();
+        const sixMonthsAgo = new Date();
+        sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
+        document.getElementById('end-date').value = today.toISOString().split('T')[0];
+        document.getElementById('start-date').value = sixMonthsAgo.toISOString().split('T')[0];
+
+        loadStock('005930');
+    });
+
+    // 📌 종토방 자동 로드 (currentTicker가 바뀔 때 실행)
+    async function loadBoard() {
+        if (!currentTicker) return;
+
+        document.getElementById("board-stock-title").innerText =
+            ` ${currentTicker} 토론방`;
+
+        // 글쓰기 버튼 링크 세팅
+        const writeBtn = document.getElementById("board-write-btn");
+        writeBtn.style.display = "inline-block";
+        writeBtn.onclick = () => {
+            location.href = `/stock/board/${currentTicker}/write`;
+        };
+
+        // 게시글 목록 API 요청
+        try {
+            const res = await fetch(`/stock/api/board/${currentTicker}`);
+            const list = await res.json();
+
+            const table = document.getElementById("board-table");
+            const tbody = document.getElementById("board-body");
+            const pagination = document.getElementById("board-pagination");
+
+            table.style.display = "table";
+            pagination.style.display = "block";
+
+            tbody.innerHTML = "";
+
+            if (list.content.length === 0) {
+                tbody.innerHTML = `
+                <tr>
+                    <td colspan="4" style="text-align:center; padding:20px; color:#718096;">
+                        등록된 글이 없습니다.
+                    </td>
+                </tr>
+            `;
+                return;
+            }
+
+            // 테이블 렌더링
+            list.content.forEach(board => {
+                const row = `
+                <tr style="border-bottom:1px solid #edf2f7;">
+                    <td style="padding:10px;">${board.id}</td>
+                    <td style="padding:10px;">
+                        <a href="/stock/board/${currentTicker}/read/${board.id}"
+                           style="color:#2b6cb0; text-decoration:none;">
+                            ${board.title}
+                        </a>
+                    </td>
+                    <td style="padding:10px;">${board.writer}</td>
+                    <td style="padding:10px;">${board.regDate?.replace('T', ' ').substring(0,16)}</td>
+                </tr>
+            `;
+                tbody.insertAdjacentHTML("beforeend", row);
+            });
+
+            // 페이지네이션 표시
+            pagination.innerHTML = `
+            <button onclick="changeBoardPage(${list.number - 1})"
+                    class="quick-btn" ${list.first ? "disabled" : ""}>◀ 이전</button>
+            <span style="margin:0 10px;">
+                ${list.number + 1} / ${list.totalPages}
+            </span>
+            <button onclick="changeBoardPage(${list.number + 1})"
+                    class="quick-btn" ${list.last ? "disabled" : ""}>다음 ▶</button>
+        `;
+
+        } catch (err) {
+            console.error("게시판 로드 실패:", err);
+        }
+    }
+
+    // 📌 게시판 페이지 변경
+    function changeBoardPage(page) {
+        if (page < 0) return;
+        loadBoard(currentTicker, page);
+    }
+
+    // // 📌 종목 불러올 때마다 게시판도 같이 로드
+    // async function loadStock(ticker) {
+    //     currentTicker = ticker.toUpperCase();
+    //     document.getElementById('ticker-input').value = currentTicker;
+    //
+    //     try {
+    //         // 기존 로직 수행
+    //         const infoResponse = await fetch(`/stock/api/info/${currentTicker}`);
+    //         if (!infoResponse.ok) throw new Error('종목을 찾을 수 없습니다.');
+    //         const stockInfo = await infoResponse.json();
+    //         displayStockInfo(stockInfo);
+    //
+    //         await loadChartData();
+    //
+    //         // 📌 종목 토론방도 함께 로드
+    //         await loadBoard();
+    //
+    //     } catch (error) {
+    //         console.error('종목 로드 실패:', error);
+    //     }
+    // }
+
+    async function loadNews() {
+        if (!currentTicker) return;
+
+        const newsArea = document.getElementById("news-area");
+        newsArea.innerHTML = "<div style='color:#718096;'>뉴스 로딩 중...</div>";
+
+        try {
+            const res = await fetch(`/stock/api/news/${currentTicker}`);
+            const data = await res.json();
+            const list = data.news;
+
+            if (!list || list.length === 0) {
+                newsArea.innerHTML = "<div style='color:#999;'>관련 뉴스가 없습니다.</div>";
+                return;
+            }
+
+            newsArea.innerHTML = "";
+
+            list.slice(0, 4).forEach(n => {
+                const time = n.providerPublishTime
+                    ? new Date(n.providerPublishTime * 1000).toLocaleString()
+                    : "";
+
+                const item = `
+                <div style="padding:10px 0; border-bottom:1px solid #eee;">
+                    <a href="${n.link}" target="_blank"
+                       style="font-weight:600; color:#2b6cb0; text-decoration:none;">
+                        ${n.title}
+                    </a>
+                    <div style="font-size:0.8rem; color:#666;">
+                        ${n.publisher ?? ""} · ${time}
+                    </div>
+                </div>
+            `;
+                newsArea.insertAdjacentHTML("beforeend", item);
+            });
+
+        } catch (e) {
+            console.error(e);
+            newsArea.innerHTML = "<div style='color:red;'>뉴스 로드 실패</div>";
+        }
+    }
+
+
+</script>
 </body>
 </html>
