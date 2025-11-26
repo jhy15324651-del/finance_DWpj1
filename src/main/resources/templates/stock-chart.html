@@ -617,6 +617,7 @@
             // 차트 데이터 로드
             await loadChartData();
             await loadNews();
+            await loadBoard();
 
 
         } catch (error) {
@@ -975,7 +976,7 @@
 
             newsArea.innerHTML = "";
 
-            list.slice(0, 8).forEach(n => {
+            list.slice(0, 4).forEach(n => {
                 const time = n.providerPublishTime
                     ? new Date(n.providerPublishTime * 1000).toLocaleString()
                     : "";

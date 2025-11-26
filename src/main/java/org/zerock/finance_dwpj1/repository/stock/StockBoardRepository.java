@@ -7,8 +7,8 @@ import org.zerock.finance_dwpj1.entity.stock.StockBoard;
 
 public interface StockBoardRepository extends JpaRepository<StockBoard, Long> {
 
-    // 특정 종목(symbol) 게시판 목록
-    Page<StockBoard> findBySymbolOrderByIdDesc(String symbol, Pageable pageable);
+    // 특정 종목(ticker) 게시판 목록
+    Page<StockBoard> findByTickerOrderByIdDesc(String ticker, Pageable pageable);
 
 
 }

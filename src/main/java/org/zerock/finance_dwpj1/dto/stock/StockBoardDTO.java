@@ -11,7 +11,7 @@ public class StockBoardDTO {
 
     private Long id;
 
-    private String symbol;    // 종목 코드
+    private String ticker;    // 종목 코드
 
     private String title;
 

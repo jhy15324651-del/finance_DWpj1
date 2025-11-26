@@ -19,10 +19,10 @@ public class StockBoardServiceImpl implements StockBoardService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<StockBoardDTO> getList(String symbol, Pageable pageable) {
+    public Page<StockBoardDTO> getList(String ticker, Pageable pageable) {
 
         Page<StockBoard> result = stockBoardRepository
-                .findBySymbolOrderByIdDesc(symbol, pageable);
+                .findByTickerOrderByIdDesc(ticker, pageable);
 
         // 엔티티 → DTO 변환
         return result.map(this::entityToDto);
@@ -51,7 +51,7 @@ public class StockBoardServiceImpl implements StockBoardService {
 
         board.setTitle(dto.getTitle());
         board.setContent(dto.getContent());
-        // writer, symbol은 보통 수정 안 함
+        // writer, ticker은 보통 수정 안 함
 
         // 더티 체킹으로 자동 update
     }
@@ -66,7 +66,7 @@ public class StockBoardServiceImpl implements StockBoardService {
     private StockBoardDTO entityToDto(StockBoard board) {
         return StockBoardDTO.builder()
                 .id(board.getId())
-                .symbol(board.getSymbol())
+                .ticker(board.getTicker())
                 .title(board.getTitle())
                 .content(board.getContent())
                 .writer(board.getWriter())
@@ -78,7 +78,7 @@ public class StockBoardServiceImpl implements StockBoardService {
     private StockBoard dtoToEntity(StockBoardDTO dto) {
         return StockBoard.builder()
                 .id(dto.getId())
-                .symbol(dto.getSymbol())
+                .ticker(dto.getTicker())
                 .title(dto.getTitle())
                 .content(dto.getContent())
                 .writer(dto.getWriter())

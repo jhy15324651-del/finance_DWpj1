@@ -20,7 +20,7 @@ public class StockBoard {
 
     // 어떤 종목의 게시판인지 구분하는 티커 (005930, TSLA 등)
     @Column(nullable = false, length = 50)
-    private String symbol;
+    private String ticker;
 
     @Column(nullable = false, length = 200)
     private String title;

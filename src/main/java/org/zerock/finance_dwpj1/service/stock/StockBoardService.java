@@ -7,7 +7,7 @@ import org.zerock.finance_dwpj1.dto.stock.StockBoardDTO;
 public interface StockBoardService {
 
     // 종목별 게시글 목록
-    Page<StockBoardDTO> getList(String symbol, Pageable pageable);
+    Page<StockBoardDTO> getList(String ticker, Pageable pageable);
 
     // 글 읽기
     StockBoardDTO get(Long id);
