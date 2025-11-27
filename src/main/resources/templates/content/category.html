@@ -77,7 +77,6 @@
     </div> <!-- category-tabs-container END -->
 
 
-
     <!-- 📄 게시글 테이블 -->
     <table class="board-table">
         <thead>
@@ -92,7 +91,16 @@
         <tbody>
         <tr th:each="post, iter : ${posts.content}">
             <td th:text="${posts.totalElements - (posts.number * posts.size) - iter.index}"></td>
-            <td><a th:href="@{'/content/post/' + ${post.id}}" th:text="${post.title}"></a></td>
+            <td>
+                <a th:href="@{/content/post/{id}(
+                            id=${post.id},
+                            page=${currentPage},
+                            keyword=${keyword},
+                            searchType=${searchType}
+                      )}"
+                   th:text="${post.title}">
+                </a>
+            </td>
             <td th:text="${#temporals.format(post.createdDate, 'yyyy.MM.dd')}"></td>
             <td th:text="${post.viewCount}"></td>
         </tr>
@@ -102,7 +110,6 @@
         </tr>
         </tbody>
     </table>
-
 
 
     <!-- 📌 페이징 + 글쓰기 -->
@@ -130,7 +137,6 @@
     </div>
 
 </div> <!-- category-page END -->
-
 
 
 <!-- ============================= -->
@@ -192,6 +198,13 @@
 
     });
 </script>
+
+<style>
+    .board-table th,
+    .board-table td {
+        text-align: center;
+    }
+</style>
 
 
 <!-- footer 포함 -->

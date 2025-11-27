@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.zerock.finance_dwpj1.entity.content.ContentReview;
 import org.zerock.finance_dwpj1.service.content.ContentReviewService;
@@ -38,18 +37,5 @@ public class ContentHomeController {
         model.addAttribute("popularPosts", popularContents);
 
         return "content/home";
-    }
-
-    /**
-     * 콘텐츠 상세 보기
-     */
-    @GetMapping("/post/{id}")
-    public String contentDetail(@PathVariable Long id, Model model) {
-        log.debug("콘텐츠 상세 조회: id={}", id);
-
-        ContentReview content = contentReviewService.getContentDetail(id);
-        model.addAttribute("post", content);
-
-        return "content/post-detail";
     }
 }

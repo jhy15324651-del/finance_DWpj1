@@ -10,87 +10,127 @@
     <!-- 날짜 · 조회수 -->
     <div class="post-detail-meta">
         <span th:text="${#temporals.format(post.createdDate, 'yyyy.MM.dd')}"></span>
-        <span> · 조회수 <span th:text="${post.viewCount}"></span></span>
+        <span class="view-text">
+            · 조회수 <span th:text="${post.viewCount}"></span>
+        </span>
     </div>
 
     <!-- 이미지 -->
-    <div th:if="${post.imgUrl}">
-        <img th:src="${post.imgUrl}"
-             style="width:100%; border-radius:10px; margin-bottom:20px;">
+    <div th:if="${post.imgUrl}" class="post-image-box">
+        <img th:src="${post.imgUrl}" class="post-image">
     </div>
 
     <!-- 본문 -->
-    <div class="post-detail-content" th:utext="${post.content}">
-    </div>
+    <div class="post-detail-content" th:utext="${post.content}"></div>
 
     <!-- 해시태그 -->
     <div class="post-hashtags"
          th:if="${post.hashtags != null and #strings.length(post.hashtags) > 0}">
         <span th:each="tag : ${#strings.arraySplit(post.hashtags, ' ')}">
             <a th:href="@{/content/category(keyword=${tag})}"
-               class="tag-item"
+               class="tag-item tag-badge"
                th:text="${tag}">
             </a>
         </span>
     </div>
 
-
     <!-- ===========================================================
-          💬 댓글 영역
-     ============================================================ -->
+          댓글 영역
+    ============================================================ -->
     <div class="comment-section">
 
-        <h3 class="comment-title">댓글</h3>
+        <!-- 댓글 개수 -->
+        <h3 class="comment-title">
+            댓글
+        </h3>
 
         <!-- 댓글 목록 -->
-        <div id="comment-list">
-            <div th:each="c : ${comments}" class="comment-item">
+        <div class="comment-list">
 
-                <!-- 댓글 -->
-                <div th:if="${c.parentId == null}" class="comment">
-                    <b th:text="${c.writer}"></b>
-                    <span class="comment-date"
-                          th:text="${#temporals.format(c.createdDate, 'yyyy-MM-dd HH:mm')}"></span>
-                    <p th:text="${c.content}"></p>
+            <div th:each="c : ${comments}" class="comment-item-box">
 
-                    <button class="reply-btn" th:attr="data-id=${c.id}">답글쓰기</button>
-                    <button class="delete-btn" th:attr="data-id=${c.id}">삭제</button>
+                <!-- 일반 댓글 -->
+                <div th:if="${c.parentId == null}">
+
+                    <div class="comment-header">
+                        <b class="comment-writer" th:text="${c.writer}"></b>
+                        <span class="comment-date"
+                              th:text="${#temporals.format(c.createdDate, 'yyyy-MM-dd HH:mm')}"></span>
+                    </div>
+
+                    <div class="comment-text" th:text="${c.content}"></div>
+
+                    <div class="comment-actions">
+                        <button class="reply-btn" th:attr="data-id=${c.id}">답글쓰기</button>
+                        <button class="comment-delete-btn" th:attr="data-id=${c.id}">삭제</button>
+                    </div>
                 </div>
 
                 <!-- 대댓글 -->
-                <div th:if="${c.parentId != null}" class="reply" style="margin-left:20px;">
-                    ↳ <b th:text="${c.writer}"></b>
-                    <span class="comment-date"
-                          th:text="${#temporals.format(c.createdDate, 'yyyy-MM-dd HH:mm')}"></span>
-                    <p th:text="${c.content}"></p>
+                <div th:if="${c.parentId != null}" class="reply-item">
 
-                    <button class="delete-btn" th:attr="data-id=${c.id}">삭제</button>
+                    <div class="comment-header">
+                        ↳ <b class="comment-writer" th:text="${c.writer}"></b>
+                        <span class="comment-date"
+                              th:text="${#temporals.format(c.createdDate, 'yyyy-MM-dd HH:mm')}"></span>
+                    </div>
+
+                    <div class="comment-text" th:text="${c.content}"></div>
+
+                    <div class="comment-actions">
+                        <button class="comment-delete-btn" th:attr="data-id=${c.id}">삭제</button>
+                    </div>
                 </div>
 
             </div>
-        </div>
 
-        <!-- 댓글 작성 -->
+        </div> <!-- comment-list END -->
+
+
+        <!-- ===========================================================
+              댓글 작성 영역 (디시 스타일)
+        ============================================================ -->
         <div class="comment-write-box">
-            <h4>댓글 작성</h4>
-            <input type="text" id="writer" placeholder="작성자">
-            <textarea id="content" placeholder="내용"></textarea>
-            <input type="password" id="password" placeholder="비밀번호">
-            <button id="comment-submit">등록</button>
+
+            <h4 class="comment-write-title">댓글 작성</h4>
+
+            <div class="comment-write-row">
+
+                <!-- 작성자 + 비밀번호 -->
+                <div class="comment-input-group">
+                    <input type="text" id="writer" class="comment-input" placeholder="작성자">
+                    <input type="password" id="password" class="comment-input" placeholder="비밀번호">
+                </div>
+
+                <!-- 내용 -->
+                <textarea id="content" class="comment-textarea"
+                          placeholder="타인을 비방하거나 명예를 훼손하는 댓글은 제재될 수 있습니다."></textarea>
+
+                <!-- 등록 버튼 -->
+                <div class="comment-submit-wrap">
+                    <button id="comment-submit" class="comment-submit-btn">등록</button>
+                </div>
+            </div>
         </div>
+        <!-- =========================================================== -->
 
-    </div>
-    <!-- =========================================================== -->
+    </div><!-- 댓글 영역 END -->
 
 
-    <!-- 목록으로 버튼 -->
-    <div style="text-align:center; margin-top:30px;">
-        <a th:href="@{/content/category}" class="btn-back">목록으로</a>
+    <!-- 목록으로 / 홈으로 버튼 -->
+    <div class="detail-btn-container">
+        <a th:href="@{/content/category(page=${page}, keyword=${keyword}, searchType=${searchType})}"
+           class="btn btn-outline-secondary detail-btn">
+            목록으로
+        </a>
+
+        <a th:href="@{/content/}"
+           class="btn btn-outline-secondary detail-btn">
+            홈으로
+        </a>
     </div>
 
 </div>
 
 <!-- footer -->
 <th:block th:replace="content/layout/footer :: footer"></th:block>
-
-</script>
