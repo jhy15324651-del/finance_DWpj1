@@ -4,42 +4,45 @@
 <!-- 2) body(header) 불러오기 -->
 <th:block th:replace="content/layout/header :: bodyheader"></th:block>
 
-<div class="main-left">
-    <div class="section-title">최신 콘텐츠</div>
 
-    <div class="post-grid">
-        <div class="post-card" th:each="post : ${latestPosts}">
-            <div>
-                <div class="post-title">
-                    <a th:href="@{'/content/post/' + ${post.id}}"
-                       th:text="${post.title}"
-                       style="text-decoration:none; color:inherit;"></a>
+<div class="content">
+
+    <div class="main-left">
+        <div class="section-title">최신 콘텐츠</div>
+
+        <div class="post-grid">
+            <div class="post-card" th:each="post : ${latestPosts}">
+                <div>
+                    <div class="post-title">
+                        <a th:href="@{'/content/post/' + ${post.id}}"
+                           th:text="${post.title}"
+                           style="text-decoration:none; color:inherit;"></a>
+                    </div>
+
+                    <div class="post-summary" th:text="${post.summary}"></div>
                 </div>
 
-                <div class="post-summary" th:text="${post.summary}"></div>
-            </div>
-
-            <div class="post-meta">
-                <span th:text="${#temporals.format(post.createdDate, 'yyyy.MM.dd')}"></span>
-                <span>👁 <span th:text="${post.viewCount}"></span></span>
+                <div class="post-meta">
+                    <span th:text="${#temporals.format(post.createdDate, 'yyyy.MM.dd')}"></span>
+                    <span>👁 <span th:text="${post.viewCount}"></span></span>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
 
-<div class="main-right">
-    <div class="section-title">많이 본 콘텐츠</div>
+    <div class="main-right">
+        <div class="section-title">많이 본 콘텐츠</div>
 
-    <div class="popular-box">
-        <div class="popular-item" th:each="post, iter : ${popularPosts}">
-            <span class="popular-rank" th:text="${iter.index + 1}"></span>
-            <a th:href="@{'/content/post/' + ${post.id}}" class="popular-title" th:text="${post.title}"></a>
-            <div class="popular-view">조회수: <span th:text="${post.viewCount}"></span></div>
+        <div class="popular-box">
+            <div class="popular-item" th:each="post, iter : ${popularPosts}">
+                <span class="popular-rank" th:text="${iter.index + 1}"></span>
+                <a th:href="@{'/content/post/' + ${post.id}}" class="popular-title" th:text="${post.title}"></a>
+                <div class="popular-view">조회수: <span th:text="${post.viewCount}"></span></div>
+            </div>
         </div>
     </div>
+
 </div>
-
-
 <!-- 3) footer fragment -->
 <th:block th:replace="content/layout/footer :: footer"></th:block>

@@ -10,7 +10,7 @@ import org.springframework.security.web.SecurityFilterChain;
 
 /**
  * Spring Security 설정
- *
+ * <p>
  * 개발 모드: 모든 접근 허용 (인증 비활성화)
  * 프로덕션 배포 시 주석 처리된 부분을 활성화하세요.
  */
@@ -60,5 +60,6 @@ public class SecurityConfig {
         */
 
         return http.build();
+    }
 }
-}
+
