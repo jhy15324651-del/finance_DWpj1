@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원가입 - Finance DW</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .signup-container {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 480px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 32px;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        label .required {
+            color: #e74c3c;
+        }
+
+        input[type="email"],
+        input[type="text"],
+        input[type="password"],
+        input[type="tel"] {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #e1e1e1;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        input.error {
+            border-color: #e74c3c;
+        }
+
+        input.success {
+            border-color: #27ae60;
+        }
+
+        .error-message {
+            color: #e74c3c;
+            font-size: 13px;
+            margin-top: 6px;
+            display: none;
+        }
+
+        .success-message {
+            color: #27ae60;
+            font-size: 13px;
+            margin-top: 6px;
+            display: none;
+        }
+
+        .password-hint {
+            font-size: 12px;
+            color: #999;
+            margin-top: 6px;
+        }
+
+        .checkbox-group {
+            margin: 25px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .checkbox-item {
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+        }
+
+        .checkbox-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+
+        .checkbox-item label {
+            margin: 0;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .checkbox-item.optional label {
+            color: #777;
+        }
+
+        button[type="submit"] {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 17px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        button[type="submit"]:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        button[type="submit"]:active {
+            transform: translateY(0);
+        }
+
+        button[type="submit"]:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .login-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+<div class="signup-container">
+    <h1>회원가입</h1>
+    <p class="subtitle">Finance DW에 오신 것을 환영합니다</p>
+
+    <form id="signupForm">
+        <div class="form-group">
+            <label for="email">이메일 <span class="required">*</span></label>
+            <input type="email" id="email" name="email" placeholder="example@email.com" required>
+            <div class="error-message" id="emailError"></div>
+            <div class="success-message" id="emailSuccess">✓ 사용 가능한 이메일입니다</div>
+        </div>
+
+        <div class="form-group">
+            <label for="nickname">닉네임 <span class="required">*</span></label>
+            <input type="text" id="nickname" name="nickname" placeholder="2~30자 이내" required>
+            <div class="error-message" id="nicknameError"></div>
+            <div class="success-message" id="nicknameSuccess">✓ 사용 가능한 닉네임입니다</div>
+        </div>
+
+        <div class="form-group">
+            <label for="password">비밀번호 <span class="required">*</span></label>
+            <input type="password" id="password" name="password" placeholder="8자 이상" required>
+            <div class="password-hint">8자 이상, 숫자 1개 이상, 특수문자 1개 이상</div>
+            <div class="error-message" id="passwordError"></div>
+        </div>
+
+        <div class="form-group">
+            <label for="passwordConfirm">비밀번호 확인 <span class="required">*</span></label>
+            <input type="password" id="passwordConfirm" name="passwordConfirm" placeholder="비밀번호 재입력" required>
+            <div class="error-message" id="passwordConfirmError"></div>
+            <div class="success-message" id="passwordConfirmSuccess">✓ 비밀번호가 일치합니다</div>
+        </div>
+
+        <div class="form-group">
+            <label for="phoneNumber">전화번호 (선택)</label>
+            <input type="tel" id="phoneNumber" name="phoneNumber" placeholder="010-1234-5678">
+        </div>
+
+        <div class="checkbox-group">
+            <div class="checkbox-item">
+                <input type="checkbox" id="agreeTerms" name="agreeTerms" required>
+                <label for="agreeTerms">이용약관 동의 <span class="required">*</span></label>
+            </div>
+            <div class="checkbox-item">
+                <input type="checkbox" id="agreePrivacy" name="agreePrivacy" required>
+                <label for="agreePrivacy">개인정보 처리방침 동의 <span class="required">*</span></label>
+            </div>
+            <div class="checkbox-item optional">
+                <input type="checkbox" id="agreeMarketing" name="agreeMarketing">
+                <label for="agreeMarketing">마케팅 정보 수신 동의 (선택)</label>
+            </div>
+        </div>
+
+        <button type="submit" id="submitBtn">회원가입</button>
+        <div class="loading" id="loading">처리 중...</div>
+    </form>
+
+    <div class="login-link">
+        이미 계정이 있으신가요? <a href="/user/login">로그인</a>
+    </div>
+</div>
+
+<script>
+    let emailChecked = false;
+    let nicknameChecked = false;
+    let passwordValid = false;
+    let passwordMatch = false;
+
+    // 이메일 중복 체크
+    document.getElementById('email').addEventListener('blur', async function () {
+        const email = this.value.trim();
+        if (!email) return;
+
+        // 이메일 형식 체크
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailPattern.test(email)) {
+            showError('email', '올바른 이메일 형식이 아닙니다');
+            return;
+        }
+
+        try {
+            const response = await fetch(`/user/check-email?email=${encodeURIComponent(email)}`);
+            const data = await response.json();
+
+            if (data.available) {
+                showSuccess('email');
+                emailChecked = true;
+            } else {
+                showError('email', '이미 사용중인 이메일입니다');
+                emailChecked = false;
+            }
+        } catch (error) {
+            showError('email', '이메일 확인 중 오류가 발생했습니다');
+            emailChecked = false;
+        }
+    });
+
+    // 닉네임 중복 체크
+    document.getElementById('nickname').addEventListener('blur', async function () {
+        const nickname = this.value.trim();
+        //trim()= 공백 제거 함수
+        if (!nickname) return;
+
+        if (nickname.length < 2 || nickname.length > 16) {
+            showError('nickname', '닉네임은 2~16자 이내여야 합니다');
+            nicknameChecked = false;
+            return;
+        }
+
+        try {
+            const response = await fetch(`/user/check-nickname?nickname=${encodeURIComponent(nickname)}`);
+            const data = await response.json();
+
+            if (data.available) {
+                showSuccess('nickname');
+                nicknameChecked = true;
+            } else {
+                showError('nickname', '이미 사용중인 닉네임입니다');
+                nicknameChecked = false;
+            }
+        } catch (error) {
+            showError('nickname', '닉네임 확인 중 오류가 발생했습니다');
+            nicknameChecked = false;
+        }
+    });
+
+    // 비밀번호 유효성 검사
+    document.getElementById('password').addEventListener('input', function () {
+        const password = this.value;
+
+        // 8자 이상
+        const hasLength = password.length >= 8;
+        // 숫자 포함
+        const hasDigit = /\d/.test(password);
+        // 특수문자 포함
+        const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
+
+        if (hasLength && hasDigit && hasSpecial) {
+            hideError('password');
+            passwordValid = true;
+        } else {
+            showError('password', '8자 이상, 숫자 1개 이상, 특수문자 1개 이상 포함해야 합니다');
+            passwordValid = false;
+        }
+
+        // 비밀번호 확인과 재검증
+        checkPasswordConfirm();
+    });
+
+    // 비밀번호 확인
+    document.getElementById('passwordConfirm').addEventListener('input', checkPasswordConfirm);
+
+    function checkPasswordConfirm() {
+        const password = document.getElementById('password').value;
+        const passwordConfirm = document.getElementById('passwordConfirm').value;
+
+        if (!passwordConfirm) {
+            hideError('passwordConfirm');
+            hideSuccess('passwordConfirm');
+            passwordMatch = false;
+            return;
+        }
+
+        if (password === passwordConfirm && passwordValid) {
+            showSuccess('passwordConfirm');
+            passwordMatch = true;
+        } else {
+            showError('passwordConfirm', '비밀번호가 일치하지 않습니다');
+            passwordMatch = false;
+        }
+    }
+
+    // 폼 제출
+    document.getElementById('signupForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        // 유효성 검증
+        if (!emailChecked) {
+            alert('이메일 중복 확인을 해주세요');
+            return;
+        }
+        if (!nicknameChecked) {
+            alert('닉네임 중복 확인을 해주세요');
+            return;
+        }
+        if (!passwordValid) {
+            alert('비밀번호 형식을 확인해주세요');
+            return;
+        }
+        if (!passwordMatch) {
+            alert('비밀번호가 일치하지 않습니다');
+            return;
+        }
+
+        const formData = {
+            email: document.getElementById('email').value.trim(),
+            nickname: document.getElementById('nickname').value.trim(),
+            password: document.getElementById('password').value,
+            passwordConfirm: document.getElementById('passwordConfirm').value,
+            phoneNumber: document.getElementById('phoneNumber').value.trim() || null,
+            agreeTerms: document.getElementById('agreeTerms').checked,
+            agreePrivacy: document.getElementById('agreePrivacy').checked,
+            agreeMarketing: document.getElementById('agreeMarketing').checked
+        };
+
+        // 로딩 표시
+        const submitBtn = document.getElementById('submitBtn');
+        const loading = document.getElementById('loading');
+        submitBtn.disabled = true;
+        loading.classList.add('active');
+
+        try {
+            const response = await fetch('/user/signup', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(formData)
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                alert('회원가입이 완료되었습니다!\n로그인 페이지로 이동합니다.');
+                window.location.href = '/user/login';
+            } else {
+                alert(data.message);
+                submitBtn.disabled = false;
+                loading.classList.remove('active');
+            }
+        } catch (error) {
+            alert('회원가입 중 오류가 발생했습니다');
+            submitBtn.disabled = false;
+            loading.classList.remove('active');
+        }
+    });
+
+    // 헬퍼 함수들
+    function showError(field, message) {
+        const input = document.getElementById(field);
+        const errorMsg = document.getElementById(field + 'Error');
+        const successMsg = document.getElementById(field + 'Success');
+
+        input.classList.add('error');
+        input.classList.remove('success');
+        errorMsg.textContent = message;
+        errorMsg.style.display = 'block';
+        if (successMsg) successMsg.style.display = 'none';
+    }
+
+    function hideError(field) {
+        const input = document.getElementById(field);
+        const errorMsg = document.getElementById(field + 'Error');
+
+        input.classList.remove('error');
+        errorMsg.style.display = 'none';
+    }
+
+    function showSuccess(field) {
+        const input = document.getElementById(field);
+        const errorMsg = document.getElementById(field + 'Error');
+        const successMsg = document.getElementById(field + 'Success');
+
+        input.classList.add('success');
+        input.classList.remove('error');
+        errorMsg.style.display = 'none';
+        if (successMsg) successMsg.style.display = 'block';
+    }
+
+    function hideSuccess(field) {
+        const input = document.getElementById(field);
+        const successMsg = document.getElementById(field + 'Success');
+
+        input.classList.remove('success');
+        if (successMsg) successMsg.style.display = 'none';
+    }
+</script>
+</body>
+</html>
