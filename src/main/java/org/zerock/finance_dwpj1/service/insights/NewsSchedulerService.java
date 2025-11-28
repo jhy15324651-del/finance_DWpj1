@@ -28,6 +28,9 @@ public class NewsSchedulerService {
     private final InsightsNewsRepository newsRepository;
     private final GPTService gptService;
 
+    // 크롤링 스케줄러 활성화 상태 (기본값: 비활성화)
+    private volatile boolean schedulerEnabled = false;
+
     /**
      * 하루에 한 번 뉴스 크롤링
      * cron: 매일 오전 10시에 실행
@@ -35,6 +38,12 @@ public class NewsSchedulerService {
     @Scheduled(cron = "0 0 10 * * *")
     @Transactional
     public void crawlNewsDaily() {
+        // 스케줄러가 비활성화되어 있으면 실행하지 않음
+        if (!schedulerEnabled) {
+            log.debug("크롤링 스케줄러가 비활성화되어 있습니다");
+            return;
+        }
+
         log.info("===== 일일 뉴스 크롤링 시작 (매일 오전 10시) =====");
 
         try {
@@ -121,6 +130,12 @@ public class NewsSchedulerService {
     @Scheduled(cron = "0 10 10 * * *")
     @Transactional
     public void archiveOldNews() {
+        // 스케줄러가 비활성화되어 있으면 실행하지 않음
+        if (!schedulerEnabled) {
+            log.debug("아카이브 스케줄러가 비활성화되어 있습니다");
+            return;
+        }
+
         log.info("===== 24시간 경과 뉴스 아카이브 처리 시작 =====");
 
         try {
@@ -219,6 +234,46 @@ public class NewsSchedulerService {
         } catch (Exception e) {
             log.error("크롤러 테스트 중 오류 발생", e);
             throw e;
+        }
+    }
+
+    /**
+     * 크롤링 스케줄러 시작
+     */
+    public void startScheduler() {
+        schedulerEnabled = true;
+        log.info("===== 크롤링 스케줄러가 활성화되었습니다 =====");
+        log.info("- 뉴스 크롤링: 매일 오전 10시 실행");
+        log.info("- 뉴스 아카이브: 매일 오전 10시 10분 실행");
+    }
+
+    /**
+     * 크롤링 스케줄러 정지
+     */
+    public void stopScheduler() {
+        schedulerEnabled = false;
+        log.info("===== 크롤링 스케줄러가 비활성화되었습니다 =====");
+        log.info("- 자동 크롤링 및 아카이브가 중지됩니다");
+        log.info("- 수동 실행은 여전히 가능합니다 (manualCrawl, manualArchive)");
+    }
+
+    /**
+     * 크롤링 스케줄러 상태 확인
+     * @return 스케줄러 활성화 여부
+     */
+    public boolean isSchedulerEnabled() {
+        return schedulerEnabled;
+    }
+
+    /**
+     * 크롤링 스케줄러 상태 정보 조회
+     * @return 스케줄러 상태 정보 문자열
+     */
+    public String getSchedulerStatus() {
+        if (schedulerEnabled) {
+            return "크롤링 스케줄러 활성화 (매일 오전 10시 자동 실행)";
+        } else {
+            return "크롤링 스케줄러 비활성화 (자동 실행 중지)";
         }
     }
 }

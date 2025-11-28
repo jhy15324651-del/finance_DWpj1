@@ -8,7 +8,7 @@ public class PageController {
 
     @GetMapping("/")
     public String index() {
-        return "redirect:/index.html";
+        return "index";  // templates/index.html
     }
 
     @GetMapping("/news")
@@ -19,5 +19,10 @@ public class PageController {
     @GetMapping("/portfolio")
     public String portfolioComparison() {
         return "portfolio/portfolio-comparison";
+    }
+
+    @GetMapping("/user/mypage")
+    public String myPage() {
+        return "user/mypage";
     }
 }

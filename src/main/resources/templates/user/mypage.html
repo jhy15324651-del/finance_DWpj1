@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>마이페이지 - Finance DW</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .user-details {
+            flex: 1;
+        }
+
+        .user-email {
+            font-size: 18px;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .user-nickname {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .content-section {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .menu-item {
+            padding: 20px;
+            border: 2px solid #e1e1e1;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            color: #333;
+            display: block;
+        }
+
+        .menu-item:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+            transform: translateY(-2px);
+        }
+
+        .menu-item-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #667eea;
+        }
+
+        .menu-item-desc {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .placeholder-message {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-size: 14px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .home-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .home-link a {
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .home-link a:hover {
+            opacity: 1;
+            text-decoration: underline;
+        }
+
+        .info-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #e8f5e9;
+            color: #27ae60;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>마이페이지</h1>
+        <div class="user-info">
+            <div class="user-avatar" sec:authorize="isAuthenticated()">
+                <span th:text="${#authentication.name.substring(0, 1).toUpperCase()}">U</span>
+            </div>
+            <div class="user-details" sec:authorize="isAuthenticated()">
+                <div class="user-email">
+                    <span sec:authentication="name">user@example.com</span>
+                    <span class="info-badge">활성</span>
+                </div>
+                <div class="user-nickname">Finance DW 회원</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-section">
+        <h2 class="section-title">내 활동</h2>
+        <div class="menu-grid">
+            <div class="menu-item">
+                <div class="menu-item-title">내가 작성한 글</div>
+                <div class="menu-item-desc">내가 작성한 게시글을 확인하고 관리합니다</div>
+            </div>
+            <div class="menu-item">
+                <div class="menu-item-title">내가 작성한 댓글</div>
+                <div class="menu-item-desc">내가 작성한 댓글을 확인하고 관리합니다</div>
+            </div>
+            <div class="menu-item">
+                <div class="menu-item-title">북마크</div>
+                <div class="menu-item-desc">저장한 게시글과 뉴스를 확인합니다</div>
+            </div>
+            <div class="menu-item">
+                <div class="menu-item-title">내 포트폴리오</div>
+                <div class="menu-item-desc">내 투자 포트폴리오를 관리합니다</div>
+            </div>
+        </div>
+        <div class="placeholder-message">
+            해당 기능들은 추후 구현 예정입니다
+        </div>
+    </div>
+
+    <div class="content-section">
+        <h2 class="section-title">계정 설정</h2>
+        <div class="menu-grid">
+            <div class="menu-item">
+                <div class="menu-item-title">프로필 수정</div>
+                <div class="menu-item-desc">닉네임, 전화번호 등을 수정합니다</div>
+            </div>
+            <div class="menu-item">
+                <div class="menu-item-title">비밀번호 변경</div>
+                <div class="menu-item-desc">보안을 위해 주기적으로 변경하세요</div>
+            </div>
+            <div class="menu-item">
+                <div class="menu-item-title">알림 설정</div>
+                <div class="menu-item-desc">받고 싶은 알림을 설정합니다</div>
+            </div>
+            <div class="menu-item">
+                <div class="menu-item-title">계정 관리</div>
+                <div class="menu-item-desc">계정 탈퇴 등의 설정을 관리합니다</div>
+            </div>
+        </div>
+        <div class="placeholder-message">
+            해당 기능들은 추후 구현 예정입니다
+        </div>
+    </div>
+
+    <div class="content-section">
+        <div class="button-group">
+            <button class="btn btn-primary" onclick="location.href='/'">홈으로 돌아가기</button>
+            <button class="btn btn-secondary" onclick="location.href='/user/logout'">로그아웃</button>
+        </div>
+    </div>
+
+    <div class="home-link">
+        <a href="/">← Finance DW 메인으로</a>
+    </div>
+</div>
+</body>
+</html>
