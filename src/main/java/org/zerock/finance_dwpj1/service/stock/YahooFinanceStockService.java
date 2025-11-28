@@ -89,7 +89,11 @@ public class YahooFinanceStockService implements StockService {
 
         if (cachedQuote.isPresent()) {
             log.info("캐시에서 조회: {} (캐시 시간: {})", ticker, cachedQuote.get().getUpdatedAt());
-            return convertToDTO(cachedQuote.get());
+
+            // 🔹 예전에는 바로 return convertToDTO(...) 했던 부분
+            StockInfoDTO dto = convertToDTO(cachedQuote.get());  // DTO로 변환
+            dto.setCurrency(detectCurrency(ticker));             // 통화 세팅
+            return dto;                                          // DTO 반환
         }
 
         // 2. API 호출
@@ -97,6 +101,9 @@ public class YahooFinanceStockService implements StockService {
         StockInfoDTO stockInfo = fetchStockInfoFromApi(ticker);
 
         if (stockInfo != null) {
+            // 🔹 API 로 가져온 DTO에도 통화 세팅
+            stockInfo.setCurrency(detectCurrency(ticker));
+
             // 3. 캐시 저장
             saveQuoteCache(ticker, stockInfo);
         }
@@ -474,4 +481,21 @@ public class YahooFinanceStockService implements StockService {
             }
         }
     }
+
+    //돈 단위 표시
+
+    private String detectCurrency(String ticker) {
+        ticker = ticker.toUpperCase();
+
+        if (ticker.matches("\\d{6}")) return "KRW";
+        if (ticker.endsWith(".KS") || ticker.endsWith(".KQ")) return "KRW";
+        if (ticker.matches("[A-Z]+")) return "USD";
+        if (ticker.endsWith(".T")) return "JPY";
+        if (ticker.endsWith(".HK")) return "HKD";
+        if (ticker.endsWith(".L")) return "GBP";
+
+        return "USD";
+    }
+
+
 }

@@ -20,20 +20,6 @@ public class StockBoardController {
      * 종목별 게시판 목록
      * 예: /stock/board/005930?page=0
      */
-    @GetMapping("/{ticker}")
-    public String list(@PathVariable String ticker,
-                       @RequestParam(defaultValue = "0") int page,
-                       Model model) {
-
-        PageRequest pageable = PageRequest.of(page, 10);
-
-        Page<StockBoardDTO> result = stockBoardService.getList(ticker, pageable);
-
-        model.addAttribute("ticker", ticker);
-        model.addAttribute("result", result);
-
-        return "stock/board/list"; // templates/stock/board/list.html
-    }
 
     /**
      * 글쓰기 폼
@@ -67,10 +53,7 @@ public class StockBoardController {
         return "redirect:/stock/board/" + ticker;
     }
 
-    /**
-     * 글 상세 보기
-     * GET /stock/board/005930/read/1
-     */
+
     @GetMapping("/{ticker}/read/{id}")
     public String read(@PathVariable String ticker,
                        @PathVariable Long id,
@@ -81,8 +64,27 @@ public class StockBoardController {
         model.addAttribute("dto", dto);
         model.addAttribute("ticker", ticker);
 
-        return "stock/board/read"; // templates/stock/board/read.html
+        return "stock/board/read";
     }
+
+
+
+    /**
+     * 글 상세 보기
+     * GET /stock/board/005930/read/1
+//     */
+//    @GetMapping("/{ticker}/read/{id}")
+//    public String read(@PathVariable String ticker,
+//                       @PathVariable Long id,
+//                       Model model) {
+//
+//        StockBoardDTO dto = stockBoardService.get(id);
+//
+//        model.addAttribute("dto", dto);
+//        model.addAttribute("ticker", ticker);
+//
+//        return "stock/board/read"; // templates/stock/board/read.html
+//    }
 
     /**
      * 글 수정 폼
@@ -126,4 +128,16 @@ public class StockBoardController {
         stockBoardService.remove(id);
         return "redirect:/stock/board/" + ticker;
     }
+
+    @GetMapping("/api/{ticker}")
+    @ResponseBody
+    public Page<StockBoardDTO> apiList(@PathVariable String ticker,
+                                       @RequestParam(defaultValue = "0") int page) {
+
+        PageRequest pageable = PageRequest.of(page, 10);
+        return stockBoardService.getList(ticker, pageable);
+    }
+
+
+
 }

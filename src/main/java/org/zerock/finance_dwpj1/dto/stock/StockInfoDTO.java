@@ -24,4 +24,5 @@ public class StockInfoDTO {
     private Long marketCap;         // 시가총액
     private Double high52Week;      // 52주 최고가
     private Double low52Week;       // 52주 최저가
+    private String currency;     //금액 단위
 }
