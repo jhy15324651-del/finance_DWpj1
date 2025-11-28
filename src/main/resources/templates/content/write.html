@@ -1,39 +1,41 @@
 <th:block th:replace="content/layout/header :: header"></th:block>
 <th:block th:replace="content/layout/header :: bodyheader"></th:block>
 
-<div class="write-container">
-    <h2>새 글 작성</h2>
+<!-- 👉 page-wrapper OR content wrapper 추가 -->
+    <div class="write-container">
+        <h2>새 글 작성</h2>
 
-    <form class="write-form" th:action="@{/content/write}" method="post" enctype="multipart/form-data">
+        <form class="write-form" th:action="@{/content/write}" method="post" enctype="multipart/form-data">
 
-        <!-- 제목 -->
-        <label>제목</label>
-        <input type="text" name="title" required>
+            <!-- 제목 -->
+            <label>제목</label>
+            <input type="text" name="title" required>
 
-        <!-- 요약 -->
-        <label>요약</label>
-        <input type="text" name="summary" required>
+            <!-- 요약 -->
+            <label>요약</label>
+            <input type="text" name="summary" required>
 
-        <!-- 본문 -->
-        <label>본문</label>
-        <textarea name="content" rows="15" required></textarea>
+            <!-- 본문 -->
+            <label>본문</label>
+            <textarea name="content" rows="15" required></textarea>
 
-        <!-- 해시태그 입력 -->
-        <label>해시태그</label>
-        <input type="text" name="hashtags"
-               placeholder="#원유 #엔비디아 #경제 (공백으로 구분)"
-               style="font-size:14px;">
+            <!-- 해시태그 입력 -->
+            <label>해시태그</label>
+            <input type="text" name="hashtags"
+                   placeholder="#원유 #엔비디아 #경제 (공백으로 구분)"
+                   style="font-size:14px;">
 
-        <!-- 이미지 첨부 -->
-        <label>이미지 첨부</label>
-        <input type="file" name="image" accept="image/*">
+            <!-- 이미지 첨부 -->
+            <label>이미지 첨부</label>
+            <input type="file" name="image" accept="image/*">
 
-        <!-- 버튼 영역 -->
-        <div style="text-align:center; margin-top:20px;">
-            <button type="submit" class="btn-submit">작성하기</button>
-            <a th:href="@{/content/category}" class="btn-cancel">취소</a>
-        </div>
-    </form>
-</div>
+            <!-- 버튼 영역 -->
+            <div style="text-align:center; margin-top:20px;">
+                <button type="submit" class="btn-submit">작성하기</button>
+                <a th:href="@{/content/category}" class="btn-cancel">돌아가기</a>
+            </div>
+        </form>
+    </div>
+ <!-- /.content -->
 
 <th:block th:replace="content/layout/footer :: footer"></th:block>
