@@ -4,13 +4,14 @@ package org.zerock.finance_dwpj1.config;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 
-@Configuration
-@ConfigurationProperties
+
+@Component
+@ConfigurationProperties(prefix = "kis")
 @Getter
 @Setter
-public class StockKISConfig {
+public class StockKisConfig {
     private String appKey;
     private String appSecret;
     private String domain;
