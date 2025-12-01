@@ -1,13 +1,32 @@
 package org.zerock.finance_dwpj1.controller.common;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.zerock.finance_dwpj1.dto.insights.InsightsDailyNewsDTO;
+import org.zerock.finance_dwpj1.service.insights.DailyNewsService;
+
+import java.util.List;
 
 @Controller
+@RequiredArgsConstructor
 public class PageController {
 
+    private final DailyNewsService dailyNewsService;
+
     @GetMapping("/")
-    public String index() {
+    public String index(Model model) {
+        // 금주의 인기 뉴스 5개 조회
+        List<InsightsDailyNewsDTO> topNews = dailyNewsService.getWeeklyTopNews();
+
+        // 상위 5개만 전달
+        List<InsightsDailyNewsDTO> top5News = topNews.size() > 5
+            ? topNews.subList(0, 5)
+            : topNews;
+
+        model.addAttribute("popularNews", top5News);
+
         return "index";  // templates/index.html
     }
 

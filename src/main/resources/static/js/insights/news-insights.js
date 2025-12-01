@@ -9,6 +9,13 @@ const isAdmin = false; // 실제 환경에서는 서버에서 관리자 여부�
 window.addEventListener('DOMContentLoaded', () => {
     loadDailyNews();
     setupModalClose();
+
+    // URL 파라미터에서 newsId 확인하여 자동으로 모달 열기
+    const urlParams = new URLSearchParams(window.location.search);
+    const newsId = urlParams.get('newsId');
+    if (newsId) {
+        showNewsDetail(parseInt(newsId));
+    }
 });
 
 // 모달 닫기 설정
@@ -186,7 +193,7 @@ async function showNewsDetail(newsId) {
         currentNewsId = newsId;
 
         // 뉴스 상세 정보 가져오기
-        const response = await fetch(`/api/news/${newsId}`);
+        const response = await fetch(`/api/news/detail/${newsId}`);
         const news = await response.json();
 
         // 모달에 정보 표시

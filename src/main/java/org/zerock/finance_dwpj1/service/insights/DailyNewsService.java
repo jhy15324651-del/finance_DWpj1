@@ -24,7 +24,6 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-@Transactional(readOnly = true)
 public class DailyNewsService {
 
     private final InsightsNewsRepository newsRepository;
@@ -33,6 +32,7 @@ public class DailyNewsService {
     /**
      * 데일리 뉴스 조회 (24시간 이내)
      */
+    @Transactional(readOnly = true)
     public List<InsightsDailyNewsDTO> getDailyNews() {
         List<InsightsNews> newsList = newsRepository.findDailyNews();
         return newsList.stream()
@@ -46,6 +46,7 @@ public class DailyNewsService {
     /**
      * 데일리 뉴스 페이징 조회
      */
+    @Transactional(readOnly = true)
     public Page<InsightsDailyNewsDTO> getDailyNews(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<InsightsNews> newsPage = newsRepository.findDailyNews(pageable);
@@ -59,6 +60,7 @@ public class DailyNewsService {
     /**
      * 아카이브 뉴스 조회 (24시간 이상)
      */
+    @Transactional(readOnly = true)
     public Page<InsightsDailyNewsDTO> getArchiveNews(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<InsightsNews> newsPage = newsRepository.findArchiveNews(pageable);
@@ -72,6 +74,7 @@ public class DailyNewsService {
     /**
      * 금주의 뉴스 (조회수 TOP 10)
      */
+    @Transactional(readOnly = true)
     public List<InsightsDailyNewsDTO> getWeeklyTopNews() {
         LocalDateTime weekAgo = LocalDateTime.now().minusWeeks(1);
         Pageable top10 = PageRequest.of(0, 10);
@@ -104,6 +107,7 @@ public class DailyNewsService {
     /**
      * 뉴스 검색
      */
+    @Transactional(readOnly = true)
     public Page<InsightsDailyNewsDTO> searchNews(String keyword, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<InsightsNews> newsPage = newsRepository.searchByTitle(keyword, pageable);
@@ -150,6 +154,7 @@ public class DailyNewsService {
     /**
      * 댓글 조회
      */
+    @Transactional(readOnly = true)
     public List<InsightsCommentDTO> getComments(Long newsId) {
         List<InsightsComment> comments = commentRepository.findByNewsId(newsId);
         return comments.stream()
