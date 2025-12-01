@@ -30,9 +30,10 @@ public class StockNewsService {
         }
     }
 
-    // -------------------------------
+
     // 🇰🇷 한국 뉴스 (Google News RSS)
-    // -------------------------------
+
+
     private String getKoreanNews(String ticker) {
 
         try {
@@ -73,9 +74,9 @@ public class StockNewsService {
         }
     }
 
-    // -------------------------------
-    // 🌍 해외 뉴스 (Yahoo Search API)
-    // -------------------------------
+    //  해외 뉴스 (Yahoo Search API)
+
+
     private String getForeignNews(String ticker) {
 
         String url = "https://query1.finance.yahoo.com/v1/finance/search?q=" + ticker;
@@ -102,6 +103,7 @@ public class StockNewsService {
     }
 
     // Yahoo 뉴스 파싱
+
     private String extractYahooNews(String json) {
 
         JsonObject root = JsonParser.parseString(json).getAsJsonObject();
