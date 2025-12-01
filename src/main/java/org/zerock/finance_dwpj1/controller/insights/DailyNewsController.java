@@ -73,7 +73,7 @@ public class DailyNewsController {
     /**
      * 뉴스 상세 조회 (조회수 증가)
      */
-    @GetMapping("/{newsId}")
+    @GetMapping("/detail/{newsId}")
     public ResponseEntity<InsightsDailyNewsDTO> getNewsDetail(@PathVariable Long newsId) {
         log.info("뉴스 상세 조회 - ID: {}", newsId);
         InsightsDailyNewsDTO newsDTO = dailyNewsService.getNewsDetail(newsId);

@@ -621,39 +621,19 @@
                 <div class="ranking-section">
                     <h3>📰 인기 뉴스</h3>
                     <ul class="ranking-list">
-                        <li class="ranking-item">
-                            <span class="rank-number top">1</span>
+                        <li class="ranking-item" th:each="news, stat : ${popularNews}"
+                            th:onclick="'location.href=\'/news?newsId=' + ${news.id} + '\''">
+                            <span class="rank-number" th:classappend="${stat.index < 3} ? 'top' : ''" th:text="${stat.index + 1}">1</span>
                             <div>
-                                <div class="rank-title">Fed 금리 동결 결정, 시장 반응은?</div>
-                                <div class="rank-views">👁 15,234</div>
+                                <div class="rank-title" th:text="${news.title}">뉴스 제목</div>
+                                <div class="rank-views" th:text="'👁 ' + ${news.viewCount}">👁 0</div>
                             </div>
                         </li>
-                        <li class="ranking-item">
-                            <span class="rank-number top">2</span>
+                        <!-- 뉴스가 없을 때 -->
+                        <li class="ranking-item" th:if="${#lists.isEmpty(popularNews)}">
+                            <span class="rank-number">-</span>
                             <div>
-                                <div class="rank-title">삼성전자 신규 반도체 공장 착공</div>
-                                <div class="rank-views">👁 11,567</div>
-                            </div>
-                        </li>
-                        <li class="ranking-item">
-                            <span class="rank-number top">3</span>
-                            <div>
-                                <div class="rank-title">비트코인 5만 달러 돌파 전망</div>
-                                <div class="rank-views">👁 10,432</div>
-                            </div>
-                        </li>
-                        <li class="ranking-item">
-                            <span class="rank-number">4</span>
-                            <div>
-                                <div class="rank-title">테슬라 신형 모델 공개 임박</div>
-                                <div class="rank-views">👁 9,123</div>
-                            </div>
-                        </li>
-                        <li class="ranking-item">
-                            <span class="rank-number">5</span>
-                            <div>
-                                <div class="rank-title">국내 증시 외국인 순매수 지속</div>
-                                <div class="rank-views">👁 8,456</div>
+                                <div class="rank-title">등록된 뉴스가 없습니다</div>
                             </div>
                         </li>
                     </ul>
