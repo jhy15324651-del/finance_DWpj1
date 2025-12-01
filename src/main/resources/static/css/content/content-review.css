@@ -1,35 +1,43 @@
 /* ==============================
-   Content Review CSS
-   콘텐츠 리뷰 기능 전용 스타일
+   Content Review – 최종 완성본
+   (전체 페이지 스타일 포함)
 ================================*/
 
-/* ------------------------------
-   기본 레이아웃
---------------------------------*/
+/* ============================
+   기본 설정
+============================= */
 html, body {
     height: 100%;
     margin: 0;
 }
 
-/* 기존 body 스타일 + flex layout 통합 */
 body {
-    margin: 0;
     padding: 0;
+    margin: 0;
     font-family: 'Segoe UI', 'Noto Sans KR', sans-serif;
     background: #f5f5f5;
 
-    /* 페이지 전체 레이아웃을 세로 flex 구조로 변경 */
     display: flex;
     flex-direction: column;
     min-height: 100vh;
 }
 
-/* 본문 영역이 footer 위까지 공간을 채우도록 */
+/* footer를 아래로 밀기 위한 wrapper */
 .content-wrapper {
-    flex: 1; /* 남는 공간을 모두 차지 */
+    flex: 1;
 }
 
-/* 상단 네비게이션 */
+/* 공통 섹션 타이틀 */
+.section-title {
+    font-size: 22px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    color: #222;
+}
+
+/* ===============================
+   상단 네비게이션 메뉴
+================================ */
 .menu ul {
     list-style: none;
     display: flex;
@@ -52,49 +60,29 @@ body {
     color: #0070f3;
 }
 
-/* 공통 컨텐츠 영역 */
-.content {
-    max-width: 1400px;   /* 전체 중앙 정렬된 폭 넓히기 */
-    margin: 30px auto;
-    display: flex;
-    align-items: flex-start;
-    gap: 40px;           /* 두 영역 간격 */
-}
+/* ===============================
+   홈 – 최신 콘텐츠 + 사이드바
+================================ */
 
-.main-left {
-    flex: 2;
-}
+/* 큰 화면 / 중간 화면 공통 — 3열 유지 */
+.home-wrapper {
+    width: 100%;
+    max-width: 1650px;  /* 전체 최대폭을 더 넓게 */
+    margin: 0 auto;     /* 완전한 가운데 정렬 */
+    padding: 40px 40px; /* 좌우 여백 균형 있게 추가 */
 
-.main-right {
-    flex: 1;
-    background: white;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 3px 12px rgba(0,0,0,0.07);
-    height: fit-content;
-    position: relative;
-    top: 80px;
-}
-
-/* 섹션 타이틀 */
-.section-title {
-    font-size: 22px;
-    font-weight: bold;
-    margin-top: 15px;
-    margin-bottom: 15px;
-    margin-left: 15px;
-    color: #222;
-}
-
-/* ------------------------------
-   홈 - 최신 콘텐츠 카드
---------------------------------*/
-.post-grid {
-    max-width: 1000px;   /* 전체 중앙 정렬된 폭 넓히기 */
-    margin: 30px auto;
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 25px;
+    grid-template-columns: 1.5fr 1.5fr 320px; /* 좌측 넓게, 사이드바 넓게 */
+    gap: 40px;
+    align-items: start;
+}
+
+
+/* 카드 2열 고정 */
+.content-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;  /* 항상 2열 */
+    gap: 20px;
 }
 
 .post-card {
@@ -102,7 +90,8 @@ body {
     padding: 15px;
     border-radius: 12px;
     box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
-    height: 180px;
+    min-height: 180px;
+    min-width: 310px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -122,8 +111,8 @@ body {
 }
 
 .post-title a {
-    text-decoration: none;
     color: inherit;
+    text-decoration: none;
 }
 
 .post-title a:hover {
@@ -133,8 +122,9 @@ body {
 .post-summary {
     color: #666;
     font-size: 14px;
-    line-height: 1.4;
     margin-bottom: 8px;
+    line-height: 1.4;
+
     overflow: hidden;
     text-overflow: ellipsis;
     display: -webkit-box;
@@ -149,14 +139,21 @@ body {
     color: #555;
 }
 
-/* ------------------------------
-   홈 - 많이 본 콘텐츠
---------------------------------*/
+/* ============================
+   많이 본 콘텐츠 (사이드바)
+============================= */
+
+.sidebar {
+    position: sticky;
+    top: 110px;
+    height: fit-content;
+}
+
 .popular-box {
     background: white;
     padding: 20px;
     border-radius: 12px;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 3px 12px rgba(0,0,0,0.08);
 }
 
 .popular-item {
@@ -193,12 +190,39 @@ body {
 .popular-view {
     font-size: 12px;
     color: #777;
-    text-align: right;
 }
 
-/* ------------------------------
+/* ============================
+   반응형 레이아웃
+============================= */
+
+/* 700px ~ 1099px : 3열 유지, 폭만 조정 */
+@media (max-width: 1099px) {
+    .home-wrapper {
+        grid-template-columns: 1fr 1fr 250px; /* 사이드바 폭만 줄이기 */
+        gap: 20px;
+    }
+}
+
+/* 699px 이하 : 카드 1열 + 사이드바 아래로 */
+@media (max-width: 699px) {
+    .home-wrapper {
+        grid-template-columns: 1fr; /* 전체 1열 */
+    }
+
+    .content-grid {
+        grid-template-columns: 1fr; /* 카드 1열 */
+    }
+
+    .sidebar {
+        position: static;  /* sticky 해제 */
+        margin-top: 20px;
+    }
+}
+
+/* ============================
    게시글 상세 페이지
---------------------------------*/
+============================= */
 .post-detail-container {
     width: 50%;
     max-width: 1000px;
@@ -231,10 +255,10 @@ body {
     color: #333;
     white-space: pre-line;
     margin-top: 35px;
-    margin-bottom: 200px; /*본문이 아무리 짧아도 아래로 여백 만들기 */
+    margin-bottom: 200px;
 }
 
-/* 해시태그 */
+/* 태그 */
 .tag-item {
     display: inline-block;
     padding: 6px 12px;
@@ -251,7 +275,7 @@ body {
     background: #d9e9ff;
 }
 
-/* 목록 / 홈 버튼 */
+/* 버튼 */
 .btn-back {
     display: inline-block;
     padding: 10px 30px;
@@ -267,9 +291,9 @@ body {
     background: #e0e0e0;
 }
 
-/* ------------------------------
-   댓글 UI 섹션
---------------------------------*/
+/* ============================
+   댓글 UI
+============================= */
 .comment-section {
     margin-top: 40px;
 }
@@ -337,9 +361,9 @@ body {
     background: #3c59dd;
 }
 
-/* ------------------------------
+/* ============================
    카테고리 페이지
---------------------------------*/
+============================= */
 .category-page {
     width: 60%;
     max-width: 1000px;
@@ -366,7 +390,7 @@ body {
     padding: 20px;
     background: #fff;
     border-radius: 16px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
     margin-bottom: 35px;
 }
 
@@ -389,7 +413,7 @@ body {
     color: white;
 }
 
-/* 검색창 */
+/* 검색 */
 .search-form-inline {
     display: flex;
     gap: 10px;
@@ -404,7 +428,6 @@ body {
 }
 
 .search-btn-inline {
-    display: inline-block;
     padding: 10px 18px;
     border: 1px solid #4c6ef5;
     color: #4c6ef5;
@@ -420,7 +443,6 @@ body {
     background-color: #4c6ef5;
     color: white;
 }
-
 
 /* 테이블 */
 .board-table {
@@ -443,7 +465,7 @@ body {
     background: #fafafa;
 }
 
-/* 페이징 */
+/* 페이지네이션 */
 .pagination {
     text-align: center;
     margin: 30px 0;
@@ -464,208 +486,9 @@ body {
     color: white;
 }
 
-/* ------------------------------
-   반응형 디자인
---------------------------------*/
-@media (max-width: 768px) {
-    .content {
-        flex-direction: column;
-    }
-
-    .post-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .category-page {
-        width: 95%;
-    }
-
-    .category-tabs-container {
-        flex-direction: column;
-    }
-
-    .comment-write-row {
-        flex-direction: column;
-    }
-
-    .search-form-inline {
-        width: 100%;
-        justify-content: center;
-    }
-
-}
-
-/* ===============================
-   상세 페이지 하단 버튼 정렬
-================================ */
-.detail-btn-container {
-    text-align: center; /* 가운데 정렬 */
-    margin-top: 40px; /* 위와 간격 */
-}
-
-.detail-btn-container .detail-btn {
-    margin: 0 10px; /* 버튼 간격 */
-    min-width: 120px;
-    padding: 10px 20px !important;
-    font-size: 15px;
-    font-weight: 600;
-    border-radius: 8px !important;
-}
-
-/* ===============================
-            댓글 영역
-================================ */
-.comment-section {
-    margin-top: 40px;
-}
-
-.comment-title {
-    font-size: 22px;
-    font-weight: 700;
-    margin-bottom: 20px;
-}
-
-/* 댓글 리스트 */
-.comment-list {
-    margin-top: 15px;
-}
-
-.comment-item-box {
-    background: #fafafa;
-    padding: 18px;
-    border-radius: 10px;
-    margin-bottom: 15px;
-    border: 1px solid #eee;
-}
-
-.comment-header {
-    display: flex;
-    justify-content: space-between;
-    font-size: 14px;
-    margin-bottom: 10px;
-}
-
-.comment-writer {
-    font-weight: 600;
-    color: #333;
-}
-
-.comment-date {
-    color: #888;
-}
-
-.comment-text {
-    font-size: 15px;
-    margin-bottom: 10px;
-}
-
-.comment-actions {
-    text-align: right;
-}
-
-.comment-delete-btn {
-    background: #ff4b4b;
-    color: white;
-    border: none;
-    padding: 5px 12px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 13px;
-}
-
-.comment-delete-btn:hover {
-    background: #e04343;
-}
-
-
-/* 댓글 작성 */
-.comment-write-title {
-    font-size: 20px;
-    font-weight: 600;
-    margin-top: 35px;
-    margin-bottom: 15px;
-}
-
-.comment-write-row {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.comment-input-group {
-    display: flex;
-    gap: 10px;
-}
-
-.comment-input {
-    flex: 1;
-    padding: 10px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    font-size: 14px;
-}
-
-.comment-textarea {
-    width: 100%;
-    min-height: 120px;
-    padding: 12px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    font-size: 14px;
-    resize: vertical;
-}
-
-.comment-submit-wrap {
-    display: flex;
-    justify-content: flex-end;
-}
-
-.comment-submit-btn {
-    padding: 10px 22px;
-    background: #4a6dff;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-size: 15px;
-    cursor: pointer;
-    font-weight: 600;
-}
-
-.comment-submit-btn:hover {
-    background: #3a5ae0;
-}
-
-.footer-container {
-    width: 100%;
-    text-align: center;
-    padding: 20px 0;
-    background: #ffffff;
-    color: #666;
-    font-size: 14px;
-    border-top: 1px solid #eaeaea;
-    margin-top: auto;
-}
-
-/* 게시글 작성 */
-
-.write-btn {
-    display: inline-block;
-    padding: 10px 18px;
-    border: 1px solid #4c6ef5;
-    color: #4c6ef5;
-    border-radius: 8px;
-    font-size: 15px;
-    font-weight: 600;
-    background: white;
-    text-decoration: none;
-    transition: 0.2s;
-}
-
-.write-btn:hover {
-    background-color: #4c6ef5;
-    color: white;
-}
-
+/* ============================
+   글쓰기 페이지
+============================= */
 .write-container {
     width: 60%;
     max-width: 800px;
@@ -742,5 +565,35 @@ body {
     background: #e0e0e0;
 }
 
+/* 목록/글쓰기 버튼 */
+.write-btn {
+    display: inline-block;
+    padding: 10px 18px;
+    border: 1px solid #4c6ef5;
+    color: #4c6ef5;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    background: white;
+    text-decoration: none;
+    transition: 0.2s;
+}
 
+.write-btn:hover {
+    background-color: #4c6ef5;
+    color: white;
+}
 
+/* ============================
+   Footer
+============================= */
+.footer-container {
+    width: 100%;
+    text-align: center;
+    padding: 20px 0;
+    background: #ffffff;
+    color: #666;
+    font-size: 14px;
+    border-top: 1px solid #eaeaea;
+    margin-top: auto;
+}

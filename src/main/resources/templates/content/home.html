@@ -1,22 +1,32 @@
-<!-- 1) head 부분 불러오기 -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<!-- 1) head -->
 <th:block th:replace="content/layout/header :: header"></th:block>
 
-<!-- 2) body(header) 불러오기 -->
+<body>
+
+<!-- 2) body 시작 + content-wrapper 시작 -->
 <th:block th:replace="content/layout/header :: bodyheader"></th:block>
 
 
-<div class="content">
+<!-- ===============================
+     메인 레이아웃
+================================ -->
+<div class="home-wrapper">
 
-    <div class="main-left">
+    <!-- ===============================
+         최신 콘텐츠 (왼쪽)
+    ================================== -->
+    <div class="left-area">
         <div class="section-title">최신 콘텐츠</div>
 
-        <div class="post-grid">
+        <div class="content-grid">
             <div class="post-card" th:each="post : ${latestPosts}">
                 <div>
                     <div class="post-title">
                         <a th:href="@{'/content/post/' + ${post.id}}"
-                           th:text="${post.title}"
-                           style="text-decoration:none; color:inherit;"></a>
+                           th:text="${post.title}"></a>
                     </div>
 
                     <div class="post-summary" th:text="${post.summary}"></div>
@@ -30,19 +40,28 @@
         </div>
     </div>
 
-
-    <div class="main-right">
+    <!-- ===============================
+         많이 본 콘텐츠 (오른쪽 사이드바)
+    ================================== -->
+    <aside class="sidebar">
         <div class="section-title">많이 본 콘텐츠</div>
 
         <div class="popular-box">
             <div class="popular-item" th:each="post, iter : ${popularPosts}">
                 <span class="popular-rank" th:text="${iter.index + 1}"></span>
-                <a th:href="@{'/content/post/' + ${post.id}}" class="popular-title" th:text="${post.title}"></a>
+                <a th:href="@{'/content/post/' + ${post.id}}"
+                   class="popular-title"
+                   th:text="${post.title}"></a>
                 <div class="popular-view">조회수: <span th:text="${post.viewCount}"></span></div>
             </div>
         </div>
-    </div>
+    </aside>
 
 </div>
-<!-- 3) footer fragment -->
+
+
+<!-- 3) footer -->
 <th:block th:replace="content/layout/footer :: footer"></th:block>
+
+</body>
+</html>
