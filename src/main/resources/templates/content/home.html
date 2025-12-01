@@ -4,8 +4,6 @@
 <!-- 1) head -->
 <th:block th:replace="content/layout/header :: header"></th:block>
 
-<body>
-
 <!-- 2) body 시작 + content-wrapper 시작 -->
 <th:block th:replace="content/layout/header :: bodyheader"></th:block>
 
@@ -15,9 +13,7 @@
 ================================ -->
 <div class="home-wrapper">
 
-    <!-- ===============================
-         최신 콘텐츠 (왼쪽)
-    ================================== -->
+    <!-- 최신 콘텐츠 -->
     <div class="left-area">
         <div class="section-title">최신 콘텐츠</div>
 
@@ -40,9 +36,7 @@
         </div>
     </div>
 
-    <!-- ===============================
-         많이 본 콘텐츠 (오른쪽 사이드바)
-    ================================== -->
+    <!-- 많이 본 콘텐츠 -->
     <aside class="sidebar">
         <div class="section-title">많이 본 콘텐츠</div>
 
@@ -63,5 +57,4 @@
 <!-- 3) footer -->
 <th:block th:replace="content/layout/footer :: footer"></th:block>
 
-</body>
 </html>

@@ -13,43 +13,35 @@
         <!-- ▣ 해시태그 리스트 -->
         <div class="tag-list">
 
-            <!-- 👉 초기화 버튼 (전체 초기화) -->
-            <button type="button"
-                    class="category-tab reset-tags-btn">
-                초기화
-            </button>
+            <!-- 👉 초기화 버튼 -->
+            <button type="button" class="category-tab reset-tags-btn">초기화</button>
 
             <!-- 👉 반복되는 해시태그 버튼들 -->
-            <button type="button"
-                    class="category-tab tag-select-btn"
+            <button type="button" class="category-tab tag-select-btn"
                     data-tag="#공지"
                     th:classappend="${keyword != null and #strings.contains(keyword, '#공지')} ? ' active'">
                 #공지
             </button>
 
-            <button type="button"
-                    class="category-tab tag-select-btn"
+            <button type="button" class="category-tab tag-select-btn"
                     data-tag="#거시경제"
                     th:classappend="${keyword != null and #strings.contains(keyword, '#거시경제')} ? ' active'">
                 #거시경제
             </button>
 
-            <button type="button"
-                    class="category-tab tag-select-btn"
+            <button type="button" class="category-tab tag-select-btn"
                     data-tag="#원유"
                     th:classappend="${keyword != null and #strings.contains(keyword, '#원유')} ? ' active'">
                 #원유
             </button>
 
-            <button type="button"
-                    class="category-tab tag-select-btn"
+            <button type="button" class="category-tab tag-select-btn"
                     data-tag="#엔비디아"
                     th:classappend="${keyword != null and #strings.contains(keyword, '#엔비디아')} ? ' active'">
                 #엔비디아
             </button>
 
-            <button type="button"
-                    class="category-tab tag-select-btn"
+            <button type="button" class="category-tab tag-select-btn"
                     data-tag="#테슬라"
                     th:classappend="${keyword != null and #strings.contains(keyword, '#테슬라')} ? ' active'">
                 #테슬라
@@ -65,11 +57,8 @@
                 <option value="content" th:selected="${searchType} == 'content'">내용</option>
             </select>
 
-            <input type="text"
-                   name="keyword"
-                   class="search-input-inline"
-                   placeholder="검색어 입력"
-                   th:value="${keyword}">
+            <input type="text" name="keyword" class="search-input-inline"
+                   th:value="${keyword}" placeholder="검색어 입력">
 
             <button type="submit" class="search-btn-inline">검색</button>
         </form>
@@ -83,6 +72,7 @@
         <tr>
             <th>번호</th>
             <th>제목</th>
+            <th>작성자</th> <!-- 🔥 추가 -->
             <th>작성일</th>
             <th>조회수</th>
         </tr>
@@ -90,23 +80,33 @@
 
         <tbody>
         <tr th:each="post, iter : ${posts.content}">
+            <!-- 번호 -->
             <td th:text="${posts.totalElements - (posts.number * posts.size) - iter.index}"></td>
+
+            <!-- 제목 -->
             <td>
                 <a th:href="@{/content/post/{id}(
-                            id=${post.id},
-                            page=${currentPage},
-                            keyword=${keyword},
-                            searchType=${searchType}
-                      )}"
-                   th:text="${post.title}">
-                </a>
+                        id=${post.id},
+                        page=${currentPage},
+                        keyword=${keyword},
+                        searchType=${searchType}
+                )}"
+                   th:text="${post.title}"></a>
             </td>
+
+            <!-- 🔥 작성자 출력 -->
+            <td th:text="${post.writer != null ? post.writer : '익명'}"></td>
+
+            <!-- 작성일 -->
             <td th:text="${#temporals.format(post.createdDate, 'yyyy.MM.dd')}"></td>
+
+            <!-- 조회수 -->
             <td th:text="${post.viewCount}"></td>
         </tr>
 
+        <!-- 게시글이 없을 때 -->
         <tr th:if="${posts.totalElements == 0}">
-            <td colspan="4" style="text-align:center; padding:30px;">게시글이 없습니다.</td>
+            <td colspan="5" style="text-align:center; padding:30px;">게시글이 없습니다.</td>
         </tr>
         </tbody>
     </table>
@@ -115,6 +115,7 @@
     <!-- 📌 페이징 + 글쓰기 -->
     <div class="page-bottom-area">
 
+        <!-- 페이징 -->
         <div class="pagination" th:if="${totalPages > 1}">
             <a th:href="@{/content/category(page=0, keyword=${keyword}, searchType=${searchType})}">⏮</a>
 
@@ -124,8 +125,7 @@
             <a th:each="i : ${#numbers.sequence(blockStart, blockEnd)}"
                th:href="@{/content/category(page=${i}, keyword=${keyword}, searchType=${searchType})}"
                th:text="${i + 1}"
-               th:classappend="${i == currentPage} ? 'active-page'">
-            </a>
+               th:classappend="${i == currentPage} ? 'active-page'"></a>
 
             <a th:if="${nextBlock < totalPages}"
                th:href="@{/content/category(page=${nextBlock}, keyword=${keyword}, searchType=${searchType})}">▶</a>
@@ -133,7 +133,12 @@
             <a th:href="@{/content/category(page=${totalPages - 1}, keyword=${keyword}, searchType=${searchType})}">⏭</a>
         </div>
 
-        <a href="/content/write" class="write-btn">글쓰기</a>
+        <!-- 🔥 글쓰기 버튼 (로그인 여부로 제어) -->
+        <div>
+            <a th:if="${nickname != null}" href="/content/write" class="write-btn">글쓰기</a>
+            <a th:if="${nickname == null}" href="/user/login" class="write-btn">로그인 후 글쓰기</a>
+        </div>
+
     </div>
 
 </div> <!-- category-page END -->
@@ -189,7 +194,6 @@
         /* 3️⃣ 초기화 버튼 클릭 → 전체 리셋 */
         resetBtn.addEventListener("click", () => {
             selectedTags.clear();
-
             tagButtons.forEach(btn => btn.classList.remove("active"));
 
             searchInput.value = "";
@@ -206,6 +210,5 @@
     }
 </style>
 
-
-<!-- footer 포함 -->
+<!-- footer -->
 <th:block th:replace="content/layout/footer :: footer"></th:block>

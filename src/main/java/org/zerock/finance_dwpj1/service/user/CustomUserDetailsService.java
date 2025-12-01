@@ -2,7 +2,6 @@ package org.zerock.finance_dwpj1.service.user;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -10,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.zerock.finance_dwpj1.entity.user.User;
 import org.zerock.finance_dwpj1.repository.user.UserRepository;
 
-import java.util.Collections;
 
 /**
  * Spring Security 로그인 처리
@@ -40,12 +38,6 @@ public class CustomUserDetailsService implements UserDetailsService {
         log.info("로그인 성공: {} ({})", user.getEmail(), user.getNickname());
 
         // Spring Security User 객체 반환
-        return org.springframework.security.core.userdetails.User.builder()
-                .username(user.getEmail())
-                .password(user.getPassword())
-                .authorities(Collections.singletonList(
-                        new SimpleGrantedAuthority("ROLE_" + user.getRole().name())
-                ))
-                .build();
+        return new CustomUserDetails(user);
     }
 }

@@ -2,11 +2,15 @@ package org.zerock.finance_dwpj1.controller.content;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.zerock.finance_dwpj1.entity.content.ContentReview;
 import org.zerock.finance_dwpj1.service.content.ContentReviewService;
+import org.zerock.finance_dwpj1.service.content.ContentCommentService;
+import org.zerock.finance_dwpj1.dto.content.ContentCommentWriteDTO;
+import org.zerock.finance_dwpj1.service.user.CustomUserDetails;
 
 @Slf4j
 @Controller
@@ -15,33 +19,50 @@ import org.zerock.finance_dwpj1.service.content.ContentReviewService;
 public class ContentPostController {
 
     private final ContentReviewService contentReviewService;
+    private final ContentCommentService contentCommentService;
 
-    /**
-     * 🔥 게시글 상세 페이지
-     *  - 목록에서 넘어온 page / keyword / searchType 정보를 그대로 받아서
-     *    다시 목록으로 돌아갈 때 사용한다.
-     */
     @GetMapping("/post/{id}")
     public String detail(
             @PathVariable Long id,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "hashtag") String searchType,
-            Model model
+            Model model,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        log.debug("상세 페이지 요청: id={}, page={}, keyword={}, searchType={}",
-                id, page, keyword, searchType);
 
-        // 🔥 게시글 상세 조회 (조회수 증가까지 포함된 너의 서비스 메서드)
         ContentReview post = contentReviewService.getContentDetail(id);
-
         model.addAttribute("post", post);
 
-        // 🔥 목록 복귀를 위한 정보 유지
+        // 댓글 목록
+        model.addAttribute("comments", contentCommentService.getComments(id));
+
+        // 로그인 사용자 정보 전달
+        if (userDetails != null) {
+            model.addAttribute("nickname", userDetails.getNickname());
+            model.addAttribute("userId", userDetails.getId());
+        }
+
+        // 목록 복귀 정보
         model.addAttribute("page", page);
         model.addAttribute("keyword", keyword);
         model.addAttribute("searchType", searchType);
 
         return "content/post-detail";
+    }
+
+    @PostMapping("/comment")
+    @ResponseBody
+    public String writeComment(
+            @AuthenticationPrincipal CustomUserDetails user,
+            @RequestBody ContentCommentWriteDTO dto
+    ) {
+
+        if (user == null) {
+            return "NOT_LOGIN";
+        }
+
+        contentCommentService.write(user.getId(), user.getNickname(), dto);
+        return "SUCCESS";
     }
 }

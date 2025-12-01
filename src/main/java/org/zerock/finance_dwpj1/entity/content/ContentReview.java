@@ -38,6 +38,14 @@ public class ContentReview {
     @Column(length = 2000)
     private String hashtags;   // "#원유 #테슬라 #경제"
 
+    // 🆕 게시글 작성자 회원 ID
+    @Column(name = "user_id")
+    private Long userId;
+
+    // 🆕 게시글 작성자 닉네임 (화면 표시용)
+    @Column(name = "writer", length = 30)
+    private String writer;
+
     @Builder.Default
     @Column(name = "view_count")
     private Integer viewCount = 0;

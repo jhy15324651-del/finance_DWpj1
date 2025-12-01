@@ -67,12 +67,12 @@ body {
 /* 큰 화면 / 중간 화면 공통 — 3열 유지 */
 .home-wrapper {
     width: 100%;
-    max-width: 1650px;  /* 전체 최대폭을 더 넓게 */
+    max-width: 1400px;  /* 전체 최대폭을 더 넓게 */
     margin: 0 auto;     /* 완전한 가운데 정렬 */
     padding: 40px 40px; /* 좌우 여백 균형 있게 추가 */
 
     display: grid;
-    grid-template-columns: 1.5fr 1.5fr 320px; /* 좌측 넓게, 사이드바 넓게 */
+    grid-template-columns: 1.5fr 0.8fr; /* 좌측 넓게, 사이드바 넓게 */
     gap: 40px;
     align-items: start;
 }

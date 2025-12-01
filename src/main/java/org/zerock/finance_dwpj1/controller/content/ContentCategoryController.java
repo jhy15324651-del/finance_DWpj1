@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.zerock.finance_dwpj1.entity.content.ContentReview;
 import org.zerock.finance_dwpj1.service.content.ContentReviewService;
+import org.zerock.finance_dwpj1.service.user.CustomUserDetails;
 
 import java.util.Arrays;
 import java.util.Set;
@@ -34,7 +36,8 @@ public class ContentCategoryController {
             @RequestParam(defaultValue = "hashtag") String searchType,
             @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "0") int page,
-            Model model
+            Model model,
+            @AuthenticationPrincipal CustomUserDetails loginUser  // 🔥 로그인 사용자 정보 추가
     ) {
 
         log.debug("카테고리 요청: type={}, keyword={}, page={}", searchType, keyword, page);
@@ -81,6 +84,15 @@ public class ContentCategoryController {
         int blockSize = 10;
         int blockStart = (currentPage / blockSize) * blockSize;
         int blockEnd = Math.min(blockStart + blockSize - 1, totalPages - 1);
+
+        // -----------------------------------------------------------
+        // 🔥 로그인 사용자 닉네임 전달
+        // -----------------------------------------------------------
+        if (loginUser != null) {
+            model.addAttribute("nickname", loginUser.getNickname());
+        } else {
+            model.addAttribute("nickname", null);
+        }
 
         // -----------------------------------------------------------
         // 🔥 모델 전달
