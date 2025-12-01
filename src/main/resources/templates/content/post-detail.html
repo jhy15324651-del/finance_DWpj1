@@ -7,13 +7,23 @@
     <!-- 제목 -->
     <h1 class="post-detail-title" th:text="${post.title}"></h1>
 
-    <!-- 날짜 · 조회수 -->
-    <div class="post-detail-meta">
-        <span th:text="${#temporals.format(post.createdDate, 'yyyy.MM.dd')}"></span>
-        <span class="view-text">
+    <!-- 날짜 · 조회수 + 작성자 (우측 정렬) -->
+    <div class="post-detail-meta" style="display:flex; justify-content:space-between; align-items:center;">
+
+        <!-- 날짜 · 조회수 -->
+        <div>
+            <span th:text="${#temporals.format(post.createdDate, 'yyyy.MM.dd')}"></span>
+            <span class="view-text">
             · 조회수 <span th:text="${post.viewCount}"></span>
         </span>
+        </div>
+
+        <!-- 작성자 (오른쪽 끝, bold) -->
+        <div>
+            <b th:text="${post.writer != null ? post.writer : '익명'}"></b>
+        </div>
     </div>
+
 
     <!-- 이미지 -->
     <div th:if="${post.imgUrl}" class="post-image-box">
@@ -34,24 +44,16 @@
         </span>
     </div>
 
-    <!-- ===========================================================
-          댓글 영역
-    ============================================================ -->
+    <!-- 댓글 영역 -->
     <div class="comment-section">
 
-        <!-- 댓글 개수 -->
-        <h3 class="comment-title">
-            댓글
-        </h3>
+        <h3 class="comment-title">댓글</h3>
 
-        <!-- 댓글 목록 -->
         <div class="comment-list">
-
             <div th:each="c : ${comments}" class="comment-item-box">
 
                 <!-- 일반 댓글 -->
                 <div th:if="${c.parentId == null}">
-
                     <div class="comment-header">
                         <b class="comment-writer" th:text="${c.writer}"></b>
                         <span class="comment-date"
@@ -62,13 +64,14 @@
 
                     <div class="comment-actions">
                         <button class="reply-btn" th:attr="data-id=${c.id}">답글쓰기</button>
+
+                        <!-- 댓글 삭제 버튼 (작성자 & 게시글 작성자만) -->
                         <button class="comment-delete-btn" th:attr="data-id=${c.id}">삭제</button>
                     </div>
                 </div>
 
                 <!-- 대댓글 -->
                 <div th:if="${c.parentId != null}" class="reply-item">
-
                     <div class="comment-header">
                         ↳ <b class="comment-writer" th:text="${c.writer}"></b>
                         <span class="comment-date"
@@ -83,41 +86,37 @@
                 </div>
 
             </div>
+        </div>
 
-        </div> <!-- comment-list END -->
-
-
-        <!-- ===========================================================
-              댓글 작성 영역 (디시 스타일)
-        ============================================================ -->
+        <!-- 댓글 작성 영역 (회원 전용) -->
         <div class="comment-write-box">
 
             <h4 class="comment-write-title">댓글 작성</h4>
 
-            <div class="comment-write-row">
+            <!-- 로그인 x -->
+            <div th:if="${nickname == null}" class="comment-login-required">
+                <p>댓글을 작성하려면 <a href="/user/login">로그인</a>이 필요합니다.</p>
+            </div>
 
-                <!-- 작성자 + 비밀번호 -->
-                <div class="comment-input-group">
-                    <input type="text" id="writer" class="comment-input" placeholder="작성자">
-                    <input type="password" id="password" class="comment-input" placeholder="비밀번호">
+            <!-- 로그인 O -->
+            <div th:if="${nickname != null}" class="comment-write-row">
+
+                <div class="comment-nickname-box">
+                    <b>작성자: </b> <span th:text="${nickname}"></span>
                 </div>
 
-                <!-- 내용 -->
-                <textarea id="content" class="comment-textarea"
+                <textarea id="comment-content" class="comment-textarea"
                           placeholder="타인을 비방하거나 명예를 훼손하는 댓글은 제재될 수 있습니다."></textarea>
 
-                <!-- 등록 버튼 -->
                 <div class="comment-submit-wrap">
                     <button id="comment-submit" class="comment-submit-btn">등록</button>
                 </div>
             </div>
         </div>
-        <!-- =========================================================== -->
 
-    </div><!-- 댓글 영역 END -->
+    </div>
 
-
-    <!-- 목록으로 / 홈으로 버튼 -->
+    <!-- 목록 버튼 -->
     <div class="detail-btn-container">
         <a th:href="@{/content/category(page=${page}, keyword=${keyword}, searchType=${searchType})}"
            class="btn btn-outline-secondary detail-btn">
@@ -131,6 +130,55 @@
     </div>
 
 </div>
+
+<!-- 댓글 작성 AJAX -->
+<script th:inline="javascript">
+    document.addEventListener("DOMContentLoaded", function () {
+        // 🔥 댓글 등록 버튼 요소 찾기
+        const submitBtn = document.getElementById("comment-submit");
+        if (!submitBtn) return;   // 버튼이 없으면 실행 중지
+
+        submitBtn.addEventListener("click", async () => {
+
+            // 🔥 사용자가 입력한 댓글 내용 가져오기
+            const content = document.getElementById("comment-content").value;
+
+            // 🔥 현재 게시글 ID를 Thymeleaf에서 직접 삽입
+            const postId = [[${post.id}]];
+
+            // 🔥 내용이 비어 있으면 경고 후 중단
+            if (!content.trim()) {
+                alert("댓글 내용을 입력해주세요.");
+                return;
+            }
+
+            // 🔥 서버에 댓글 저장 요청 (AJAX)
+            // fetch() → /content/comment 로 JSON 데이터 전달
+            const response = await fetch("/content/comment", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    postId: postId,   // 어떤 게시글인지
+                    content: content  // 댓글 내용
+                })
+            });
+
+            // 🔥 서버에서 반환한 문자열 확인 ("SUCCESS" / "NOT_LOGIN" / "FAIL")
+            const result = await response.text();
+
+            // 🔥 결과에 따라 안내 메시지 출력
+            if (result === "SUCCESS") {
+                alert("댓글이 등록되었습니다.");
+                location.reload(); // 새로고침 → 댓글 목록 업데이트
+            } else if (result === "NOT_LOGIN") {
+                alert("로그인이 필요합니다.");
+            } else {
+                alert("댓글 등록 실패");
+            }
+        });
+    });
+</script>
+
 
 <!-- footer -->
 <th:block th:replace="content/layout/footer :: footer"></th:block>
