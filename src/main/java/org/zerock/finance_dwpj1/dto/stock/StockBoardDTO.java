@@ -20,5 +20,8 @@ public class StockBoardDTO {
     private String writer;
 
     private LocalDateTime regDate; // BaseEntity 기준
+
     private LocalDateTime modDate;
+
+    private int view;
 }
