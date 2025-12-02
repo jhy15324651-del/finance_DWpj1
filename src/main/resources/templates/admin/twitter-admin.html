@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>트위터 인사이트 관리</title>
+    <link rel="stylesheet" href="/css/admin/twitter-admin.css">
+</head>
+<body>
+<div class="admin-container">
+    <header class="admin-header">
+        <h1>트위터 인사이트 관리</h1>
+        <div class="header-buttons">
+            <button class="btn-primary" onclick="openAddModal()">+ 새 트윗 추가</button>
+            <button class="btn-secondary" onclick="initializeDummyData()">더미 데이터 초기화</button>
+            <a href="/news" class="btn-link">뉴스 페이지로 이동</a>
+        </div>
+    </header>
+
+    <main class="admin-main">
+        <div class="stats-section">
+            <div class="stat-card">
+                <div class="stat-label">전체 트윗</div>
+                <div class="stat-value" id="total-count">0</div>
+            </div>
+        </div>
+
+        <div class="tweet-list-section">
+            <h2>트윗 목록</h2>
+            <div id="tweet-list" class="tweet-list">
+                <div class="loading">로딩 중...</div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- 트윗 추가/수정 모달 -->
+<div id="tweetModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <h2 id="modal-title">새 트윗 추가</h2>
+
+        <form id="tweet-form">
+            <input type="hidden" id="tweet-id">
+
+            <div class="form-group">
+                <label for="tweet-name">이름 *</label>
+                <input type="text" id="tweet-name" required placeholder="예: Cathie Wood">
+            </div>
+
+            <div class="form-group">
+                <label for="tweet-handle">핸들 (@username) *</label>
+                <input type="text" id="tweet-handle" required placeholder="예: CathieDWood">
+            </div>
+
+            <div class="form-group">
+                <label for="tweet-avatar">아바타 URL</label>
+                <input type="text" id="tweet-avatar" placeholder="프로필 이미지 URL">
+            </div>
+
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="tweet-verified">
+                    인증 계정
+                </label>
+            </div>
+
+            <div class="form-group">
+                <label for="tweet-original">원문 (영어) *</label>
+                <textarea id="tweet-original" required rows="4" placeholder="영어 원문을 입력하세요"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="tweet-translated">번역 (한국어) *</label>
+                <textarea id="tweet-translated" required rows="4" placeholder="한국어 번역을 입력하세요"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="tweet-date">날짜 표시</label>
+                <input type="text" id="tweet-date" placeholder="예: 2시간 전, 1일 전">
+            </div>
+
+            <div class="form-group">
+                <label for="tweet-url">트윗 URL</label>
+                <input type="text" id="tweet-url" placeholder="https://twitter.com/...">
+            </div>
+
+            <div class="form-actions">
+                <button type="button" class="btn-secondary" onclick="closeModal()">취소</button>
+                <button type="submit" class="btn-primary">저장</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="/js/admin/twitter-admin.js"></script>
+</body>
+</html>
