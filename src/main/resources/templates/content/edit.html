@@ -1,0 +1,46 @@
+<th:block th:replace="content/layout/header :: header"></th:block>
+<th:block th:replace="content/layout/header :: bodyheader"></th:block>
+
+<div class="write-container">
+    <h2>게시글 수정</h2>
+
+    <form class="write-form"
+          th:action="@{/content/edit/{id}(id=${post.id})}"
+          method="post"
+          enctype="multipart/form-data">
+
+        <!-- 제목 -->
+        <label>제목</label>
+        <input type="text" name="title" th:value="${post.title}" required>
+
+        <!-- 본문 -->
+        <label>본문</label>
+        <textarea name="content" rows="15" th:utext="${post.content}" required></textarea>
+
+        <!-- 해시태그 입력 -->
+        <label>해시태그</label>
+        <input type="text" name="hashtags"
+               th:value="${post.hashtags}"
+               placeholder="#원유 #엔비디아 #경제 (공백으로 구분)"
+               style="font-size:14px;">
+
+        <!-- 기존 이미지 미리보기 -->
+        <div th:if="${post.imgUrl != null}" style="margin:10px 0;">
+            <label>현재 이미지</label><br>
+            <img th:src="${post.imgUrl}" style="max-width:300px; border-radius:8px; margin-bottom:10px;">
+        </div>
+
+        <!-- 이미지 첨부 (수정 시 새로운 이미지 선택 가능) -->
+        <label>이미지 변경 (선택)</label>
+        <input type="file" name="image" accept="image/*">
+
+        <!-- 버튼 영역 -->
+        <div style="text-align:center; margin-top:20px;">
+            <button type="submit" class="btn-submit">수정하기</button>
+            <a th:href="@{/content/post/{id}(id=${post.id})}" class="btn-cancel">돌아가기</a>
+        </div>
+
+    </form>
+</div>
+
+<th:block th:replace="content/layout/footer :: footer"></th:block>
