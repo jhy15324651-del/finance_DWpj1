@@ -789,3 +789,128 @@ body {
         margin-left: 15px;
     }
 }
+
+/* 트위터 인사이트 스타일 */
+.twitter-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.tweet-card {
+    background: white;
+    border: 1px solid #e1e8ed;
+    border-radius: 12px;
+    padding: 20px;
+    transition: all 0.2s;
+}
+
+.tweet-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.tweet-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+.tweet-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.tweet-user-info {
+    flex: 1;
+}
+
+.tweet-name-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.tweet-name {
+    font-weight: bold;
+    font-size: 15px;
+    color: #14171a;
+}
+
+.verified-badge {
+    color: #1da1f2;
+    font-size: 16px;
+}
+
+.tweet-handle {
+    color: #657786;
+    font-size: 14px;
+}
+
+.tweet-date {
+    color: #657786;
+    font-size: 14px;
+    margin-left: auto;
+}
+
+.tweet-content {
+    margin-bottom: 12px;
+}
+
+.tweet-original {
+    color: #14171a;
+    font-size: 15px;
+    line-height: 1.5;
+    margin-bottom: 12px;
+    padding: 12px;
+    background-color: #f7f9fa;
+    border-radius: 8px;
+    border-left: 3px solid #1da1f2;
+}
+
+.tweet-translated {
+    color: #14171a;
+    font-size: 15px;
+    line-height: 1.5;
+    padding: 12px;
+    background-color: #e7f5ff;
+    border-radius: 8px;
+    border-left: 3px solid #50b83c;
+}
+
+.tweet-link {
+    display: inline-block;
+    color: #1da1f2;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    margin-top: 8px;
+}
+
+.tweet-link:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .tweet-card {
+        padding: 15px;
+    }
+
+    .tweet-avatar {
+        width: 40px;
+        height: 40px;
+    }
+
+    .tweet-name {
+        font-size: 14px;
+    }
+
+    .tweet-original,
+    .tweet-translated {
+        font-size: 14px;
+        padding: 10px;
+    }
+}

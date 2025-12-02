@@ -58,6 +58,8 @@ function switchTab(tabName) {
         loadWeeklyNews();
     } else if (tabName === 'archive') {
         loadArchiveNews();
+    } else if (tabName === 'twitter') {
+        loadTwitterInsights();
     }
 }
 
@@ -448,4 +450,47 @@ async function submitReply() {
         console.error('답글 작성 실패:', error);
         alert('답글 등록에 실패했습니다.');
     }
+}
+
+// 트위터 인사이트 로드
+async function loadTwitterInsights() {
+    try {
+        const response = await fetch('/api/twitter/insights');
+        const tweets = await response.json();
+        displayTwitterInsights(tweets);
+    } catch (error) {
+        console.error('트위터 인사이트 로드 실패:', error);
+        document.getElementById('twitter-insights').innerHTML = '<div class="loading">트위터 인사이트를 불러오는데 실패했습니다.</div>';
+    }
+}
+
+// 트위터 인사이트 표시
+function displayTwitterInsights(tweets) {
+    const container = document.getElementById('twitter-insights');
+
+    if (!tweets || tweets.length === 0) {
+        container.innerHTML = '<div class="loading">등록된 트윗이 없습니다.</div>';
+        return;
+    }
+
+    container.innerHTML = tweets.map(tweet => `
+        <div class="tweet-card">
+            <div class="tweet-header">
+                ${tweet.avatar ? `<img src="${tweet.avatar}" alt="${tweet.name}" class="tweet-avatar">` : ''}
+                <div class="tweet-user-info">
+                    <div class="tweet-name-row">
+                        <span class="tweet-name">${tweet.name}</span>
+                        ${tweet.verified ? '<span class="verified-badge">✓</span>' : ''}
+                    </div>
+                    <div class="tweet-handle">@${tweet.handle}</div>
+                </div>
+                <div class="tweet-date">${tweet.date || ''}</div>
+            </div>
+            <div class="tweet-content">
+                <div class="tweet-original">${tweet.originalText}</div>
+                <div class="tweet-translated">${tweet.translatedText}</div>
+            </div>
+            ${tweet.url ? `<a href="${tweet.url}" target="_blank" class="tweet-link">트윗 보기 →</a>` : ''}
+        </div>
+    `).join('');
 }

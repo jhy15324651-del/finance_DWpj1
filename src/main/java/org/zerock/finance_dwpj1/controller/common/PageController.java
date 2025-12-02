@@ -44,4 +44,9 @@ public class PageController {
     public String myPage() {
         return "user/mypage";
     }
+
+    @GetMapping("/admin/twitter")
+    public String twitterAdmin() {
+        return "admin/twitter-admin";
+    }
 }

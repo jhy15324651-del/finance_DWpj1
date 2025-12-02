@@ -29,6 +29,7 @@
         <button class="tab active" onclick="switchTab('daily')">데일리 뉴스</button>
         <button class="tab" onclick="switchTab('weekly')">금주의 뉴스</button>
         <button class="tab" onclick="switchTab('archive')">아카이브</button>
+        <button class="tab" onclick="switchTab('twitter')">트위터 인사이트</button>
     </div>
 
     <!-- 데일리 뉴스 탭 -->
@@ -49,6 +50,13 @@
     <div id="archive-tab" class="tab-content">
         <div id="archive-news" class="news-grid">
             <div class="loading">아카이브를 불러오는 중...</div>
+        </div>
+    </div>
+
+    <!-- 트위터 인사이트 탭 -->
+    <div id="twitter-tab" class="tab-content">
+        <div id="twitter-insights" class="twitter-grid">
+            <div class="loading">트위터 인사이트를 불러오는 중...</div>
         </div>
     </div>
 </div>

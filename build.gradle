@@ -48,3 +48,12 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+// UTF-8 인코딩 설정 (한글 주석 컴파일 오류 해결)
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+tasks.withType(Test) {
+    systemProperty 'file.encoding', 'UTF-8'
+}
