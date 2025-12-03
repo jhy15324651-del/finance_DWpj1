@@ -16,16 +16,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ContentCommentService {
 
-    // 댓글 Repo
     private final ContentCommentRepository commentRepo;
-
-    // 게시글 Repo (게시글 작성자 권한 확인용)
     private final ContentReviewRepository contentRepo;
 
-
     /**
-     * 🔥 댓글 저장
-     * - 로그인한 유저의 ID, 닉네임을 그대로 저장
+     * 🔥 댓글 저장 (+ 평점 rating 저장 추가!)
      */
     public void write(Long userId, String nickname, ContentCommentWriteDTO dto) {
 
@@ -34,12 +29,12 @@ public class ContentCommentService {
                 .userId(userId)
                 .writer(nickname)
                 .content(dto.getContent())
-                .parentId(null)   // 대댓글은 추후 구현
+                .rating(dto.getRating())   // ⭐ 신규 추가
+                .parentId(null)            // 대댓글은 추후 구현
                 .build();
 
         commentRepo.save(comment);
     }
-
 
     /**
      * 🔥 특정 게시글의 댓글 전체 조회
@@ -48,25 +43,19 @@ public class ContentCommentService {
         return commentRepo.findByPostIdOrderByCreatedDateAsc(postId);
     }
 
-
     /**
      * 🔥 댓글 삭제
-     * - 댓글 작성자 O → 삭제 가능
-     * - 게시글 작성자 O → 삭제 가능
-     * - 그 외 사용자 → 삭제 불가
+     * - 댓글 작성자 OR 게시글 작성자 → 삭제 가능
      */
     @Transactional
     public String deleteComment(Long id, CustomUserDetails user) {
 
-        // 1) 댓글 조회
         ContentComment comment = commentRepo.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("댓글 없음"));
 
-        // 2) 댓글이 달린 게시글 조회
         ContentReview post = contentRepo.findById(comment.getPostId())
                 .orElseThrow(() -> new IllegalArgumentException("게시글 없음"));
 
-        // 3) 권한 체크
         boolean isCommentWriter = comment.getUserId().equals(user.getId());
         boolean isPostWriter = post.getUserId().equals(user.getId());
 
@@ -74,29 +63,59 @@ public class ContentCommentService {
             return "NO_PERMISSION";
         }
 
-        // 4) 삭제
         commentRepo.delete(comment);
         return "SUCCESS";
     }
-
 
     /**
      * 🔥 댓글 수정
      * - 댓글 작성자만 수정 가능
      */
     @Transactional
-    public String editComment(Long id, String newContent, CustomUserDetails user) {
+    public String editComment(Long id, String newContent, Double newRating, CustomUserDetails user) {
 
-        // 1) 댓글 조회
         ContentComment comment = commentRepo.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("댓글 없음"));
 
-        // 2) 권한 체크
         boolean isCommentWriter = comment.getUserId().equals(user.getId());
         if (!isCommentWriter) return "NO_PERMISSION";
 
-        // 3) 수정
+        // 🔥 내용 수정
         comment.setContent(newContent);
+
+        // 🔥 평점 수정 (반드시 추가!)
+        comment.setRating(newRating);
+
         return "SUCCESS";
     }
+
+    /**
+     평균 평점 + 참여자 수 계산 추가
+     */
+    public double getAverageRating(Long postId) {
+
+        List<ContentComment> list = commentRepo.findByPostIdOrderByCreatedDateAsc(postId);
+
+        double sum = 0;
+        int count = 0;
+
+        for (ContentComment c : list) {
+            if (c.getRating() != null) {
+                sum += c.getRating();
+                count++;
+            }
+        }
+
+        if (count == 0) return 0.0;
+
+        // ⭐ 반올림(0.5 단위)
+        return Math.round((sum / count) * 2) / 2.0;
+    }
+
+    public int getRatingCount(Long postId) {
+        return (int) commentRepo.countByPostIdAndRatingIsNotNull(postId);
+    }
+
+
+
 }

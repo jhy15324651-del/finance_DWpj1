@@ -7,7 +7,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.zerock.finance_dwpj1.entity.content.ContentComment;
 import org.zerock.finance_dwpj1.entity.content.ContentReview;
+import org.zerock.finance_dwpj1.repository.content.ContentCommentRepository;
 import org.zerock.finance_dwpj1.repository.content.ContentReviewRepository;
 
 import java.io.IOException;
@@ -24,18 +26,46 @@ import java.util.Set;
 public class ContentReviewService {
 
     private final ContentReviewRepository repo;
+    private final ContentCommentRepository commentRepo;
+
 
 
     // ---------------------------------------------------------
-    // 🔥 최신/인기 게시글
+    // 🔥 preview 생성 유틸 (HTML 제거 + 길이 제한)
     // ---------------------------------------------------------
+    private String makePreview(String content) {
+        if (content == null) return "";
 
+        // 1) HTML 태그 제거
+        String plain = content.replaceAll("<[^>]*>", "");
+
+        // 2) 길이 제한 (원하면 100~150 사이로 조절 가능)
+        if (plain.length() > 120) {
+            return plain.substring(0, 120) + "...";
+        }
+        return plain;
+    }
+
+
+    // ---------------------------------------------------------
+    // 🔥 최신/인기 게시글 (preview 자동 세팅)
+    // ---------------------------------------------------------
     public List<ContentReview> getLatestContents() {
-        return repo.findTop8ByIsDeletedFalseOrderByCreatedDateDesc();
+        List<ContentReview> list =
+                repo.findTop8ByIsDeletedFalseOrderByCreatedDateDesc();
+
+        // ⭐ preview 세팅
+        list.forEach(post -> post.setPreview(makePreview(post.getContent())));
+        return list;
     }
 
     public List<ContentReview> getPopularContents() {
-        return repo.findTop5ByIsDeletedFalseOrderByViewCountDesc();
+        List<ContentReview> list =
+                repo.findTop5ByIsDeletedFalseOrderByViewCountDesc();
+
+        // ⭐ preview 세팅
+        list.forEach(post -> post.setPreview(makePreview(post.getContent())));
+        return list;
     }
 
 
@@ -123,7 +153,7 @@ public class ContentReviewService {
 
 
     // ---------------------------------------------------------
-    // 🔥 수정 기능 (핵심 추가)
+    // 🔥 수정 기능
     // ---------------------------------------------------------
     @Transactional
     public void updateContent(Long id, String title, String content,
@@ -133,7 +163,6 @@ public class ContentReviewService {
         ContentReview post = repo.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글입니다."));
 
-        // 값 변경
         post.setTitle(title);
         post.setContent(content);
         post.setHashtags(hashtags);
@@ -169,4 +198,36 @@ public class ContentReviewService {
         content.softDelete();
         repo.save(content);
     }
+
+    // ---------------------------------------------------------
+// ⭐ 평점 시스템 구축
+// ---------------------------------------------------------
+    public double getAverageRating(Long postId) {
+
+        // ⭐ 올바른 엔티티 = ContentComment
+        List<ContentComment> comments =
+                commentRepo.findByPostIdOrderByCreatedDateAsc(postId);
+
+        double sum = 0;
+        int cnt = 0;
+
+        for (ContentComment c : comments) {
+            if (c.getRating() != null) {
+                sum += c.getRating();
+                cnt++;
+            }
+        }
+
+        if (cnt == 0) return 0.0;
+
+        // ⭐ 0.5 단위 반올림
+        return Math.round((sum / cnt) * 2) / 2.0;
+    }
+
+    public int getRatingCount(Long postId) {
+        return commentRepo.countByPostIdAndRatingIsNotNull(postId);
+    }
+
+
+
 }

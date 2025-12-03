@@ -37,6 +37,14 @@ public class ContentPostController {
         // 댓글 목록
         model.addAttribute("comments", contentCommentService.getComments(id));
 
+        // 평점 모델에 담아 뷰로 전달하기
+        double avgRating = contentCommentService.getAverageRating(id);
+        int ratingCount = contentCommentService.getRatingCount(id);
+
+        model.addAttribute("avgRating", avgRating);
+        model.addAttribute("ratingCount", ratingCount);
+
+
         // 로그인 사용자 정보 전달
         if (userDetails != null) {
             model.addAttribute("nickname", userDetails.getNickname());
