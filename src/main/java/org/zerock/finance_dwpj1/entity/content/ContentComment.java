@@ -21,7 +21,11 @@ public class ContentComment {
     private String writer;    // 작성자 닉네임
     private String content;   // 댓글 내용
 
-    private Long parentId;    // 대댓글 기능 용(일반 댓글이면 null)
+    // ⭐ 추가: 평점 (0.0 ~ 5.0, 0.5 단위)
+    @Column
+    private Double rating;
+
+    private Long parentId;    // 대댓글 기능 용
 
     private LocalDateTime createdDate;
 

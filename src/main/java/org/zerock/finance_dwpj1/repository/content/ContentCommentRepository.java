@@ -13,4 +13,7 @@ public interface ContentCommentRepository extends JpaRepository<ContentComment, 
      * 특정 게시글의 댓글 목록 조회 (오래된 순)
      */
     List<ContentComment> findByPostIdOrderByCreatedDateAsc(Long postId);
+
+    int countByPostIdAndRatingIsNotNull(Long postId);
+
 }

@@ -173,8 +173,13 @@ body {
 .popular-rank {
     font-weight: bold;
     font-size: 20px;
-    color: #0070f3;
+    color: #0070f3; /* 기본 색 */
     min-width: 30px;
+}
+
+/* ⭐ 1~3위 색상 강조 */
+.popular-rank.top3 {
+    color: #fbbf24 !important;
 }
 
 .popular-title {
@@ -324,12 +329,6 @@ body {
     margin: 10px 0;
     font-size: 15px;
     color: #333;
-}
-
-.comment-write-row {
-    display: flex;
-    gap: 10px;
-    margin-top: 20px;
 }
 
 .comment-input,

@@ -11,40 +11,43 @@
     ======================== -->
     <h1 class="post-detail-title" th:text="${post.title}"></h1>
 
-    <!-- 날짜 · 조회수 + 작성자 -->
-    <div class="post-detail-meta"
-         style="display:flex; justify-content:space-between; align-items:center;">
-
-        <!-- 날짜 + 조회수 -->
-        <div>
-            <span th:text="${#temporals.format(post.createdDate, 'yyyy.MM.dd')}"></span>
-            <span class="view-text">
-                · 조회수 <span th:text="${post.viewCount}"></span>
+    <!-- =======================
+          평균 평점 표시
+    ======================== -->
+    <div class="post-rating-box" th:if="${ratingCount > 0}">
+        <div class="rating-stars-display">
+            <span th:each="i : ${#numbers.sequence(1,5)}"
+                  th:classappend="
+                    ${avgRating >= i} ? 'full' :
+                    (${avgRating >= i - 0.5} ? 'half' : '')
+                  ">
             </span>
         </div>
 
-        <!-- 작성자 -->
-        <div>
-            <b th:text="${post.writer != null ? post.writer : '익명'}"></b>
+        <div class="rating-average-text">
+            <span th:text="${avgRating}"></span> / 5.0
+            (<span th:text="${ratingCount}"></span>명)
         </div>
     </div>
 
+    <!-- 날짜 / 조회수 / 작성자 -->
+    <div class="post-detail-meta">
+        <div>
+            <span th:text="${#temporals.format(post.createdDate,'yyyy.MM.dd')}"></span>
+            · 조회수 <span th:text="${post.viewCount}"></span>
+        </div>
+        <b th:text="${post.writer != null ? post.writer : '익명'}"></b>
+    </div>
 
-    <!-- =======================
-          이미지
-    ======================== -->
+    <!-- 이미지 -->
     <div th:if="${post.imgUrl}" class="post-image-box">
         <img th:src="${post.imgUrl}" class="post-image">
     </div>
 
-    <!-- =======================
-          본문
-    ======================== -->
+    <!-- 본문 -->
     <div class="post-detail-content" th:utext="${post.content}"></div>
 
-    <!-- =======================
-          해시태그
-    ======================== -->
+    <!-- 해시태그 -->
     <div class="post-hashtags"
          th:if="${post.hashtags != null and #strings.length(post.hashtags) > 0}">
         <span th:each="tag : ${#strings.arraySplit(post.hashtags, ' ')}">
@@ -55,165 +58,154 @@
         </span>
     </div>
 
-    <!-- ===========================
-         게시글 수정/삭제 (작성자만)
-    ============================ -->
+    <!-- =======================
+         게시글 수정/삭제
+    ======================== -->
     <div class="post-edit-buttons"
-         th:if="${nickname != null and post.writer == nickname}"
-         style="text-align:right; margin:15px 0 25px 0;">
-
-        <!-- 수정 -->
-        <a th:href="@{/content/edit/{id}(id=${post.id})}"
-           class="btn btn-outline-primary"
-           style="margin-right:10px;">
-            수정
-        </a>
-
-        <!-- 삭제 -->
+         th:if="${nickname != null and post.writer == nickname}">
+        <a th:href="@{/content/edit/{id}(id=${post.id})}" class="btn btn-outline-primary">수정</a>
         <a th:href="@{/content/delete/{id}(id=${post.id})}"
            class="btn btn-outline-danger"
-           onclick="return confirm('정말 삭제하시겠습니까?');">
-            삭제
-        </a>
+           onclick="return confirm('정말 삭제하시겠습니까?');">삭제</a>
     </div>
 
-
     <!-- =======================
-          댓글 영역
+          댓글 목록
     ======================== -->
     <div class="comment-section">
         <h3 class="comment-title">댓글</h3>
 
         <div class="comment-list">
-
-            <!-- 댓글 출력 -->
             <div th:each="c : ${comments}" class="comment-item-box">
 
-                <!-- 일반 댓글 -->
-                <div th:if="${c.parentId == null}">
-                    <div class="comment-header">
-                        <b class="comment-writer" th:text="${c.writer}"></b>
-                        <span class="comment-date"
-                              th:text="${#temporals.format(c.createdDate,'yyyy-MM-dd HH:mm')}"></span>
-                    </div>
+                <!-- 댓글 header -->
+                <div class="comment-header">
+                    <b class="comment-writer" th:text="${c.writer}"></b>
+                    <span class="comment-date"
+                          th:text="${#temporals.format(c.createdDate,'yyyy-MM-dd HH:mm')}"></span>
+                </div>
 
-                    <div class="comment-text" th:text="${c.content}"></div>
-
-                    <!-- 🔥 댓글 액션 버튼 (수정/삭제) -->
-                    <div class="comment-actions">
-
-                        <!-- 댓글 작성자만 수정 -->
-                        <button th:if="${nickname == c.writer}"
-                                class="comment-edit-btn"
-                                th:attr="data-id=${c.id}">
-                            수정
-                        </button>
-
-                        <!-- 댓글 작성자 OR 게시글 작성자만 삭제 -->
-                        <button th:if="${nickname == c.writer || nickname == post.writer}"
-                                class="comment-delete-btn"
-                                th:attr="data-id=${c.id}">
-                            삭제
-                        </button>
-
+                <!-- ⭐ 댓글 평점 표시 -->
+                <div class="comment-rating" th:if="${c.rating != null}">
+                    <div class="rating-stars-display small"
+                         th:attr="data-rating=${c.rating}">
+                        <span th:each="i : ${#numbers.sequence(1,5)}"
+                              th:classappend="
+                                ${c.rating >= i} ? 'full' :
+                                (${c.rating >= i - 0.5} ? 'half' : '')
+                              ">
+                        </span>
                     </div>
                 </div>
 
-                <!-- 대댓글 (구조 동일, 디자인만 차이) -->
-                <div th:if="${c.parentId != null}" class="reply-item">
+                <!-- 댓글 내용 -->
+                <div class="comment-text" th:text="${c.content}"></div>
 
-                    <div class="comment-header">
-                        ↳ <b class="comment-writer" th:text="${c.writer}"></b>
-                        <span class="comment-date"
-                              th:text="${#temporals.format(c.createdDate,'yyyy-MM-dd HH:mm')}"></span>
-                    </div>
+                <!-- 액션 버튼 -->
+                <div class="comment-actions">
+                    <button th:if="${nickname == c.writer}"
+                            class="comment-edit-btn"
+                            th:attr="data-id=${c.id}, data-rating=${c.rating}">
+                        수정
+                    </button>
 
-                    <div class="comment-text" th:text="${c.content}"></div>
-
-                    <div class="comment-actions">
-
-                        <!-- 대댓글도 권한 동일 적용 -->
-                        <button th:if="${nickname == c.writer}"
-                                class="comment-edit-btn"
-                                th:attr="data-id=${c.id}">
-                            수정
-                        </button>
-
-                        <button th:if="${nickname == c.writer || nickname == post.writer}"
-                                class="comment-delete-btn"
-                                th:attr="data-id=${c.id}">
-                            삭제
-                        </button>
-
-                    </div>
-
+                    <button th:if="${nickname == c.writer || nickname == post.writer}"
+                            class="comment-delete-btn"
+                            th:attr="data-id=${c.id}">
+                        삭제
+                    </button>
                 </div>
 
             </div>
         </div>
 
-
         <!-- =======================
-              댓글 작성 영역
+              댓글 작성
         ======================== -->
         <div class="comment-write-box">
 
-            <!-- 로그인 x -->
             <div th:if="${nickname == null}" class="comment-login-required">
                 <p>댓글을 작성하려면 <a href="/user/login">로그인</a>이 필요합니다.</p>
             </div>
 
-            <!-- 로그인 O -->
             <div th:if="${nickname != null}" class="comment-write-row">
 
-                <div class="comment-nickname-box">
-                    <b>작성자: </b> <span th:text="${nickname}"></span>
+                <!-- 작성자 + 별점 한 줄 -->
+                <div class="comment-write-top">
+                    <div class="writer-box">
+                        <b>작성자:</b> <span th:text="${nickname}"></span>
+                    </div>
+
+                    <!-- ⭐ 평점 입력 -->
+                    <div class="rating-stars" id="rating-stars">
+                        <span></span><span></span><span></span><span></span><span></span>
+                    </div>
                 </div>
 
-                <textarea id="comment-content" class="comment-textarea"
-                          placeholder="타인을 비방하거나 명예를 훼손하는 댓글은 제재될 수 있습니다."></textarea>
+                <!-- 입력창 + 등록 버튼 -->
+                <div class="comment-write-bottom">
+                    <textarea id="comment-content" class="comment-textarea"
+                              placeholder="타인을 비방하거나 명예를 훼손하는 댓글은 제재될 수 있습니다."></textarea>
 
-                <div class="comment-submit-wrap">
                     <button id="comment-submit" class="comment-submit-btn">등록</button>
                 </div>
+
             </div>
         </div>
 
-    </div> <!-- 댓글 섹션 종료 -->
-
+    </div> <!-- 댓글 섹션 END -->
 
     <!-- =======================
          목록 / 홈 버튼
     ======================== -->
     <div class="detail-btn-container">
-        <a th:href="@{/content/category(page=${page}, keyword=${keyword}, searchType=${searchType})}"
-           class="btn btn-outline-secondary detail-btn">
-            목록으로
-        </a>
+        <a th:href="@{/content/category(page=${page},keyword=${keyword},searchType=${searchType})}"
+           class="btn btn-outline-secondary detail-btn">목록으로</a>
 
-        <a th:href="@{/content/}"
-           class="btn btn-outline-secondary detail-btn">
-            홈으로
-        </a>
+        <a th:href="@{/content/}" class="btn btn-outline-secondary detail-btn">홈으로</a>
     </div>
 
-</div> <!-- post-detail-container END -->
+</div> <!-- container END -->
 
 
-<!-- ===========================
-     댓글 관련 AJAX SCRIPT
-=========================== -->
+<!-- =======================
+     ⭐ SCRIPT (별점 + 댓글)
+======================= -->
 <script th:inline="javascript">
-
-    /* --------------------------
-       1) 댓글 작성
-    --------------------------- */
     document.addEventListener("DOMContentLoaded", function () {
 
-        const submitBtn = document.getElementById("comment-submit");
-        if (submitBtn) {
+        /* ---------------------------------------------------------
+            ⭐ 댓글 작성 별점 입력 (0.5 단위)
+        --------------------------------------------------------- */
+        let selectedRating = 0;
+        const inputStars = document.querySelectorAll("#rating-stars span");
 
+        function renderInputStars(rating) {
+            inputStars.forEach((star, index) => {
+                star.classList.remove("full", "half");
+                const val = index + 1;
+                if (rating >= val) star.classList.add("full");
+                else if (rating >= val - 0.5) star.classList.add("half");
+            });
+        }
+
+        inputStars.forEach((star, index) => {
+            star.addEventListener("click", e => {
+                const rect = star.getBoundingClientRect();
+                const half = (e.clientX - rect.left) <= rect.width / 2;
+                selectedRating = index + (half ? 0.5 : 1.0);
+                renderInputStars(selectedRating);
+            });
+        });
+
+        /* ---------------------------------------------------------
+            댓글 작성 요청
+        --------------------------------------------------------- */
+        const submitBtn = document.getElementById("comment-submit");
+
+        if (submitBtn) {
             submitBtn.addEventListener("click", async () => {
+
                 const content = document.getElementById("comment-content").value;
                 const postId = [[${post.id}]];
 
@@ -222,35 +214,34 @@
                     return;
                 }
 
-                const response = await fetch("/content/comment", {
+                const res = await fetch("/content/comment", {
                     method: "POST",
                     headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({postId: postId, content: content})
+                    body: JSON.stringify({
+                        postId: postId,
+                        content: content,
+                        rating: selectedRating || 0
+                    })
                 });
 
-                const result = await response.text();
+                const result = await res.text();
 
-                if (result === "SUCCESS") {
-                    alert("댓글이 등록되었습니다.");
-                    location.reload();
-                } else if (result === "NOT_LOGIN") {
-                    alert("로그인이 필요합니다.");
-                } else {
-                    alert("댓글 등록 실패");
-                }
+                if (result === "SUCCESS") location.reload();
+                else if (result === "NOT_LOGIN") alert("로그인이 필요합니다.");
+                else alert("댓글 등록 실패");
             });
         }
 
-        /* --------------------------
-           2) 댓글 삭제
-        --------------------------- */
+
+        /* ---------------------------------------------------------
+            댓글 삭제
+        --------------------------------------------------------- */
         document.querySelectorAll(".comment-delete-btn").forEach(btn => {
             btn.addEventListener("click", async () => {
-
                 const id = btn.dataset.id;
                 if (!confirm("정말 삭제하시겠습니까?")) return;
 
-                const res = await fetch(`/content/comment/${id}`, {method: "DELETE"});
+                const res = await fetch(`/content/comment/${id}`, {method:"DELETE"});
                 const result = await res.text();
 
                 if (result === "SUCCESS") location.reload();
@@ -259,49 +250,89 @@
             });
         });
 
-        /* --------------------------
-           3) 댓글 수정
-        --------------------------- */
+        /* ---------------------------------------------------------
+            ⭐ 댓글 수정 + 기존 평점 변경 기능 (핵심)
+        --------------------------------------------------------- */
         document.querySelectorAll(".comment-edit-btn").forEach(btn => {
+
             btn.addEventListener("click", () => {
+
                 const id = btn.dataset.id;
+                let editRating = parseFloat(btn.dataset.rating || 0);
+
                 const box = btn.closest(".comment-item-box");
                 const contentDiv = box.querySelector(".comment-text");
 
                 const oldText = contentDiv.innerText;
 
-                // 기존 수정/삭제 버튼 숨기기
-                box.querySelectorAll(".comment-actions button").forEach(b => b.style.display = "none");
+                /* 액션 버튼 숨기기 */
+                box.querySelectorAll(".comment-actions button")
+                    .forEach(b => b.style.display = "none");
 
-                // 수정모드 UI로 교체
+                /* 기존 별 UI */
+                const ratingBox = box.querySelector(".rating-stars-display.small");
+                const editStars = ratingBox.querySelectorAll("span");
+
+                /* 댓글 내용 → textarea로 변경 */
                 contentDiv.innerHTML = `
-            <textarea class="edit-area">${oldText}</textarea>
-            <div class="edit-action-wrapper">
-                <button class="save-edit-btn">저장</button>
-                <button class="cancel-edit-btn">취소</button>
-            </div>
-        `;
+                <textarea class="edit-area">${oldText}</textarea>
 
-                // 저장 버튼 클릭
-                contentDiv.querySelector(".save-edit-btn").addEventListener("click", async () => {
-                    const newText = contentDiv.querySelector(".edit-area").value;
+                <div class="edit-action-wrapper">
+                    <button class="save-edit-btn">저장</button>
+                    <button class="cancel-edit-btn">취소</button>
+                </div>
+            `;
 
-                    const res = await fetch(`/content/comment/${id}`, {
-                        method: "PUT",
-                        headers: {"Content-Type": "application/json"},
-                        body: JSON.stringify({content: newText})
+                /* 기존 표시용 별을 클릭 가능하도록 변경 */
+                ratingBox.style.cursor = "pointer";
+
+                function renderEditStars(rating) {
+                    editStars.forEach((star, index) => {
+                        star.classList.remove("full", "half");
+
+                        const val = index + 1;
+                        if (rating >= val) star.classList.add("full");
+                        else if (rating >= val - 0.5) star.classList.add("half");
+                    });
+                }
+
+                /* 초기 별 반영 */
+                renderEditStars(editRating);
+
+                /* ⭐ 클릭하면 평점 변경 */
+                editStars.forEach((star, index) => {
+                    star.addEventListener("click", e => {
+                        const rect = star.getBoundingClientRect();
+                        const half = (e.clientX - rect.left) <= rect.width / 2;
+
+                        editRating = index + (half ? 0.5 : 1.0);
+                        renderEditStars(editRating);
+                    });
+                });
+
+                /* 저장 */
+                contentDiv.querySelector(".save-edit-btn")
+                    .addEventListener("click", async () => {
+
+                        const newText = contentDiv.querySelector(".edit-area").value;
+
+                        const res = await fetch(`/content/comment/${id}`, {
+                            method: "PUT",
+                            headers: {"Content-Type":"application/json"},
+                            body: JSON.stringify({
+                                content: newText,
+                                rating: editRating
+                            })
+                        });
+
+                        const result = await res.text();
+                        if (result === "SUCCESS") location.reload();
+                        else alert("수정 실패");
                     });
 
-                    const result = await res.text();
-
-                    if (result === "SUCCESS") location.reload();
-                    else alert("수정 실패");
-                });
-
-                // 취소 버튼 → 원래 UI 복구
-                contentDiv.querySelector(".cancel-edit-btn").addEventListener("click", () => {
-                    location.reload();
-                });
+                /* 취소 */
+                contentDiv.querySelector(".cancel-edit-btn")
+                    .addEventListener("click", () => location.reload());
             });
         });
 
@@ -309,12 +340,146 @@
 </script>
 
 <style>
-    /* 수정,삭제 버튼 스타일 */
+
+    /* =====================
+     본문 정보
+====================== */
+    .post-detail-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 8px;
+        margin-bottom: 20px;
+        color: #555;
+        font-size: 14px;
+    }
+
+    .post-detail-title {
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .post-image {
+        max-width: 100%;
+        border-radius: 6px;
+        margin: 20px 0;
+    }
+
+    .post-detail-content {
+        font-size: 16px;
+        line-height: 1.7;
+        margin-bottom: 40px;
+        white-space: pre-line;
+    }
+
+    .post-hashtags {
+        padding-bottom: 20px;
+        border-bottom: 1px solid #e5e5e5;
+        margin-bottom: 40px;
+    }
+
+
+    /* =====================
+       ⭐ 평균 평점 표시
+    ====================== */
+    .post-rating-box {
+        margin: 10px 0 15px 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .rating-stars-display {
+        display: flex;
+        gap: 2px;
+    }
+
+    .rating-stars-display span {
+        width: 22px;
+        height: 22px;
+        background: url('/img/star-empty.svg') center/cover no-repeat;
+    }
+
+    .rating-stars-display span.full {
+        background-image: url('/img/star-full.svg');
+    }
+
+    .rating-stars-display span.half {
+        background-image: url('/img/star-half.svg');
+    }
+
+    /* small 버전 (댓글용) */
+    .rating-stars-display.small span {
+        width: 18px;
+        height: 18px;
+    }
+
+    /* ⭐ 댓글 수정 시 클릭 가능하게 (필수) */
+    .rating-stars-display.small.editable span {
+        cursor: pointer !important;
+    }
+
+
+    .rating-average-text {
+        color: #555;
+        font-size: 15px;
+    }
+
+
+    /* =====================
+       댓글 목록
+    ====================== */
+    .comment-section {
+        margin-top: 50px;
+    }
+
+    .comment-title {
+        font-size: 20px;
+        font-weight: 700;
+        margin-bottom: 20px;
+    }
+
+    .comment-item-box {
+        background: #fafafa;
+        border-radius: 8px;
+        padding: 18px;
+        margin-bottom: 15px;
+        border: 1px solid #eee;
+        transition: border 0.2s, background 0.2s;
+    }
+
+    .comment-item-box:hover {
+        border-color: #ddd;
+    }
+
+    .comment-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        font-size: 14px;
+        color: #555;
+    }
+
+    .comment-text {
+        margin: 10px 0;
+        font-size: 15px;
+        color: #333;
+    }
+
+    .comment-actions button {
+        margin-right: 6px;
+    }
+
+
+    /* =====================
+       수정/삭제 버튼
+    ====================== */
     .comment-edit-btn,
     .comment-delete-btn {
-        padding: 6px 14px;
+        padding: 6px 12px;
         border-radius: 6px;
-        font-size: 14px;
+        font-size: 13px;
         cursor: pointer;
         border: none;
     }
@@ -329,62 +494,157 @@
     }
 
     .comment-delete-btn:hover {
-        background: #cacaca;
+        background: #d0d0d0;
     }
 
-    /* 댓글 작성 영역과 버튼 영역 사이 여백 추가 */
+
+    /* =====================
+         댓글 수정 UI
+    ====================== */
+
+    /* textarea */
+    .edit-area {
+        width: 100%;
+        min-height: 70px;
+        padding: 12px;
+        margin-top: 10px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        font-size: 14px;
+        resize: vertical;
+    }
+
+    /* action 버튼들 */
+    .edit-action-wrapper {
+        display: flex;
+        gap: 10px;
+        margin-top: 12px;
+    }
+
+    .save-edit-btn {
+        background: #4e73df;
+        color: #fff;
+        padding: 8px 14px;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+    }
+
+    .save-edit-btn:hover {
+        background: #3b5cc4;
+    }
+
+    .cancel-edit-btn {
+        background: #e5e5e5;
+        padding: 8px 14px;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+    }
+
+    .cancel-edit-btn:hover {
+        background: #d0d0d0;
+    }
+
+
+    /* =====================
+       댓글 작성 UI
+    ====================== */
     .comment-write-box {
-        margin-bottom: 30px;
+        margin-top: 30px;
+        border-top: 1px solid #e5e5e5;
+        padding-top: 25px;
     }
 
-    /* ============================================
-   🔥 본문과 댓글 사이 구분선 + 여백
-============================================ */
-
-    /* 본문 + 해시태그 전체 아래 구분선 */
-    .post-hashtags {
-        margin-bottom: 30px;          /* 해시태그 아래 여백 */
-        padding-bottom: 20px;         /* 구분선 위쪽 공간 */
-        border-bottom: 1px solid #e5e5e5;  /* 구분선 */
+    .comment-write-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
     }
 
-    .post-detail-content {
-        font-size: 16px;
-        line-height: 1.7;
-        color: #333;
-        white-space: pre-line;
-        margin-top: 35px;
-        margin-bottom: 100px; /* 👈 우리가 원하는 값 */
-        padding-bottom: 10px;
+    .writer-box {
+        font-size: 15px;
+        color: #444;
+    }
+
+    /* ⭐ 신규 댓글 평점 입력 */
+    .rating-stars {
+        display: flex;
+        gap: 4px;
+        cursor: pointer;
+    }
+
+    .rating-stars span {
+        width: 28px;
+        height: 28px;
+        background: url('/img/star-empty.svg') center/cover no-repeat;
+    }
+
+    .rating-stars span.full {
+        background-image: url('/img/star-full.svg');
+    }
+
+    .rating-stars span.half {
+        background-image: url('/img/star-half.svg');
+    }
+
+    .comment-write-bottom {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .comment-textarea {
+        width: 100%;
+        height: 70px;
+        padding: 12px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        font-size: 14px;
+    }
+
+    /* 작성자 + 별점 정렬 */
+    .comment-write-top {
+        width: 90%;
+    }
+
+    .comment-submit-btn {
+        padding: 12px 18px;
+        background: #4e73df;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        flex-shrink: 0;
+        font-size: 14px;
     }
 
 
-    /* ============================================
-       🔥 댓글 섹션 상단 여백
-    ============================================ */
-    .comment-section {
+    /* =====================
+       목록/홈 버튼
+    ====================== */
+    .detail-btn-container {
         margin-top: 40px;
+        display: flex;
+        gap: 10px;
     }
 
-    /* ============================================
-       🔥 댓글 작성 제목 디자인 개선
-    ============================================ */
-
-    /* 댓글 박스와 아래 버튼 사이 공간 (이미 존재하지만 조금 조정 가능) */
-    .comment-write-box {
-        margin-bottom: 35px;
+    /* 모바일 대응 */
+    @media (max-width: 600px) {
+        .post-detail-title {
+            font-size: 22px;
+        }
+        .comment-textarea {
+            height: 60px;
+        }
+        .rating-stars span {
+            width: 24px;
+            height: 24px;
+        }
     }
-
-    /* 댓글 타이틀(댓글)도 스타일 통일감 있게 */
-    .comment-title {
-        font-size: 20px;
-        font-weight: 700;
-        margin-bottom: 15px;
-    }
-
 
 </style>
 
-
-<!-- footer -->
+<!-- FOOTER -->
 <th:block th:replace="content/layout/footer :: footer"></th:block>

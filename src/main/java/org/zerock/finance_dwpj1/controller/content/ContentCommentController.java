@@ -25,7 +25,7 @@ public class ContentCommentController {
         return commentService.deleteComment(id, user);
     }
 
-    /** 댓글 수정 */
+    /** 댓글 수정 (내용 + 평점) */
     @PutMapping("/{id}")
     public String editComment(
             @PathVariable Long id,
@@ -33,13 +33,20 @@ public class ContentCommentController {
             @AuthenticationPrincipal CustomUserDetails user
     ) {
         if (user == null) return "NOT_LOGIN";
-        return commentService.editComment(id, dto.getContent(), user);
+
+        return commentService.editComment(
+                id,
+                dto.getContent(),
+                dto.getRating(),   // ⭐ 평점 전달
+                user
+        );
     }
 }
 
-/** 댓글 수정 요청 DTO */
+/** 댓글 수정 DTO */
 @Getter
 @Setter
 class CommentEditRequest {
     private String content;
+    private Double rating;   // ⭐ 평점 추가
 }
