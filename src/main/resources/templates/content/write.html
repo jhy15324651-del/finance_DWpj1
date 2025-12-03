@@ -1,41 +1,99 @@
 <th:block th:replace="content/layout/header :: header"></th:block>
 <th:block th:replace="content/layout/header :: bodyheader"></th:block>
 
-<!-- 👉 page-wrapper OR content wrapper 추가 -->
-    <div class="write-container">
-        <h2>새 글 작성</h2>
+<div class="write-container">
+    <h2>새 글 작성</h2>
 
-        <form class="write-form" th:action="@{/content/write}" method="post" enctype="multipart/form-data">
+    <form class="write-form" th:action="@{/content/write}" method="post" enctype="multipart/form-data">
 
-            <!-- 제목 -->
-            <label>제목</label>
-            <input type="text" name="title" required>
+        <!-- 제목 -->
+        <label>제목</label>
+        <input type="text" name="title" required>
 
-            <!-- 요약 -->
-            <label>요약</label>
-            <input type="text" name="summary" required>
+        <!-- Quill CSS -->
+        <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
 
-            <!-- 본문 -->
-            <label>본문</label>
-            <textarea name="content" rows="15" required></textarea>
+        <!-- 본문 (Quill Editor) -->
+        <label>본문</label>
+        <div id="editor-container" style="height: 400px;"></div>
 
-            <!-- 해시태그 입력 -->
-            <label>해시태그</label>
-            <input type="text" name="hashtags"
-                   placeholder="#원유 #엔비디아 #경제 (공백으로 구분)"
-                   style="font-size:14px;">
+        <!-- 서버에 보낼 본문 HTML -->
+        <input type="hidden" id="content-hidden" name="content">
 
-            <!-- 이미지 첨부 -->
-            <label>이미지 첨부</label>
-            <input type="file" name="image" accept="image/*">
+        <!-- 해시태그 입력 -->
+        <label>해시태그</label>
+        <input type="text" name="hashtags"
+               placeholder="#원유 #엔비디아 #경제 (공백으로 구분)"
+               style="font-size:14px;">
 
-            <!-- 버튼 영역 -->
-            <div style="text-align:center; margin-top:20px;">
-                <button type="submit" class="btn-submit">작성하기</button>
-                <a th:href="@{/content/category}" class="btn-cancel">돌아가기</a>
-            </div>
-        </form>
-    </div>
- <!-- /.content -->
+        <!-- 버튼 -->
+        <div style="text-align:center; margin-top:20px;">
+            <button type="submit" class="btn-submit">작성하기</button>
+            <a th:href="@{/content/category}" class="btn-cancel">돌아가기</a>
+        </div>
+    </form>
+</div>
+
+<!-- Quill JS -->
+<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+
+<script>
+    var toolbarOptions = [
+        ['bold', 'italic', 'underline'],
+        [{ 'header': 1 }, { 'header': 2 }],
+        ['image']
+    ];
+
+    var quill = new Quill('#editor-container', {
+        theme: 'snow',
+        placeholder: '내용을 입력하세요...',
+        modules: {
+            toolbar: {
+                container: toolbarOptions,
+                handlers: {
+                    image: function () {
+                        selectLocalImage();
+                    }
+                }
+            }
+        }
+    });
+
+    function selectLocalImage() {
+        const input = document.createElement("input");
+        input.setAttribute("type", "file");
+        input.setAttribute("accept", "image/*");
+        input.click();
+
+        input.onchange = () => {
+            const file = input.files[0];
+            saveToServer(file);
+        };
+    }
+
+    function saveToServer(file) {
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        fetch('/content/uploadImage', {
+            method: "POST",
+            body: formData
+        })
+            .then(res => res.text())
+            .then(url => {
+                let range = quill.getSelection(true);
+                quill.insertEmbed(range.index, 'image', url);
+            })
+            .catch(err => {
+                console.error("이미지 업로드 실패", err);
+                alert("이미지 업로드 중 오류가 발생했습니다.");
+            });
+    }
+
+    document.querySelector(".write-form").addEventListener("submit", function () {
+        document.querySelector("#content-hidden").value = quill.root.innerHTML;
+    });
+</script>
 
 <th:block th:replace="content/layout/footer :: footer"></th:block>

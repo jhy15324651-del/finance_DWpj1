@@ -1,39 +1,50 @@
-<!-- header -->
+<!-- =======================
+      HEADER
+======================= -->
 <th:block th:replace="content/layout/header :: header"></th:block>
 <th:block th:replace="content/layout/header :: bodyheader"></th:block>
 
 <div class="post-detail-container">
 
-    <!-- 제목 -->
+    <!-- =======================
+          제목
+    ======================== -->
     <h1 class="post-detail-title" th:text="${post.title}"></h1>
 
-    <!-- 날짜 · 조회수 + 작성자 (우측 정렬) -->
-    <div class="post-detail-meta" style="display:flex; justify-content:space-between; align-items:center;">
+    <!-- 날짜 · 조회수 + 작성자 -->
+    <div class="post-detail-meta"
+         style="display:flex; justify-content:space-between; align-items:center;">
 
-        <!-- 날짜 · 조회수 -->
+        <!-- 날짜 + 조회수 -->
         <div>
             <span th:text="${#temporals.format(post.createdDate, 'yyyy.MM.dd')}"></span>
             <span class="view-text">
-            · 조회수 <span th:text="${post.viewCount}"></span>
-        </span>
+                · 조회수 <span th:text="${post.viewCount}"></span>
+            </span>
         </div>
 
-        <!-- 작성자 (오른쪽 끝, bold) -->
+        <!-- 작성자 -->
         <div>
             <b th:text="${post.writer != null ? post.writer : '익명'}"></b>
         </div>
     </div>
 
 
-    <!-- 이미지 -->
+    <!-- =======================
+          이미지
+    ======================== -->
     <div th:if="${post.imgUrl}" class="post-image-box">
         <img th:src="${post.imgUrl}" class="post-image">
     </div>
 
-    <!-- 본문 -->
+    <!-- =======================
+          본문
+    ======================== -->
     <div class="post-detail-content" th:utext="${post.content}"></div>
 
-    <!-- 해시태그 -->
+    <!-- =======================
+          해시태그
+    ======================== -->
     <div class="post-hashtags"
          th:if="${post.hashtags != null and #strings.length(post.hashtags) > 0}">
         <span th:each="tag : ${#strings.arraySplit(post.hashtags, ' ')}">
@@ -44,12 +55,38 @@
         </span>
     </div>
 
-    <!-- 댓글 영역 -->
-    <div class="comment-section">
+    <!-- ===========================
+         게시글 수정/삭제 (작성자만)
+    ============================ -->
+    <div class="post-edit-buttons"
+         th:if="${nickname != null and post.writer == nickname}"
+         style="text-align:right; margin:15px 0 25px 0;">
 
+        <!-- 수정 -->
+        <a th:href="@{/content/edit/{id}(id=${post.id})}"
+           class="btn btn-outline-primary"
+           style="margin-right:10px;">
+            수정
+        </a>
+
+        <!-- 삭제 -->
+        <a th:href="@{/content/delete/{id}(id=${post.id})}"
+           class="btn btn-outline-danger"
+           onclick="return confirm('정말 삭제하시겠습니까?');">
+            삭제
+        </a>
+    </div>
+
+
+    <!-- =======================
+          댓글 영역
+    ======================== -->
+    <div class="comment-section">
         <h3 class="comment-title">댓글</h3>
 
         <div class="comment-list">
+
+            <!-- 댓글 출력 -->
             <div th:each="c : ${comments}" class="comment-item-box">
 
                 <!-- 일반 댓글 -->
@@ -57,41 +94,69 @@
                     <div class="comment-header">
                         <b class="comment-writer" th:text="${c.writer}"></b>
                         <span class="comment-date"
-                              th:text="${#temporals.format(c.createdDate, 'yyyy-MM-dd HH:mm')}"></span>
+                              th:text="${#temporals.format(c.createdDate,'yyyy-MM-dd HH:mm')}"></span>
                     </div>
 
                     <div class="comment-text" th:text="${c.content}"></div>
 
+                    <!-- 🔥 댓글 액션 버튼 (수정/삭제) -->
                     <div class="comment-actions">
-                        <button class="reply-btn" th:attr="data-id=${c.id}">답글쓰기</button>
 
-                        <!-- 댓글 삭제 버튼 (작성자 & 게시글 작성자만) -->
-                        <button class="comment-delete-btn" th:attr="data-id=${c.id}">삭제</button>
+                        <!-- 댓글 작성자만 수정 -->
+                        <button th:if="${nickname == c.writer}"
+                                class="comment-edit-btn"
+                                th:attr="data-id=${c.id}">
+                            수정
+                        </button>
+
+                        <!-- 댓글 작성자 OR 게시글 작성자만 삭제 -->
+                        <button th:if="${nickname == c.writer || nickname == post.writer}"
+                                class="comment-delete-btn"
+                                th:attr="data-id=${c.id}">
+                            삭제
+                        </button>
+
                     </div>
                 </div>
 
-                <!-- 대댓글 -->
+                <!-- 대댓글 (구조 동일, 디자인만 차이) -->
                 <div th:if="${c.parentId != null}" class="reply-item">
+
                     <div class="comment-header">
                         ↳ <b class="comment-writer" th:text="${c.writer}"></b>
                         <span class="comment-date"
-                              th:text="${#temporals.format(c.createdDate, 'yyyy-MM-dd HH:mm')}"></span>
+                              th:text="${#temporals.format(c.createdDate,'yyyy-MM-dd HH:mm')}"></span>
                     </div>
 
                     <div class="comment-text" th:text="${c.content}"></div>
 
                     <div class="comment-actions">
-                        <button class="comment-delete-btn" th:attr="data-id=${c.id}">삭제</button>
+
+                        <!-- 대댓글도 권한 동일 적용 -->
+                        <button th:if="${nickname == c.writer}"
+                                class="comment-edit-btn"
+                                th:attr="data-id=${c.id}">
+                            수정
+                        </button>
+
+                        <button th:if="${nickname == c.writer || nickname == post.writer}"
+                                class="comment-delete-btn"
+                                th:attr="data-id=${c.id}">
+                            삭제
+                        </button>
+
                     </div>
+
                 </div>
 
             </div>
         </div>
 
-        <!-- 댓글 작성 영역 (회원 전용) -->
-        <div class="comment-write-box">
 
-            <h4 class="comment-write-title">댓글 작성</h4>
+        <!-- =======================
+              댓글 작성 영역
+        ======================== -->
+        <div class="comment-write-box">
 
             <!-- 로그인 x -->
             <div th:if="${nickname == null}" class="comment-login-required">
@@ -114,9 +179,12 @@
             </div>
         </div>
 
-    </div>
+    </div> <!-- 댓글 섹션 종료 -->
 
-    <!-- 목록 버튼 -->
+
+    <!-- =======================
+         목록 / 홈 버튼
+    ======================== -->
     <div class="detail-btn-container">
         <a th:href="@{/content/category(page=${page}, keyword=${keyword}, searchType=${searchType})}"
            class="btn btn-outline-secondary detail-btn">
@@ -129,55 +197,193 @@
         </a>
     </div>
 
-</div>
+</div> <!-- post-detail-container END -->
 
-<!-- 댓글 작성 AJAX -->
+
+<!-- ===========================
+     댓글 관련 AJAX SCRIPT
+=========================== -->
 <script th:inline="javascript">
+
+    /* --------------------------
+       1) 댓글 작성
+    --------------------------- */
     document.addEventListener("DOMContentLoaded", function () {
-        // 🔥 댓글 등록 버튼 요소 찾기
+
         const submitBtn = document.getElementById("comment-submit");
-        if (!submitBtn) return;   // 버튼이 없으면 실행 중지
+        if (submitBtn) {
 
-        submitBtn.addEventListener("click", async () => {
+            submitBtn.addEventListener("click", async () => {
+                const content = document.getElementById("comment-content").value;
+                const postId = [[${post.id}]];
 
-            // 🔥 사용자가 입력한 댓글 내용 가져오기
-            const content = document.getElementById("comment-content").value;
+                if (!content.trim()) {
+                    alert("댓글 내용을 입력해주세요.");
+                    return;
+                }
 
-            // 🔥 현재 게시글 ID를 Thymeleaf에서 직접 삽입
-            const postId = [[${post.id}]];
+                const response = await fetch("/content/comment", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({postId: postId, content: content})
+                });
 
-            // 🔥 내용이 비어 있으면 경고 후 중단
-            if (!content.trim()) {
-                alert("댓글 내용을 입력해주세요.");
-                return;
-            }
+                const result = await response.text();
 
-            // 🔥 서버에 댓글 저장 요청 (AJAX)
-            // fetch() → /content/comment 로 JSON 데이터 전달
-            const response = await fetch("/content/comment", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    postId: postId,   // 어떤 게시글인지
-                    content: content  // 댓글 내용
-                })
+                if (result === "SUCCESS") {
+                    alert("댓글이 등록되었습니다.");
+                    location.reload();
+                } else if (result === "NOT_LOGIN") {
+                    alert("로그인이 필요합니다.");
+                } else {
+                    alert("댓글 등록 실패");
+                }
             });
+        }
 
-            // 🔥 서버에서 반환한 문자열 확인 ("SUCCESS" / "NOT_LOGIN" / "FAIL")
-            const result = await response.text();
+        /* --------------------------
+           2) 댓글 삭제
+        --------------------------- */
+        document.querySelectorAll(".comment-delete-btn").forEach(btn => {
+            btn.addEventListener("click", async () => {
 
-            // 🔥 결과에 따라 안내 메시지 출력
-            if (result === "SUCCESS") {
-                alert("댓글이 등록되었습니다.");
-                location.reload(); // 새로고침 → 댓글 목록 업데이트
-            } else if (result === "NOT_LOGIN") {
-                alert("로그인이 필요합니다.");
-            } else {
-                alert("댓글 등록 실패");
-            }
+                const id = btn.dataset.id;
+                if (!confirm("정말 삭제하시겠습니까?")) return;
+
+                const res = await fetch(`/content/comment/${id}`, {method: "DELETE"});
+                const result = await res.text();
+
+                if (result === "SUCCESS") location.reload();
+                else if (result === "NO_PERMISSION") alert("삭제 권한이 없습니다.");
+                else alert("삭제 실패");
+            });
         });
+
+        /* --------------------------
+           3) 댓글 수정
+        --------------------------- */
+        document.querySelectorAll(".comment-edit-btn").forEach(btn => {
+            btn.addEventListener("click", () => {
+                const id = btn.dataset.id;
+                const box = btn.closest(".comment-item-box");
+                const contentDiv = box.querySelector(".comment-text");
+
+                const oldText = contentDiv.innerText;
+
+                // 기존 수정/삭제 버튼 숨기기
+                box.querySelectorAll(".comment-actions button").forEach(b => b.style.display = "none");
+
+                // 수정모드 UI로 교체
+                contentDiv.innerHTML = `
+            <textarea class="edit-area">${oldText}</textarea>
+            <div class="edit-action-wrapper">
+                <button class="save-edit-btn">저장</button>
+                <button class="cancel-edit-btn">취소</button>
+            </div>
+        `;
+
+                // 저장 버튼 클릭
+                contentDiv.querySelector(".save-edit-btn").addEventListener("click", async () => {
+                    const newText = contentDiv.querySelector(".edit-area").value;
+
+                    const res = await fetch(`/content/comment/${id}`, {
+                        method: "PUT",
+                        headers: {"Content-Type": "application/json"},
+                        body: JSON.stringify({content: newText})
+                    });
+
+                    const result = await res.text();
+
+                    if (result === "SUCCESS") location.reload();
+                    else alert("수정 실패");
+                });
+
+                // 취소 버튼 → 원래 UI 복구
+                contentDiv.querySelector(".cancel-edit-btn").addEventListener("click", () => {
+                    location.reload();
+                });
+            });
+        });
+
     });
 </script>
+
+<style>
+    /* 수정,삭제 버튼 스타일 */
+    .comment-edit-btn,
+    .comment-delete-btn {
+        padding: 6px 14px;
+        border-radius: 6px;
+        font-size: 14px;
+        cursor: pointer;
+        border: none;
+    }
+
+    .comment-edit-btn {
+        background: #4e73df;
+        color: #fff;
+    }
+
+    .comment-edit-btn:hover {
+        background: #3b5cc4;
+    }
+
+    .comment-delete-btn:hover {
+        background: #cacaca;
+    }
+
+    /* 댓글 작성 영역과 버튼 영역 사이 여백 추가 */
+    .comment-write-box {
+        margin-bottom: 30px;
+    }
+
+    /* ============================================
+   🔥 본문과 댓글 사이 구분선 + 여백
+============================================ */
+
+    /* 본문 + 해시태그 전체 아래 구분선 */
+    .post-hashtags {
+        margin-bottom: 30px;          /* 해시태그 아래 여백 */
+        padding-bottom: 20px;         /* 구분선 위쪽 공간 */
+        border-bottom: 1px solid #e5e5e5;  /* 구분선 */
+    }
+
+    .post-detail-content {
+        font-size: 16px;
+        line-height: 1.7;
+        color: #333;
+        white-space: pre-line;
+        margin-top: 35px;
+        margin-bottom: 100px; /* 👈 우리가 원하는 값 */
+        padding-bottom: 10px;
+    }
+
+
+    /* ============================================
+       🔥 댓글 섹션 상단 여백
+    ============================================ */
+    .comment-section {
+        margin-top: 40px;
+    }
+
+    /* ============================================
+       🔥 댓글 작성 제목 디자인 개선
+    ============================================ */
+
+    /* 댓글 박스와 아래 버튼 사이 공간 (이미 존재하지만 조금 조정 가능) */
+    .comment-write-box {
+        margin-bottom: 35px;
+    }
+
+    /* 댓글 타이틀(댓글)도 스타일 통일감 있게 */
+    .comment-title {
+        font-size: 20px;
+        font-weight: 700;
+        margin-bottom: 15px;
+    }
+
+
+</style>
 
 
 <!-- footer -->

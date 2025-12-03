@@ -208,7 +208,36 @@
     .board-table td {
         text-align: center;
     }
+
+    /* ================================
+       게시글 제목 링크 색상 제어
+       방문 전 = 검정
+       방문 후 = 보라색
+       hover = 파란색
+       ================================= */
+
+    /* 기본 링크 색상 (방문 전) */
+    .board-table a:link {
+        color: #222;
+        text-decoration: none;
+    }
+
+    /* 방문한 링크 색상 */
+    .board-table a:visited {
+        color: #8b4cf5;  /* 보라색 */
+    }
+
+    /* 마우스 올렸을 때 */
+    .board-table a:hover {
+        color: #0070f3;  /* 파란색 */
+    }
+
+    /* 클릭 시(active) */
+    .board-table a:active {
+        color: #4b2ca6;
+    }
 </style>
+
 
 <!-- footer -->
 <th:block th:replace="content/layout/footer :: footer"></th:block>

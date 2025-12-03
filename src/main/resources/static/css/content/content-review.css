@@ -64,15 +64,14 @@ body {
    홈 – 최신 콘텐츠 + 사이드바
 ================================ */
 
-/* 큰 화면 / 중간 화면 공통 — 3열 유지 */
 .home-wrapper {
     width: 100%;
-    max-width: 1400px;  /* 전체 최대폭을 더 넓게 */
-    margin: 0 auto;     /* 완전한 가운데 정렬 */
-    padding: 40px 40px; /* 좌우 여백 균형 있게 추가 */
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 40px;
 
     display: grid;
-    grid-template-columns: 1.5fr 0.8fr; /* 좌측 넓게, 사이드바 넓게 */
+    grid-template-columns: 1fr 300px; /* ← 비율 대신 '고정' */
     gap: 40px;
     align-items: start;
 }
@@ -147,10 +146,12 @@ body {
     position: sticky;
     top: 110px;
     height: fit-content;
+    min-width: 260px; /* 사이드바가 얇아지지 않게 최소 폭 보장 */
 }
 
 .popular-box {
     background: white;
+    width: 100%;
     padding: 20px;
     border-radius: 12px;
     box-shadow: 0 3px 12px rgba(0,0,0,0.08);
@@ -196,11 +197,11 @@ body {
    반응형 레이아웃
 ============================= */
 
-/* 700px ~ 1099px : 3열 유지, 폭만 조정 */
+/* 태블릿 ~ 작은 데스크탑 */
 @media (max-width: 1099px) {
     .home-wrapper {
-        grid-template-columns: 1fr 1fr 250px; /* 사이드바 폭만 줄이기 */
-        gap: 20px;
+        grid-template-columns: 1fr 260px; /* 사이드바 폭만 줄이기 */
+        gap: 25px;
     }
 }
 
@@ -215,7 +216,9 @@ body {
     }
 
     .sidebar {
-        position: static;  /* sticky 해제 */
+        position: static;
+        width: 100%;
+        min-width: 0; /* 모바일에서는 전체 가로폭 사용 */
         margin-top: 20px;
     }
 }
@@ -249,14 +252,6 @@ body {
     border-bottom: 1px solid #eee;
 }
 
-.post-detail-content {
-    font-size: 16px;
-    line-height: 1.7;
-    color: #333;
-    white-space: pre-line;
-    margin-top: 35px;
-    margin-bottom: 200px;
-}
 
 /* 태그 */
 .tag-item {
@@ -360,6 +355,66 @@ body {
 .comment-submit-btn:hover {
     background: #3c59dd;
 }
+
+/* ----------------------------
+    댓글 수정 모드 디자인 개선
+-----------------------------*/
+
+/* 수정 textarea */
+.edit-area {
+    width: 100%;
+    min-height: 80px;
+    padding: 10px 12px;
+    border: 1px solid #dcdcdc;
+    border-radius: 6px;
+    font-size: 14px;
+    resize: vertical;
+    box-sizing: border-box;
+    margin-bottom: 10px;
+}
+
+/* 버튼 영역 */
+.edit-action-wrapper {
+    display: flex;
+    gap: 8px;
+}
+
+/* 저장/취소 버튼 통일 디자인 */
+.save-edit-btn,
+.cancel-edit-btn {
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    border: none;
+}
+
+/* 저장 버튼 */
+.save-edit-btn {
+    background: #4e73df;
+    color: #fff;
+}
+
+/* 취소 버튼 */
+.cancel-edit-btn {
+    background: #e0e0e0;
+    color: #333;
+}
+
+/* 호버 효과 */
+.save-edit-btn:hover {
+    background: #3b5cc4;
+}
+
+.cancel-edit-btn:hover {
+    background: #cacaca;
+}
+
+/* 수정 상태에서 글자 위치 조금 내려주기 */
+.comment-text {
+    margin-top: 10px;
+}
+
 
 /* ============================
    카테고리 페이지
