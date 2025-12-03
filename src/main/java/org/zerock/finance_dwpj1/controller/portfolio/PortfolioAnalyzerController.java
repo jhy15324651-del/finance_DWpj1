@@ -1,0 +1,161 @@
+package org.zerock.finance_dwpj1.controller.portfolio;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.zerock.finance_dwpj1.dto.portfolio.PortfolioAnalysisRequest;
+import org.zerock.finance_dwpj1.dto.portfolio.PortfolioAnalysisResponse;
+import org.zerock.finance_dwpj1.service.portfolio.OcrService;
+import org.zerock.finance_dwpj1.service.portfolio.PortfolioMatchingService;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+/**
+ * 포트폴리오 분석 REST API 컨트롤러
+ */
+@RestController
+@RequestMapping("/api/portfolio")
+@RequiredArgsConstructor
+@Slf4j
+public class PortfolioAnalyzerController {
+
+    private final OcrService ocrService;
+    private final PortfolioMatchingService matchingService;
+
+    /**
+     * OCR로 이미지에서 포트폴리오 추출
+     */
+    @PostMapping("/extract-from-image")
+    public ResponseEntity<Map<String, Object>> extractFromImage(
+            @RequestParam("image") MultipartFile image) {
+
+        log.info("이미지 OCR 요청: {} ({} bytes)", image.getOriginalFilename(), image.getSize());
+
+        try {
+            List<OcrService.PortfolioStock> stocks = ocrService.extractPortfolioFromImage(image);
+
+            // 응답 구성
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("stocks", stocks);
+            response.put("count", stocks.size());
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            log.error("OCR 처리 중 오류", e);
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("error", e.getMessage());
+            return ResponseEntity.status(500).body(errorResponse);
+        }
+    }
+
+    /**
+     * 포트폴리오 분석 (투자대가 매칭)
+     */
+    @PostMapping("/analyze")
+    public ResponseEntity<PortfolioAnalysisResponse> analyzePortfolio(
+            @RequestBody PortfolioAnalysisRequest request) {
+
+        log.info("포트폴리오 분석 요청: {} 종목", request.getPortfolio().size());
+
+        try {
+            // TOP 3 투자대가 매칭
+            List<PortfolioMatchingService.MatchResult> topMatches =
+                    matchingService.findTopMatches(request.getPortfolio());
+
+            // MatchResult를 DTO로 변환 (순위 포함)
+            List<PortfolioAnalysisResponse.InvestorMatch> investorMatches =
+                    IntStream.range(0, topMatches.size())
+                            .mapToObj(i -> PortfolioAnalysisResponse.fromMatchResult(
+                                    topMatches.get(i), i + 1))
+                            .collect(Collectors.toList());
+
+            // 더미 콘텐츠 추천 생성
+            List<PortfolioAnalysisResponse.ContentRecommendation> dummyContents =
+                    generateDummyContentRecommendations(topMatches);
+
+            // 응답 구성
+            PortfolioAnalysisResponse response = PortfolioAnalysisResponse.builder()
+                    .topMatches(investorMatches)
+                    .recommendedContents(dummyContents)
+                    .build();
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            log.error("포트폴리오 분석 중 오류", e);
+            return ResponseEntity.status(500).build();
+        }
+    }
+
+    /**
+     * 더미 콘텐츠 추천 데이터 생성
+     * (실제로는 콘텐츠 DB에서 조회)
+     */
+    private List<PortfolioAnalysisResponse.ContentRecommendation> generateDummyContentRecommendations(
+            List<PortfolioMatchingService.MatchResult> matches) {
+
+        List<PortfolioAnalysisResponse.ContentRecommendation> contents = new ArrayList<>();
+
+        // TOP 1 투자대가 기반 콘텐츠
+        if (!matches.isEmpty()) {
+            String topInvestor = matches.get(0).getInvestorName();
+
+            contents.add(PortfolioAnalysisResponse.ContentRecommendation.builder()
+                    .contentId(1L)
+                    .title(topInvestor + "의 투자 철학과 성공 비결")
+                    .category("투자 전략")
+                    .rating(4.8)
+                    .thumbnailUrl("/images/content/dummy1.jpg")
+                    .keyword(topInvestor)
+                    .build());
+
+            contents.add(PortfolioAnalysisResponse.ContentRecommendation.builder()
+                    .contentId(2L)
+                    .title("가치투자 vs 성장주 투자: 어떤 전략이 나에게 맞을까?")
+                    .category("투자 입문")
+                    .rating(4.7)
+                    .thumbnailUrl("/images/content/dummy2.jpg")
+                    .keyword("투자 전략")
+                    .build());
+
+            contents.add(PortfolioAnalysisResponse.ContentRecommendation.builder()
+                    .contentId(3L)
+                    .title("포트폴리오 분산투자의 중요성")
+                    .category("리스크 관리")
+                    .rating(4.6)
+                    .thumbnailUrl("/images/content/dummy3.jpg")
+                    .keyword("분산투자")
+                    .build());
+
+            contents.add(PortfolioAnalysisResponse.ContentRecommendation.builder()
+                    .contentId(4L)
+                    .title("초보 투자자가 피해야 할 5가지 실수")
+                    .category("투자 팁")
+                    .rating(4.9)
+                    .thumbnailUrl("/images/content/dummy4.jpg")
+                    .keyword("투자 실수")
+                    .build());
+
+            contents.add(PortfolioAnalysisResponse.ContentRecommendation.builder()
+                    .contentId(5L)
+                    .title("2024년 주목해야 할 산업과 종목")
+                    .category("시장 분석")
+                    .rating(4.5)
+                    .thumbnailUrl("/images/content/dummy5.jpg")
+                    .keyword("시장 전망")
+                    .build());
+        }
+
+        return contents;
+    }
+}
