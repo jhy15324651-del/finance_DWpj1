@@ -3,11 +3,15 @@ package org.zerock.finance_dwpj1.controller.stock;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.zerock.finance_dwpj1.dto.stock.StockBoardDTO;
+import org.zerock.finance_dwpj1.dto.user.UserSessionDTO;
 import org.zerock.finance_dwpj1.service.stock.StockBoardService;
+import org.zerock.finance_dwpj1.service.user.CustomUserDetails;
+
 
 @Controller
 @RequestMapping("/stock/board")
@@ -26,7 +30,11 @@ public class StockBoardController {
      * GET /stock/board/005930/write
      */
     @GetMapping("/{ticker}/write")
-    public String writeForm(@PathVariable String ticker, Model model) {
+    public String writeForm(@PathVariable String ticker, @AuthenticationPrincipal CustomUserDetails loginUser, Model model) {
+
+        if(loginUser==null){
+            return "redirect:/user/login";
+        }
 
         StockBoardDTO dto = StockBoardDTO.builder()
                 .ticker(ticker)
@@ -34,6 +42,7 @@ public class StockBoardController {
 
         model.addAttribute("dto", dto);
         model.addAttribute("ticker", ticker);
+        model.addAttribute("loginUser", loginUser);
 
         return "stock/board/write"; // templates/stock/board/write.html
     }
@@ -44,9 +53,12 @@ public class StockBoardController {
      */
     @PostMapping("/{ticker}/write")
     public String write(@PathVariable String ticker,
-                        @ModelAttribute("dto") StockBoardDTO dto) {
+                        @ModelAttribute("dto") StockBoardDTO dto,
+                        @AuthenticationPrincipal CustomUserDetails loginUser) {
 
-        dto.setTicker(ticker); // path variable 기준으로 강제 세팅
+
+        dto.setWriter(loginUser.getNickname());
+        dto.setTicker(ticker); // path 기준 강제
 
         stockBoardService.register(dto);
 

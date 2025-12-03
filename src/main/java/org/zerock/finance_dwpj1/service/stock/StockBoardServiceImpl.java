@@ -32,7 +32,7 @@ public class StockBoardServiceImpl implements StockBoardService {
     @Transactional(readOnly = true)
     public StockBoardDTO get(Long id) {
         StockBoard board = stockBoardRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 글입니다. id=" + id));
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 글입니다."));
 
         return entityToDto(board);
     }
@@ -47,12 +47,10 @@ public class StockBoardServiceImpl implements StockBoardService {
     @Override
     public void modify(StockBoardDTO dto) {
         StockBoard board = stockBoardRepository.findById(dto.getId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 글입니다. id=" + dto.getId()));
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 글입니다."));
 
         board.setTitle(dto.getTitle());
         board.setContent(dto.getContent());
-        // writer, ticker은 보통 수정 안 함
-
         // 더티 체킹으로 자동 update
     }
 
@@ -60,6 +58,18 @@ public class StockBoardServiceImpl implements StockBoardService {
     public void remove(Long id) {
         stockBoardRepository.deleteById(id);
     }
+
+//    @Override
+//    public void addRecommend(Long boardId, Long memberId){
+//
+//        if (voteService.hasVoted(boardId, memberId)){
+//            throw new IllegalStateException("이미 추천한 글입니다.");
+//        }
+//
+//        StockBoard board = stockBoardRepository.findById(boardId);
+//
+//    }
+
 
     // ======== 변환 메서드 ========
 
