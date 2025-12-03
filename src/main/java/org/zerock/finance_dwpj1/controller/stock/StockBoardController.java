@@ -35,8 +35,7 @@ public class StockBoardController {
             @PathVariable String ticker,
             @AuthenticationPrincipal CustomUserDetails loginUser,
             Model model) {
-
-        // 로그인 확인
+        // 로그인 필요
         if (loginUser == null) {
             return "redirect:/user/login";
         }
@@ -61,8 +60,7 @@ public class StockBoardController {
     public String write(
             @PathVariable String ticker,
             @ModelAttribute("dto") StockBoardDTO dto,
-            @AuthenticationPrincipal CustomUserDetails loginUser
-    ) {
+            @AuthenticationPrincipal CustomUserDetails loginUser) {
 
         //  로그인 확인
         if (loginUser == null) {
