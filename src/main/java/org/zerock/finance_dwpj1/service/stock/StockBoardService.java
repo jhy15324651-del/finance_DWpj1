@@ -20,4 +20,14 @@ public interface StockBoardService {
 
     // 글 삭제
     void remove(Long id);
+
+
+    //추천
+   // void addRecommend(Long id);
+
+    //비추천
+   // void addUnrecommend(Long id);
+
+    //조회수
+    //void addview(Long id);
 }

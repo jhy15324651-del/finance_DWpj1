@@ -24,4 +24,10 @@ public class StockBoardDTO {
     private LocalDateTime modDate;
 
     private int view;
+
+    private int recommend;
+
+    private int unrecommend;
+
+    private String commentCount;
 }

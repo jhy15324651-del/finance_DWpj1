@@ -1,14 +1,19 @@
 package org.zerock.finance_dwpj1.controller.stock;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.zerock.finance_dwpj1.dto.stock.StockBoardDTO;
+import org.zerock.finance_dwpj1.dto.user.UserSessionDTO;
 import org.zerock.finance_dwpj1.service.stock.StockBoardService;
+import org.zerock.finance_dwpj1.service.user.CustomUserDetails;
 
+@Slf4j
 @Controller
 @RequestMapping("/stock/board")
 @RequiredArgsConstructor
@@ -26,7 +31,14 @@ public class StockBoardController {
      * GET /stock/board/005930/write
      */
     @GetMapping("/{ticker}/write")
-    public String writeForm(@PathVariable String ticker, Model model) {
+    public String writeForm(
+            @PathVariable String ticker,
+            @AuthenticationPrincipal CustomUserDetails loginUser,
+            Model model) {
+        // 로그인 필요
+        if (loginUser == null) {
+            return "redirect:/user/login";
+        }
 
         StockBoardDTO dto = StockBoardDTO.builder()
                 .ticker(ticker)
@@ -34,24 +46,37 @@ public class StockBoardController {
 
         model.addAttribute("dto", dto);
         model.addAttribute("ticker", ticker);
+        model.addAttribute("loginUser", loginUser);
 
-        return "stock/board/write"; // templates/stock/board/write.html
+        return "stock/board/write";
     }
+
 
     /**
      * 글쓰기 처리
      * POST /stock/board/005930/write
      */
     @PostMapping("/{ticker}/write")
-    public String write(@PathVariable String ticker,
-                        @ModelAttribute("dto") StockBoardDTO dto) {
+    public String write(
+            @PathVariable String ticker,
+            @ModelAttribute("dto") StockBoardDTO dto,
+            @AuthenticationPrincipal CustomUserDetails loginUser) {
 
-        dto.setTicker(ticker); // path variable 기준으로 강제 세팅
+        //  로그인 확인
+        if (loginUser == null) {
+            return "redirect:/user/login";
+        }
+
+        // 작성자 자동 설정
+        dto.setWriter(loginUser.getNickname());
+        dto.setTicker(ticker);
+
 
         stockBoardService.register(dto);
 
         return "redirect:/stock/board/" + ticker;
     }
+
 
 
     @GetMapping("/{ticker}/read/{id}")

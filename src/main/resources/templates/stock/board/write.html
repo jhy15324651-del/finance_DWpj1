@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout1}">
+
+<head>
+<!--    <meta name="_csrf" th:content="${_csrf.token}"/>-->
+<!--    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>-->
+</head>
+
+<div layout:fragment="content" class="container mt-4">
+
+    <h2 class="mb-4">[ [[${ticker}]] ] 게시판 글쓰기</h2>
+
+    <form th:action="@{|/stock/board/${ticker}/write|}"
+          th:object="${dto}"
+          method="post">
+
+        <!-- 제목 -->
+        <div class="form-group mb-3">
+            <label>제목</label>
+            <input type="text" class="form-control"
+                   th:field="*{title}"
+                   placeholder="제목을 입력하세요"
+                   required>
+        </div>
+
+<!--        &lt;!&ndash; 작성자 &ndash;&gt;-->
+<!--        <div class="form-group mb-3">-->
+<!--            <label>작성자</label>-->
+<!--            <input type="text" class="form-control"-->
+<!--                   th:field="*{writer}"-->
+<!--                   placeholder="닉네임 또는 작성자명"-->
+<!--                   required>-->
+<!--        </div>-->
+
+        <!-- 내용 -->
+        <div class="form-group mb-3">
+            <label>내용</label>
+            <textarea class="form-control"
+                      th:field="*{content}"
+                      rows="10"
+                      placeholder="내용을 입력하세요"
+                      required></textarea>
+        </div>
+
+        <!-- 감춰진 ticker 값 -->
+        <input type="hidden" th:field="*{ticker}"/>
+
+        <!-- 버튼 영역 -->
+        <div class="mt-4">
+            <button type="submit" class="btn btn-primary">등록하기</button>
+            <a th:href="@{|/stock/board/${ticker}|}"
+               class="btn btn-secondary">뒤로가기</a>
+        </div>
+
+    </form>
+
+</div>
+
+</html>

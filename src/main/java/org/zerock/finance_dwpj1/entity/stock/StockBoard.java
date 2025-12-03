@@ -46,4 +46,14 @@ public class StockBoard {
     public void onUpdate() {
         this.modDate = LocalDateTime.now();
     }
+
+    @Column(nullable = false)
+    private int recommend = 0;
+
+    @Column(nullable = false)
+    private int unrecommend = 0;
+
+    @Column(nullable = false)
+    private int view = 0;
+
 }
