@@ -1,6 +1,7 @@
 package org.zerock.finance_dwpj1.controller.stock;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -12,7 +13,7 @@ import org.zerock.finance_dwpj1.dto.user.UserSessionDTO;
 import org.zerock.finance_dwpj1.service.stock.StockBoardService;
 import org.zerock.finance_dwpj1.service.user.CustomUserDetails;
 
-
+@Slf4j
 @Controller
 @RequestMapping("/stock/board")
 @RequiredArgsConstructor
@@ -30,9 +31,13 @@ public class StockBoardController {
      * GET /stock/board/005930/write
      */
     @GetMapping("/{ticker}/write")
-    public String writeForm(@PathVariable String ticker, @AuthenticationPrincipal CustomUserDetails loginUser, Model model) {
+    public String writeForm(
+            @PathVariable String ticker,
+            @AuthenticationPrincipal CustomUserDetails loginUser,
+            Model model) {
 
-        if(loginUser==null){
+        // 로그인 확인
+        if (loginUser == null) {
             return "redirect:/user/login";
         }
 
@@ -44,26 +49,36 @@ public class StockBoardController {
         model.addAttribute("ticker", ticker);
         model.addAttribute("loginUser", loginUser);
 
-        return "stock/board/write"; // templates/stock/board/write.html
+        return "stock/board/write";
     }
+
 
     /**
      * 글쓰기 처리
      * POST /stock/board/005930/write
      */
     @PostMapping("/{ticker}/write")
-    public String write(@PathVariable String ticker,
-                        @ModelAttribute("dto") StockBoardDTO dto,
-                        @AuthenticationPrincipal CustomUserDetails loginUser) {
+    public String write(
+            @PathVariable String ticker,
+            @ModelAttribute("dto") StockBoardDTO dto,
+            @AuthenticationPrincipal CustomUserDetails loginUser
+    ) {
 
+        //  로그인 확인
+        if (loginUser == null) {
+            return "redirect:/user/login";
+        }
 
+        // 작성자 자동 설정
         dto.setWriter(loginUser.getNickname());
-        dto.setTicker(ticker); // path 기준 강제
+        dto.setTicker(ticker);
+
 
         stockBoardService.register(dto);
 
         return "redirect:/stock/board/" + ticker;
     }
+
 
 
     @GetMapping("/{ticker}/read/{id}")
