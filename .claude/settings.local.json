@@ -6,7 +6,11 @@
       "Bash(src/main/resources/static/upload/.gitkeep)",
       "Bash(./gradlew clean build:*)",
       "Bash(./gradlew clean:*)",
-      "Bash(git mv:*)"
+      "Bash(git mv:*)",
+      "Bash(if [ -d \"src/main/resources/static/upload\" ])",
+      "Bash(then echo \"exists\")",
+      "Bash(else echo \"not found\")",
+      "Bash(fi)"
     ],
     "deny": [],
     "ask": []

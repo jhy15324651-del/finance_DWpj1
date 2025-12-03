@@ -40,6 +40,11 @@ public class PageController {
         return "portfolio/portfolio-comparison";
     }
 
+    @GetMapping("/portfolio/analyzer")
+    public String portfolioAnalyzer() {
+        return "portfolio/portfolio-analyzer";
+    }
+
     @GetMapping("/user/mypage")
     public String myPage() {
         return "user/mypage";
@@ -48,5 +53,10 @@ public class PageController {
     @GetMapping("/admin/twitter")
     public String twitterAdmin() {
         return "admin/twitter-admin";
+    }
+
+    @GetMapping("/admin")
+    public String adminMain() {
+        return "admin/admin-main";
     }
 }

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>나의 투자 스타일 분석 - 당신은 어떤 투자대가와 닮았을까?</title>
+    <link rel="stylesheet" href="/css/portfolio/analyzer.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- 배경 애니메이션 -->
+    <div class="golden-particles"></div>
+
+    <div class="container">
+        <!-- 헤더 -->
+        <header class="hero-header">
+            <div class="crown-icon">
+                <i class="fas fa-crown"></i>
+            </div>
+            <h1 class="main-title">
+                <span class="shine">나의 투자 스타일 분석</span>
+            </h1>
+            <p class="subtitle">당신은 어떤 투자대가와 닮았을까요?</p>
+        </header>
+
+        <!-- Step 1: 이미지 업로드 -->
+        <section id="upload-section" class="section active">
+            <div class="upload-card">
+                <div class="upload-icon">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                </div>
+                <h2>포트폴리오 이미지 업로드</h2>
+                <p>증권사 앱 스크린샷을 업로드하거나 직접 입력하세요</p>
+
+                <div class="upload-area" id="upload-area">
+                    <input type="file" id="image-input" accept="image/*" hidden>
+                    <div class="upload-placeholder">
+                        <i class="fas fa-image"></i>
+                        <p>클릭하거나 이미지를 드래그하세요</p>
+                    </div>
+                    <img id="preview-image" class="preview-image" style="display: none;">
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-primary" onclick="document.getElementById('image-input').click()">
+                        <i class="fas fa-upload"></i> 이미지 선택
+                    </button>
+                    <button class="btn-secondary" onclick="skipToManualInput()">
+                        <i class="fas fa-keyboard"></i> 직접 입력하기
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Step 2: 수동 입력 -->
+        <section id="input-section" class="section">
+            <div class="input-card">
+                <h2>보유 종목 입력</h2>
+                <p>이미지를 보면서 종목과 비중을 입력하세요</p>
+
+                <div id="stock-list" class="stock-list">
+                    <!-- 동적으로 추가됨 -->
+                </div>
+
+                <button class="btn-add" onclick="addStockRow()">
+                    <i class="fas fa-plus"></i> 종목 추가
+                </button>
+
+                <div class="total-weight">
+                    합계: <span id="total-weight">0</span>%
+                    <span class="weight-status" id="weight-status"></span>
+                </div>
+
+                <button class="btn-analyze" onclick="analyzePortfolio()">
+                    <i class="fas fa-chart-line"></i> 투자 성향 분석하기
+                </button>
+            </div>
+        </section>
+
+        <!-- Step 3: 로딩 -->
+        <section id="loading-section" class="section">
+            <div class="loading-card">
+                <div class="loading-spinner">
+                    <div class="trophy-spin">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                </div>
+                <h2>당신의 투자 스타일을 분석 중입니다...</h2>
+                <p class="loading-text">잠시만 기다려주세요</p>
+            </div>
+        </section>
+
+        <!-- Step 4: 결과 -->
+        <section id="result-section" class="section">
+            <!-- TOP 3 투자대가 매칭 결과 -->
+            <div class="results-header">
+                <h2 class="results-title">
+                    <i class="fas fa-medal"></i> 당신과 가장 닮은 투자대가 TOP 3
+                </h2>
+            </div>
+
+            <div id="top-matches" class="top-matches">
+                <!-- 동적으로 추가됨 -->
+            </div>
+
+            <!-- 콘텐츠 추천 -->
+            <div class="content-recommendation">
+                <h3><i class="fas fa-book"></i> 추천 콘텐츠</h3>
+                <div id="recommended-contents" class="content-grid">
+                    <!-- 동적으로 추가됨 -->
+                </div>
+            </div>
+
+            <button class="btn-restart" onclick="restart()">
+                <i class="fas fa-redo"></i> 다시 분석하기
+            </button>
+        </section>
+    </div>
+
+    <script src="/js/portfolio/analyzer.js"></script>
+</body>
+</html>

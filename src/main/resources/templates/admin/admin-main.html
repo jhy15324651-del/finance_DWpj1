@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리자 페이지</title>
+    <link rel="stylesheet" th:href="@{/css/admin/admin-main.css}">
+</head>
+<body>
+<div class="admin-container">
+    <!-- 헤더 -->
+    <header class="admin-header">
+        <div class="header-left">
+            <h1>📊 Finance 관리자 페이지</h1>
+        </div>
+        <div class="header-right">
+            <span class="user-info" sec:authentication="name">관리자</span>
+            <a th:href="@{/}" class="btn-link">메인으로</a>
+            <form th:action="@{/logout}" method="post" style="display: inline;">
+                <button type="submit" class="btn-logout">로그아웃</button>
+            </form>
+        </div>
+    </header>
+
+    <!-- 탭 네비게이션 -->
+    <nav class="admin-tabs">
+        <button class="tab-btn active" data-tab="twitter">
+            🐦 트위터 관리
+        </button>
+        <button class="tab-btn" data-tab="portfolio">
+            💼 포트폴리오 관리
+        </button>
+        <button class="tab-btn" data-tab="news">
+            📰 뉴스 관리
+        </button>
+        <button class="tab-btn" data-tab="content">
+            📝 콘텐츠리뷰 관리
+        </button>
+        <!-- 확장 가능 공간 -->
+    </nav>
+
+    <!-- 탭 컨텐츠 영역 -->
+    <main class="admin-main">
+
+        <!-- 트위터 관리 탭 -->
+        <div class="tab-content active" id="twitter-tab">
+            <div class="tab-header">
+                <h2>트위터 인사이트 관리</h2>
+                <div class="header-buttons">
+                    <button class="btn-primary" onclick="openAddModal()">+ 새 트윗 추가</button>
+                    <button class="btn-secondary" onclick="initializeDummyData()">더미 데이터 초기화</button>
+                </div>
+            </div>
+
+            <div class="stats-section">
+                <div class="stat-card">
+                    <div class="stat-label">전체 트윗</div>
+                    <div class="stat-value" id="total-count">0</div>
+                </div>
+            </div>
+
+            <div class="content-section">
+                <h3>트윗 목록</h3>
+                <div id="tweet-list" class="tweet-list">
+                    <div class="loading">로딩 중...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 포트폴리오 관리 탭 -->
+        <div class="tab-content" id="portfolio-tab">
+            <div class="tab-header">
+                <h2>포트폴리오 관리</h2>
+            </div>
+
+            <div class="stats-section">
+                <div class="stat-card">
+                    <div class="stat-label">등록된 투자자</div>
+                    <div class="stat-value" id="investor-count">10</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">13F 보유 종목</div>
+                    <div class="stat-value" id="holdings-count">0</div>
+                </div>
+            </div>
+
+            <div class="content-section">
+                <h3>13F 데이터 수집</h3>
+                <p class="description">
+                    SEC 13F 보고서에서 투자대가들의 포트폴리오 데이터를 수집합니다.<br>
+                    <small>※ SEC API 호출로 시간이 소요될 수 있습니다 (약 2-5분)</small>
+                </p>
+
+                <div class="action-buttons">
+                    <button class="btn-primary btn-large" onclick="fetchAll13FData()">
+                        📊 전체 투자자 13F 데이터 수집
+                    </button>
+                </div>
+
+                <div id="fetch-status" class="fetch-status"></div>
+
+                <div class="investor-list">
+                    <h4>개별 투자자 데이터 수집</h4>
+                    <div class="investor-grid">
+                        <button class="investor-btn" onclick="fetch13FData('buffett')">Warren Buffett</button>
+                        <button class="investor-btn" onclick="fetch13FData('wood')">Cathie Wood</button>
+                        <button class="investor-btn" onclick="fetch13FData('dalio')">Ray Dalio</button>
+                        <button class="investor-btn" onclick="fetch13FData('soros')">George Soros</button>
+                        <button class="investor-btn" onclick="fetch13FData('lynch')">Peter Lynch</button>
+                        <button class="investor-btn" onclick="fetch13FData('graham')">Benjamin Graham</button>
+                        <button class="investor-btn" onclick="fetch13FData('thiel')">Peter Thiel</button>
+                        <button class="investor-btn" onclick="fetch13FData('fink')">Larry Fink</button>
+                        <button class="investor-btn" onclick="fetch13FData('simons')">Jim Simons</button>
+                        <button class="investor-btn" onclick="fetch13FData('ackman')">Bill Ackman</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 뉴스 관리 탭 -->
+        <div class="tab-content" id="news-tab">
+            <div class="tab-header">
+                <h2>뉴스 관리</h2>
+            </div>
+            <div class="content-section">
+                <p class="empty-state">뉴스 관리 기능은 준비 중입니다.</p>
+            </div>
+        </div>
+
+        <!-- 콘텐츠리뷰 관리 탭 -->
+        <div class="tab-content" id="content-tab">
+            <div class="tab-header">
+                <h2>콘텐츠리뷰 관리</h2>
+            </div>
+            <div class="content-section">
+                <p class="empty-state">콘텐츠리뷰 관리 기능은 준비 중입니다.</p>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<!-- 트윗 추가/수정 모달 (트위터 탭용) -->
+<div id="tweetModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <h2 id="modal-title">새 트윗 추가</h2>
+
+        <form id="tweet-form">
+            <input type="hidden" id="tweet-id">
+
+            <div class="form-group">
+                <label for="tweet-name">이름 *</label>
+                <input type="text" id="tweet-name" required placeholder="예: Cathie Wood">
+            </div>
+
+            <div class="form-group">
+                <label for="tweet-handle">핸들 (@username) *</label>
+                <input type="text" id="tweet-handle" required placeholder="예: CathieDWood">
+            </div>
+
+            <div class="form-group">
+                <label for="tweet-avatar">아바타 URL</label>
+                <input type="text" id="tweet-avatar" placeholder="프로필 이미지 URL">
+            </div>
+
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="tweet-verified">
+                    인증 계정
+                </label>
+            </div>
+
+            <div class="form-group">
+                <label for="tweet-original">원문 (영어) *</label>
+                <textarea id="tweet-original" required rows="4" placeholder="영어 원문을 입력하세요"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="tweet-translated">번역 (한국어) *</label>
+                <textarea id="tweet-translated" required rows="4" placeholder="한국어 번역을 입력하세요"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="tweet-date">날짜 표시</label>
+                <input type="text" id="tweet-date" placeholder="예: 2시간 전, 1일 전">
+            </div>
+
+            <div class="form-group">
+                <label for="tweet-url">트윗 URL</label>
+                <input type="text" id="tweet-url" placeholder="https://twitter.com/...">
+            </div>
+
+            <div class="form-actions">
+                <button type="button" class="btn-secondary" onclick="closeModal()">취소</button>
+                <button type="submit" class="btn-primary">저장</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script th:src="@{/js/admin/admin-main.js}"></script>
+</body>
+</html>
