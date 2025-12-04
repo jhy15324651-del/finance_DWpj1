@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tesseract OCR 테스트</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .status {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .status-item {
+            display: inline-block;
+            margin-right: 30px;
+            font-size: 0.95em;
+        }
+
+        .status-label {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .status-value {
+            color: #28a745;
+            font-weight: 700;
+        }
+
+        .status-value.error {
+            color: #dc3545;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .upload-section {
+            background: #f8f9fa;
+            border: 3px dashed #dee2e6;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+        }
+
+        .upload-section:hover {
+            border-color: #667eea;
+            background: #f0f0ff;
+        }
+
+        .upload-section input[type="file"] {
+            display: none;
+        }
+
+        .upload-label {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 40px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .upload-label:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .upload-btn {
+            background: #28a745;
+            color: white;
+            padding: 15px 50px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .upload-btn:hover {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(40, 167, 69, 0.4);
+        }
+
+        .upload-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            max-height: 400px;
+            margin-top: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .results {
+            margin-top: 30px;
+        }
+
+        .result-card {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .result-card h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .raw-text {
+            background: #2d3748;
+            color: #68d391;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95em;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+            line-height: 1.6;
+        }
+
+        .line-item {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+
+        .line-number {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-weight: 600;
+            margin-right: 10px;
+            font-size: 0.85em;
+        }
+
+        .line-text {
+            font-family: 'Courier New', monospace;
+            color: #495057;
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+        }
+
+        .found-data {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .data-badge {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .data-badge.ticker {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .data-badge.percent {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .data-badge.number {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .stock-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stock-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .stock-ticker {
+            font-size: 1.5em;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stock-weight {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .info-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .info-label {
+            color: #6c757d;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            color: #495057;
+            font-size: 1.3em;
+            font-weight: 700;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 5px solid #dc3545;
+            margin-bottom: 20px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px;
+            color: #6c757d;
+        }
+
+        .empty-state-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>🔍 Tesseract OCR 테스트</h1>
+        <p>이미지에서 텍스트를 추출하고 모든 데이터를 확인하세요</p>
+    </div>
+
+    <div class="status">
+        <div class="status-item">
+            <span class="status-label">OCR 상태:</span>
+            <span class="status-value" th:classappend="${ocrAvailable} ? '' : 'error'"
+                  th:text="${ocrAvailable} ? '사용 가능 ✅' : '사용 불가 ❌'">사용 가능</span>
+        </div>
+        <div class="status-item">
+            <span class="status-label">Tesseract 경로:</span>
+            <span class="status-value" th:text="${tesseractPath}">C:\Program Files\Tesseract-OCR\tessdata</span>
+        </div>
+        <div class="status-item">
+            <span class="status-label">언어:</span>
+            <span class="status-value" th:text="${tesseractLanguage}">eng+kor</span>
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="upload-section">
+            <form id="uploadForm">
+                <label for="imageFile" class="upload-label">
+                    📁 이미지 파일 선택
+                </label>
+                <input type="file" id="imageFile" name="image" accept="image/*">
+                <div id="preview"></div>
+                <button type="submit" class="upload-btn" id="uploadBtn" disabled>
+                    🚀 OCR 실행
+                </button>
+            </form>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>OCR 처리 중입니다...</p>
+        </div>
+
+        <div class="results" id="results" style="display: none;">
+            <!-- 결과가 여기에 동적으로 표시됩니다 -->
+        </div>
+    </div>
+</div>
+
+<script>
+    const imageInput = document.getElementById('imageFile');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const uploadForm = document.getElementById('uploadForm');
+    const preview = document.getElementById('preview');
+    const loading = document.getElementById('loading');
+    const results = document.getElementById('results');
+
+    // 파일 선택 시 미리보기
+    imageInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            uploadBtn.disabled = false;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.innerHTML = `<img src="${e.target.result}" class="preview-image" alt="Preview">`;
+            };
+            reader.readAsDataURL(file);
+        } else {
+            uploadBtn.disabled = true;
+            preview.innerHTML = '';
+        }
+    });
+
+    // 폼 제출
+    uploadForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const file = imageInput.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('image', file);
+
+        // 로딩 표시
+        loading.classList.add('active');
+        results.style.display = 'none';
+
+        try {
+            const response = await fetch('/test/ocr/extract', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+
+            // 로딩 숨김
+            loading.classList.remove('active');
+
+            // 결과 표시
+            displayResults(data);
+
+        } catch (error) {
+            loading.classList.remove('active');
+            results.innerHTML = `
+                <div class="error-message">
+                    <h3>❌ 오류 발생</h3>
+                    <p>${error.message}</p>
+                </div>
+            `;
+            results.style.display = 'block';
+        }
+    });
+
+    function displayResults(data) {
+        if (!data.success) {
+            results.innerHTML = `
+                <div class="error-message">
+                    <h3>❌ OCR 처리 실패</h3>
+                    <p>${data.error}</p>
+                </div>
+            `;
+            results.style.display = 'block';
+            return;
+        }
+
+        let html = '';
+
+        // 요약 정보
+        html += `
+            <div class="result-card">
+                <h3>📊 처리 정보</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">처리 시간</div>
+                        <div class="info-value">${data.processingTime}ms</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">전체 라인 수</div>
+                        <div class="info-value">${data.totalLines}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">추출된 종목 수</div>
+                        <div class="info-value">${data.parsedCount}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">이미지 크기</div>
+                        <div class="info-value">${data.imageInfo.width} x ${data.imageInfo.height}</div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // OCR 원본 텍스트
+        html += `
+            <div class="result-card">
+                <h3>📝 OCR 원본 텍스트 (전체)</h3>
+                <div class="raw-text">${escapeHtml(data.rawText)}</div>
+            </div>
+        `;
+
+        // 라인별 상세 분석
+        html += `
+            <div class="result-card">
+                <h3>🔍 라인별 상세 분석</h3>
+        `;
+
+        data.lineDetails.forEach(line => {
+            if (line.isEmpty) return; // 빈 라인 건너뛰기
+
+            html += `
+                <div class="line-item">
+                    <div>
+                        <span class="line-number">라인 ${line.lineNumber}</span>
+                    </div>
+                    <div class="line-text">${escapeHtml(line.rawText)}</div>
+                    <div class="found-data">
+            `;
+
+            if (line.foundTickers.length > 0) {
+                line.foundTickers.forEach(ticker => {
+                    html += `<span class="data-badge ticker">티커: ${ticker}</span>`;
+                });
+            }
+
+            if (line.foundPercents.length > 0) {
+                line.foundPercents.forEach(percent => {
+                    html += `<span class="data-badge percent">비중: ${percent}</span>`;
+                });
+            }
+
+            if (line.foundNumbers.length > 0 && line.foundPercents.length === 0) {
+                line.foundNumbers.forEach(number => {
+                    html += `<span class="data-badge number">숫자: ${number}</span>`;
+                });
+            }
+
+            html += `
+                    </div>
+                </div>
+            `;
+        });
+
+        html += `</div>`;
+
+        // 파싱된 종목 결과
+        if (data.parsedStocks.length > 0) {
+            html += `
+                <div class="result-card">
+                    <h3>✅ 파싱 결과 (${data.parsedCount}개 종목)</h3>
+                    <div class="stock-grid">
+            `;
+
+            data.parsedStocks.forEach(stock => {
+                html += `
+                    <div class="stock-card">
+                        <div class="stock-ticker">${stock.ticker}</div>
+                        <div class="stock-weight">${stock.weight}%</div>
+                    </div>
+                `;
+            });
+
+            html += `
+                    </div>
+                </div>
+            `;
+        } else {
+            html += `
+                <div class="result-card">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">⚠️</div>
+                        <h3>종목을 찾을 수 없습니다</h3>
+                        <p>이미지에서 티커와 비중 정보를 인식하지 못했습니다.</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        results.innerHTML = html;
+        results.style.display = 'block';
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+</script>
+</body>
+</html>
