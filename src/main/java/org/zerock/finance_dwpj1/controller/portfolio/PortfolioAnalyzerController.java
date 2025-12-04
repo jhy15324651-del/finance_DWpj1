@@ -9,6 +9,7 @@ import org.zerock.finance_dwpj1.dto.portfolio.PortfolioAnalysisRequest;
 import org.zerock.finance_dwpj1.dto.portfolio.PortfolioAnalysisResponse;
 import org.zerock.finance_dwpj1.service.portfolio.OcrService;
 import org.zerock.finance_dwpj1.service.portfolio.PortfolioMatchingService;
+import org.zerock.finance_dwpj1.service.portfolio.ocr.BrokerType;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,19 +32,31 @@ public class PortfolioAnalyzerController {
 
     /**
      * OCR로 이미지에서 포트폴리오 추출
+     * @param image 포트폴리오 이미지 파일
+     * @param broker 증권사 타입 (선택사항, 기본값: DEFAULT)
+     *               가능한 값: TOSS, DEFAULT
      */
     @PostMapping("/extract-from-image")
     public ResponseEntity<Map<String, Object>> extractFromImage(
-            @RequestParam("image") MultipartFile image) {
+            @RequestParam("image") MultipartFile image,
+            @RequestParam(value = "broker", required = false, defaultValue = "DEFAULT") String broker) {
 
-        log.info("이미지 OCR 요청: {} ({} bytes)", image.getOriginalFilename(), image.getSize());
+        log.info("이미지 OCR 요청: {} ({} bytes), 증권사: {}",
+                image.getOriginalFilename(), image.getSize(), broker);
 
         try {
-            List<OcrService.PortfolioStock> stocks = ocrService.extractPortfolioFromImage(image);
+            // 증권사 타입 파싱
+            BrokerType brokerType = BrokerType.fromString(broker);
+            log.info("파싱된 증권사 타입: {}", brokerType);
+
+            // OCR 실행 (증권사별 전처리 및 파싱 적용)
+            List<OcrService.PortfolioStock> stocks = ocrService.extractPortfolioFromImage(image, brokerType);
 
             // 응답 구성
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
+            response.put("broker", brokerType.name());
+            response.put("brokerName", brokerType.getKoreanName());
             response.put("stocks", stocks);
             response.put("count", stocks.size());
 

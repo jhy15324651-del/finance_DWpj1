@@ -32,23 +32,43 @@
                 <h2>포트폴리오 이미지 업로드</h2>
                 <p>증권사 앱 스크린샷을 업로드하거나 직접 입력하세요</p>
 
-                <div class="upload-area" id="upload-area">
-                    <input type="file" id="image-input" accept="image/*" hidden>
-                    <div class="upload-placeholder">
-                        <i class="fas fa-image"></i>
-                        <p>클릭하거나 이미지를 드래그하세요</p>
+                <!-- 드래그 앤 드롭 영역 -->
+                <div class="upload-area-multi" id="upload-area-multi">
+                    <input type="file" id="image-input" accept="image/*" multiple hidden>
+                    <div class="drop-zone" id="drop-zone">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>이미지를 드래그하거나 클릭하세요</p>
+                        <span class="upload-limit">(최대 5개)</span>
                     </div>
-                    <img id="preview-image" class="preview-image" style="display: none;">
+                </div>
+
+                <!-- 미리보기 그리드 -->
+                <div class="preview-grid" id="preview-grid" style="display: none;">
+                    <!-- 동적으로 추가됨 -->
                 </div>
 
                 <div class="button-group">
                     <button class="btn-primary" onclick="document.getElementById('image-input').click()">
-                        <i class="fas fa-upload"></i> 이미지 선택
+                        <i class="fas fa-plus"></i> 이미지 추가
                     </button>
                     <button class="btn-secondary" onclick="skipToManualInput()">
                         <i class="fas fa-keyboard"></i> 직접 입력하기
                     </button>
                 </div>
+                <div class="broker-select">
+                    <label for="broker-select">증권사 선택</label>
+                    <select id="broker-select">
+                    <option value="TOSS">토스증권</option>
+                    <option value="KIWOOM">키움증권</option>
+                    <option value="LS">LS증권</option>
+                    </select>
+                </div>
+
+
+                <!-- 이미지 선택 후 분석 시작 버튼 -->
+                <button id="start-analysis-btn" class="btn-analyze" style="display: none; margin-top: 20px;" onclick="startOCRAnalysis()">
+                    <i class="fas fa-magic"></i> 분석 시작하기 (<span id="image-count">0</span>개)
+                </button>
             </div>
         </section>
 

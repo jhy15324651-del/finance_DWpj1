@@ -6,6 +6,9 @@ import net.sourceforge.tess4j.TesseractException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.zerock.finance_dwpj1.service.portfolio.ocr.BrokerType;
+import org.zerock.finance_dwpj1.service.portfolio.ocr.OcrParser;
+import org.zerock.finance_dwpj1.service.portfolio.ocr.OcrPreprocessor;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -13,7 +16,9 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -37,16 +42,57 @@ import java.util.regex.Pattern;
 @Slf4j
 public class OcrService {
 
-    private final Tesseract tesseract;
+    // ThreadLocal: 각 스레드마다 별도의 Tesseract 인스턴스 생성
+    // 다중 이미지 병렬 처리 시 Thread-Safe 보장
+    private final ThreadLocal<Tesseract> tesseractThreadLocal;
     private final boolean isAvailable;
+    private final Map<BrokerType, OcrPreprocessor> preprocessors;
+    private final Map<BrokerType, OcrParser> parsers;
+
+    // Tesseract 설정 정보를 저장 (ThreadLocal 생성 시 사용)
+    private final String datapath;
+    private final String language;
+    private final int ocrEngineMode;
+    private final int pageSegMode;
 
     public OcrService(
             @Value("${tesseract.datapath}") String datapath,
             @Value("${tesseract.language:eng}") String language,
             @Value("${tesseract.ocr-engine-mode:3}") int ocrEngineMode,
-            @Value("${tesseract.page-seg-mode:6}") int pageSegMode
+            @Value("${tesseract.page-seg-mode:6}") int pageSegMode,
+            List<OcrPreprocessor> preprocessorList,
+            List<OcrParser> parserList
     ) {
-        this.tesseract = new Tesseract();
+        // 설정 정보 저장
+        this.datapath = datapath;
+        this.language = language;
+        this.ocrEngineMode = ocrEngineMode;
+        this.pageSegMode = pageSegMode;
+
+        // ThreadLocal 초기화: 각 스레드가 처음 접근할 때 새 Tesseract 인스턴스 생성
+        this.tesseractThreadLocal = ThreadLocal.withInitial(() -> {
+            Tesseract tess = new Tesseract();
+            tess.setDatapath(this.datapath);
+            tess.setLanguage(this.language);
+            tess.setOcrEngineMode(this.ocrEngineMode);
+            tess.setPageSegMode(this.pageSegMode);
+            log.debug("스레드 {}에 새 Tesseract 인스턴스 생성", Thread.currentThread().getName());
+            return tess;
+        });
+
+        // Preprocessor와 Parser를 BrokerType별로 매핑
+        this.preprocessors = new HashMap<>();
+        for (OcrPreprocessor preprocessor : preprocessorList) {
+            preprocessors.put(preprocessor.getSupportedBroker(), preprocessor);
+        }
+
+        this.parsers = new HashMap<>();
+        for (OcrParser parser : parserList) {
+            parsers.put(parser.getSupportedBroker(), parser);
+        }
+
+        log.info("등록된 Preprocessor: {}", preprocessors.keySet());
+        log.info("등록된 Parser: {}", parsers.keySet());
 
         boolean tempAvailable = false;
 
@@ -71,18 +117,20 @@ public class OcrService {
                 );
             }
 
-            // Tesseract 설정 적용
-            tesseract.setDatapath(datapath);
-            tesseract.setLanguage(language);
-            tesseract.setOcrEngineMode(ocrEngineMode);
-            tesseract.setPageSegMode(pageSegMode);
+            // 초기 검증을 위한 임시 Tesseract 인스턴스 생성 (설정만 확인)
+            Tesseract tempTesseract = new Tesseract();
+            tempTesseract.setDatapath(datapath);
+            tempTesseract.setLanguage(language);
+            tempTesseract.setOcrEngineMode(ocrEngineMode);
+            tempTesseract.setPageSegMode(pageSegMode);
 
             tempAvailable = true;
-            log.info("✅ Tesseract OCR 초기화 완료");
+            log.info("✅ Tesseract OCR 초기화 완료 (ThreadLocal 모드)");
             log.info("   - 데이터 경로: {}", datapath);
             log.info("   - 언어: {}", language);
             log.info("   - OCR 엔진 모드: {}", ocrEngineMode);
             log.info("   - 페이지 세그멘테이션 모드: {}", pageSegMode);
+            log.info("   - 다중 스레드 병렬 처리 지원: Thread-Safe");
 
         } catch (Exception e) {
             log.error("❌ Tesseract OCR 초기화 실패: {}", e.getMessage());
@@ -104,12 +152,24 @@ public class OcrService {
     }
 
     /**
-     * 이미지에서 포트폴리오 데이터 추출
+     * 이미지에서 포트폴리오 데이터 추출 (기본 파서 사용)
      * @param imageFile 업로드된 이미지 파일
      * @return 추출된 포트폴리오 종목 리스트
      * @throws IllegalStateException OCR을 사용할 수 없는 경우
+     * @deprecated 증권사를 지정하는 extractPortfolioFromImage(MultipartFile, BrokerType) 사용 권장
      */
     public List<PortfolioStock> extractPortfolioFromImage(MultipartFile imageFile) {
+        return extractPortfolioFromImage(imageFile, BrokerType.DEFAULT);
+    }
+
+    /**
+     * 이미지에서 포트폴리오 데이터 추출 (증권사별 처리)
+     * @param imageFile 업로드된 이미지 파일
+     * @param brokerType 증권사 타입
+     * @return 추출된 포트폴리오 종목 리스트
+     * @throws IllegalStateException OCR을 사용할 수 없는 경우
+     */
+    public List<PortfolioStock> extractPortfolioFromImage(MultipartFile imageFile, BrokerType brokerType) {
         List<PortfolioStock> stocks = new ArrayList<>();
 
         // OCR 사용 가능 여부 확인
@@ -120,6 +180,8 @@ public class OcrService {
             );
         }
 
+        log.info("OCR 처리 시작 - 증권사: {}", brokerType);
+
         try {
             // MultipartFile을 BufferedImage로 변환
             BufferedImage image = ImageIO.read(new ByteArrayInputStream(imageFile.getBytes()));
@@ -129,13 +191,33 @@ public class OcrService {
                 throw new IllegalArgumentException("이미지를 읽을 수 없습니다.");
             }
 
-            // OCR 실행
-            log.info("OCR 처리 시작: {} ({} bytes)", imageFile.getOriginalFilename(), imageFile.getSize());
-            String extractedText = tesseract.doOCR(image);
+            // 1. 증권사별 이미지 전처리
+            BufferedImage preprocessedImage = image;
+            OcrPreprocessor preprocessor = preprocessors.get(brokerType);
+
+            if (preprocessor != null) {
+                log.info("이미지 전처리 시작 - {}", brokerType);
+                preprocessedImage = preprocessor.preprocess(image);
+            } else {
+                log.warn("{}에 대한 전처리기를 찾을 수 없습니다. 원본 이미지 사용", brokerType);
+            }
+
+            // 2. OCR 실행 (ThreadLocal에서 현재 스레드의 Tesseract 인스턴스 가져오기)
+            log.info("OCR 처리 시작: {} ({} bytes) [스레드: {}]",
+                    imageFile.getOriginalFilename(), imageFile.getSize(), Thread.currentThread().getName());
+            String extractedText = tesseractThreadLocal.get().doOCR(preprocessedImage);
             log.info("OCR 추출 완료:\n{}", extractedText);
 
-            // 추출된 텍스트에서 종목 정보 파싱
-            stocks = parsePortfolioText(extractedText);
+            // 3. 증권사별 텍스트 파싱
+            OcrParser parser = parsers.get(brokerType);
+
+            if (parser != null) {
+                log.info("증권사별 파싱 시작 - {}", brokerType);
+                stocks = parser.parse(extractedText);
+            } else {
+                log.warn("{}에 대한 파서를 찾을 수 없습니다. 기본 파싱 사용", brokerType);
+                stocks = parsePortfolioText(extractedText);
+            }
 
             log.info("✅ 총 {}개 종목 추출 완료", stocks.size());
 
