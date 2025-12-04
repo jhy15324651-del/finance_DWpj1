@@ -23,10 +23,10 @@ public interface StockBoardService {
 
 
     //추천
-    void addRecommend(Long id);
+    void addRecommend(Long id, Long userId);
 
     //비추천
-   void addUnrecommend(Long id);
+   void addUnrecommend(Long id, Long userId);
 
     //조회수
     StockBoardDTO addView(Long id);

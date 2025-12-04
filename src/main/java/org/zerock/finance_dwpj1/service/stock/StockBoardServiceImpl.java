@@ -6,8 +6,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.zerock.finance_dwpj1.dto.stock.StockBoardDTO;
+import org.zerock.finance_dwpj1.entity.stock.StockBichu;
 import org.zerock.finance_dwpj1.entity.stock.StockBoard;
+import org.zerock.finance_dwpj1.entity.stock.StockGechu;
+import org.zerock.finance_dwpj1.repository.stock.StockBichuRepository;
 import org.zerock.finance_dwpj1.repository.stock.StockBoardRepository;
+import org.zerock.finance_dwpj1.repository.stock.StockGechuRepository;
+
 import java.time.LocalDateTime;
 
 @Service
@@ -16,6 +21,9 @@ import java.time.LocalDateTime;
 public class StockBoardServiceImpl implements StockBoardService {
 
     private final StockBoardRepository stockBoardRepository;
+    private final StockGechuRepository stockGechuRepository;
+    private final StockBichuRepository stockBichuRepository;
+
 
     @Override
     @Transactional(readOnly = true)
@@ -71,21 +79,52 @@ public class StockBoardServiceImpl implements StockBoardService {
     }
 
 
+    //추천
     @Override
-    public void addRecommend(Long id){
+    public void addRecommend(Long id, Long userId){
         StockBoard board = stockBoardRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("게시글이 없습니다."));
+
+        boolean exist = stockGechuRepository
+                .findByBoardIdAndUserId(id, userId)
+                .isPresent();
+
+        if(exist){
+            return;
+        }
 
         board.setRecommend(board.getRecommend() + 1);
 
+        stockGechuRepository.save(
+                StockGechu.builder()
+                        .board(board)
+                        .userId(userId)
+                        .build()
+        );
     }
 
+    //비추천
     @Override
-    public void addUnrecommend(Long id){
+    public void addUnrecommend(Long id, Long userId){
         StockBoard board = stockBoardRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("게시글이 없습니다."));
 
-        board.setRecommend(board.getUnrecommend() + 1);
+        boolean exist = stockBichuRepository
+                .findByBoardIdAndUserId(id, userId)
+                .isPresent();
+
+        if(exist){
+            return;
+        }
+
+        board.setUnrecommend(board.getUnrecommend() + 1);
+
+        stockBichuRepository.save(
+                StockBichu.builder()
+                        .board(board)
+                        .userId(userId)
+                        .build()
+        );
     }
 
 
