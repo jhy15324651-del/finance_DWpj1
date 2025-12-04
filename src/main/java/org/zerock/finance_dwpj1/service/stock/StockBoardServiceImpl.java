@@ -59,6 +59,38 @@ public class StockBoardServiceImpl implements StockBoardService {
         stockBoardRepository.deleteById(id);
     }
 
+
+
+    //조회수 증가
+    @Override
+    public StockBoardDTO addView(Long id) {
+        StockBoard board = stockBoardRepository.findById(id).orElseThrow();
+        board.setView(board.getView() + 1);
+
+        return entityToDto(board);
+    }
+
+
+    @Override
+    public void addRecommend(Long id){
+        StockBoard board = stockBoardRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("게시글이 없습니다."));
+
+        board.setRecommend(board.getRecommend() + 1);
+
+    }
+
+    @Override
+    public void addUnrecommend(Long id){
+        StockBoard board = stockBoardRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("게시글이 없습니다."));
+
+        board.setRecommend(board.getUnrecommend() + 1);
+    }
+
+
+
+
 //    @Override
 //    public void addRecommend(Long boardId, Long memberId){
 //

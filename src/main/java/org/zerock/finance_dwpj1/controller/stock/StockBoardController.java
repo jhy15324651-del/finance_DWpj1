@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -21,15 +22,11 @@ public class StockBoardController {
 
     private final StockBoardService stockBoardService;
 
-    /**
-     * 종목별 게시판 목록
-     * 예: /stock/board/005930?page=0
-     */
 
-    /**
-     * 글쓰기 폼
-     * GET /stock/board/005930/write
-     */
+
+
+
+    //글 쓰기 폼
     @GetMapping("/{ticker}/write")
     public String writeForm(
             @PathVariable String ticker,
@@ -52,10 +49,8 @@ public class StockBoardController {
     }
 
 
-    /**
-     * 글쓰기 처리
-     * POST /stock/board/005930/write
-     */
+
+    //글 쓰기
     @PostMapping("/{ticker}/write")
     public String write(
             @PathVariable String ticker,
@@ -78,11 +73,13 @@ public class StockBoardController {
     }
 
 
-
+    //글 읽기 조회수 증가
     @GetMapping("/{ticker}/read/{id}")
     public String read(@PathVariable String ticker,
                        @PathVariable Long id,
                        Model model) {
+
+        stockBoardService.addView(id);
 
         StockBoardDTO dto = stockBoardService.get(id);
 
@@ -94,26 +91,8 @@ public class StockBoardController {
 
 
 
-    /**
-     * 글 상세 보기
-     * GET /stock/board/005930/read/1
-//     */
-//    @GetMapping("/{ticker}/read/{id}")
-//    public String read(@PathVariable String ticker,
-//                       @PathVariable Long id,
-//                       Model model) {
-//
-//        StockBoardDTO dto = stockBoardService.get(id);
-//
-//        model.addAttribute("dto", dto);
-//        model.addAttribute("ticker", ticker);
-//
-//        return "stock/board/read"; // templates/stock/board/read.html
-//    }
 
-    /**
-     * 글 수정 폼
-     */
+    //글 수정 폼
     @GetMapping("/{ticker}/edit/{id}")
     public String editForm(@PathVariable String ticker,
                            @PathVariable Long id,
@@ -127,9 +106,8 @@ public class StockBoardController {
         return "stock/board/edit"; // 원하면 분리, 아니면 read랑 같이 써도 됨
     }
 
-    /**
-     * 글 수정 처리
-     */
+
+    //글 수정
     @PostMapping("/{ticker}/edit/{id}")
     public String edit(@PathVariable String ticker,
                        @PathVariable Long id,
@@ -143,9 +121,9 @@ public class StockBoardController {
         return "redirect:/stock/board/" + ticker + "/read/" + id;
     }
 
-    /**
-     * 글 삭제
-     */
+
+
+    //글 삭제
     @PostMapping("/{ticker}/delete/{id}")
     public String delete(@PathVariable String ticker,
                          @PathVariable Long id) {
@@ -153,6 +131,8 @@ public class StockBoardController {
         stockBoardService.remove(id);
         return "redirect:/stock/board/" + ticker;
     }
+
+
 
     @GetMapping("/api/{ticker}")
     @ResponseBody
@@ -163,6 +143,39 @@ public class StockBoardController {
         return stockBoardService.getList(ticker, pageable);
     }
 
+
+    //추천
+    @PostMapping("/{ticker}/recommend/{id}")
+    @ResponseBody
+    public ResponseEntity<String> recommend(@PathVariable String ticker,
+                                            @PathVariable Long id,
+                                            @AuthenticationPrincipal CustomUserDetails loginUser) {
+
+        if (loginUser == null) {
+            // 401: 인증 필요함
+            return ResponseEntity.status(401).body("UNAUTHORIZED");
+        }
+
+        stockBoardService.addRecommend(id);
+        return ResponseEntity.ok("추천");
+    }
+
+
+    //비추
+    @PostMapping("/{ticker}/unrecommend/{id}")
+    @ResponseBody
+    public ResponseEntity<String> unrecommend(@PathVariable String ticker,
+                                            @PathVariable Long id,
+                                            @AuthenticationPrincipal CustomUserDetails loginUser) {
+
+        if (loginUser == null) {
+            // 401: 인증 필요함
+            return ResponseEntity.status(401).body("UNAUTHORIZED");
+        }
+
+        stockBoardService.addUnrecommend(id);
+        return ResponseEntity.ok("비추");
+    }
 
 
 }
