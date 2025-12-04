@@ -6,7 +6,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.zerock.finance_dwpj1.dto.content.ContentCommentNodeDTO;
 import org.zerock.finance_dwpj1.entity.content.ContentReview;
+import org.zerock.finance_dwpj1.service.content.ContentCommentNodeService;
 import org.zerock.finance_dwpj1.service.content.ContentReviewService;
 import org.zerock.finance_dwpj1.service.content.ContentCommentService;
 import org.zerock.finance_dwpj1.dto.content.ContentCommentWriteDTO;
@@ -20,6 +22,7 @@ public class ContentPostController {
 
     private final ContentReviewService contentReviewService;
     private final ContentCommentService contentCommentService;
+    private final ContentCommentNodeService contentCommentNodeService;
 
     @GetMapping("/post/{id}")
     public String detail(
@@ -34,8 +37,12 @@ public class ContentPostController {
         ContentReview post = contentReviewService.getContentDetail(id);
         model.addAttribute("post", post);
 
-        // 댓글 목록
+        // 기존 댓글 목록 제거
         model.addAttribute("comments", contentCommentService.getComments(id));
+
+        // 🔥 트리댓글로 변경
+        //model.addAttribute("commentTree", contentCommentNodeService.getCommentTree(id));
+
 
         // 평점 모델에 담아 뷰로 전달하기
         double avgRating = contentCommentService.getAverageRating(id);
@@ -70,7 +77,11 @@ public class ContentPostController {
             return "NOT_LOGIN";
         }
 
-        contentCommentService.write(user.getId(), user.getNickname(), dto);
-        return "SUCCESS";
+        try {
+            contentCommentService.write(user.getId(), user.getNickname(), dto);
+            return "SUCCESS";
+        } catch (IllegalArgumentException e) {
+            return "NO_RATING";  // 평점 없음
+        }
     }
 }

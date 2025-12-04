@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import org.zerock.finance_dwpj1.entity.content.ContentComment;
 import org.zerock.finance_dwpj1.entity.content.ContentReview;
 import org.zerock.finance_dwpj1.repository.content.ContentCommentRepository;
@@ -18,6 +19,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -55,7 +58,11 @@ public class ContentReviewService {
                 repo.findTop8ByIsDeletedFalseOrderByCreatedDateDesc();
 
         // ⭐ preview 세팅
-        list.forEach(post -> post.setPreview(makePreview(post.getContent())));
+        list.forEach(post -> {
+            post.setPreview(makePreview(post.getContent()));
+            post.setRatingAvg(getAverageRating(post.getId()));
+        });
+
         return list;
     }
 
@@ -64,7 +71,10 @@ public class ContentReviewService {
                 repo.findTop5ByIsDeletedFalseOrderByViewCountDesc();
 
         // ⭐ preview 세팅
-        list.forEach(post -> post.setPreview(makePreview(post.getContent())));
+        list.forEach(post -> {
+            post.setPreview(makePreview(post.getContent()));
+            post.setRatingAvg(getAverageRating(post.getId()));
+        });
         return list;
     }
 
@@ -148,6 +158,14 @@ public class ContentReviewService {
     // ---------------------------------------------------------
     @Transactional
     public ContentReview saveContent(ContentReview content) {
+
+        // 🔥 본문 첫 이미지 → thumbnail 자동 생성
+        String thumbnail = extractFirstImage(content.getContent());
+        content.setThumbnail(thumbnail);   // null이면 null 저장됨 (OK)
+
+        // 🔥 preview도 자동 생성하는 경우
+        content.setPreview(makePreview(content.getContent()));
+
         return repo.save(content);
     }
 
@@ -157,8 +175,7 @@ public class ContentReviewService {
     // ---------------------------------------------------------
     @Transactional
     public void updateContent(Long id, String title, String content,
-                              String hashtags, org.springframework.web.multipart.MultipartFile image)
-            throws IOException {
+                              String hashtags, MultipartFile image) throws IOException {
 
         ContentReview post = repo.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글입니다."));
@@ -167,25 +184,26 @@ public class ContentReviewService {
         post.setContent(content);
         post.setHashtags(hashtags);
 
-        // 이미지 업로드 처리
-        if (image != null && !image.isEmpty()) {
+        // 🔥 본문 첫 이미지 → thumbnail 다시 계산!!
+        String thumbnail = extractFirstImage(content);
+        post.setThumbnail(thumbnail);
 
+        // 🔥 이미지 업로드 처리 (기존 코드 그대로)
+        if (image != null && !image.isEmpty()) {
             String uploadDir = "src/main/resources/static/upload/";
             Path uploadPath = Paths.get(uploadDir);
-
             if (!Files.exists(uploadPath)) Files.createDirectories(uploadPath);
 
             String fileName = System.currentTimeMillis() + "_" + image.getOriginalFilename();
             Path filePath = uploadPath.resolve(fileName);
-
             Files.write(filePath, image.getBytes());
-            post.setImgUrl("/upload/" + fileName);
 
-            log.info("이미지 변경 완료: {}", post.getImgUrl());
+            post.setImgUrl("/upload/" + fileName);
         }
 
         repo.save(post);
     }
+
 
 
     // ---------------------------------------------------------
@@ -229,5 +247,18 @@ public class ContentReviewService {
     }
 
 
+    //썸네일용 첫 이미지 자동 추출 기능
+
+    private String extractFirstImage(String content) {
+        if (content == null) return null;
+
+        Pattern pattern = Pattern.compile("<img[^>]+src=[\"']?([^\"'>]+)[\"']?");
+        Matcher matcher = pattern.matcher(content);
+
+        if (matcher.find()) {
+            return matcher.group(1);  // 첫 번째 이미지 URL
+        }
+        return null; // 없다면 null
+    }
 
 }
