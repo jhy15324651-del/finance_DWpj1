@@ -506,6 +506,7 @@ body {
     border-radius: 10px;
     overflow: hidden;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    table-layout: fixed;  /* 열 고정 */
 }
 
 .board-table th,
@@ -518,6 +519,24 @@ body {
 .board-table tr:hover {
     background: #fafafa;
 }
+
+/* ======================== */
+/* 새로운 추가 요소         */
+/* ======================== */
+
+/* 🔥 제목 말줄임 */
+.board-table td.title-cell {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-left: 18px;
+}
+
+/* 링크 스타일 (category.html 내부에도 있지만 CSS로 분리 가능) */
+.board-table a:link    { color: #222; text-decoration: none; }
+.board-table a:visited { color: #8b4cf5; }
+.board-table a:hover   { color: #0070f3; }
+.board-table a:active  { color: #4b2ca6; }
 
 /* 페이지네이션 */
 .pagination {

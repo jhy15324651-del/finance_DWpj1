@@ -25,7 +25,9 @@ public class ContentComment {
     @Column
     private Double rating;
 
-    private Long parentId;    // 대댓글 기능 용
+    // 대댓글 기능 툴
+    @Column(name = "parent_id")
+    private Long parentId;    // 부모 댓글 ID (null이면 루트 댓글)
 
     private LocalDateTime createdDate;
 

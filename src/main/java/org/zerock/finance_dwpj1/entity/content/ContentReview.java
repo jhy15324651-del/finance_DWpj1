@@ -26,8 +26,11 @@ public class ContentReview {
     @Column(nullable = false, length = 500)
     private String title;
 
-    @Column(length = 2000)
-    private String summary;
+    @Column(name = "thumbnail")
+    private String thumbnail;
+
+    @Transient
+    private Double ratingAvg;
 
     @Column(columnDefinition = "TEXT")
     private String content;

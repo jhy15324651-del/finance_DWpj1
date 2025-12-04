@@ -68,6 +68,14 @@
 
     <!-- 📄 게시글 테이블 -->
     <table class="board-table">
+        <colgroup>
+            <col style="width: 80px;">     <!-- 번호 -->
+            <col style="width: auto;">     <!-- 제목 (가변, ellipsis 적용) -->
+            <col style="width: 140px;">    <!-- 작성자 -->
+            <col style="width: 150px;">    <!-- 작성일 -->
+            <col style="width: 100px;">    <!-- 조회수 -->
+        </colgroup>
+
         <thead>
         <tr>
             <th>번호</th>
@@ -204,10 +212,6 @@
 </script>
 
 <style>
-    .board-table th,
-    .board-table td {
-        text-align: center;
-    }
 
     /* ================================
        게시글 제목 링크 색상 제어
@@ -224,12 +228,12 @@
 
     /* 방문한 링크 색상 */
     .board-table a:visited {
-        color: #8b4cf5;  /* 보라색 */
+        color: #8b4cf5; /* 보라색 */
     }
 
     /* 마우스 올렸을 때 */
     .board-table a:hover {
-        color: #0070f3;  /* 파란색 */
+        color: #0070f3; /* 파란색 */
     }
 
     /* 클릭 시(active) */

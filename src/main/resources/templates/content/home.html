@@ -4,13 +4,12 @@
 <!-- 1) head -->
 <th:block th:replace="content/layout/header :: header"></th:block>
 
-<!-- 2) body 시작 + content-wrapper 시작 -->
+<!-- 2) body 시작 -->
 <th:block th:replace="content/layout/header :: bodyheader"></th:block>
-
 
 <!-- ===============================
      메인 레이아웃
-================================ -->
+================================= -->
 <div class="home-wrapper">
 
     <!-- 최신 콘텐츠 -->
@@ -23,16 +22,36 @@
                  th:onclick="'location.href=\'/content/post/' + ${post.id} + '\';'"
                  th:attr="data-id=${post.id}">
 
-                <div>
-                    <div class="post-title" th:text="${post.title}"></div>
-                    <!-- 본문 미리보기 -->
-                    <div class="post-preview" th:text="${post.preview}"></div>
+                <!-- 🔹 상단: 제목 + 본문 + 썸네일 -->
+                <div class="post-main">
+                    <!-- 왼쪽 텍스트 영역 -->
+                    <div class="post-left">
+                        <div class="post-title" th:text="${post.title}"></div>
+
+                        <div class="post-preview" th:text="${post.preview}"></div>
+                    </div>
+
+                    <!-- 오른쪽 썸네일 -->
+                    <div class="post-thumb">
+                        <img th:src="${post.thumbnail} ?: '/images/default-thumbnail.png'" alt="thumbnail">
+                    </div>
                 </div>
 
-                <div class="post-meta">
-                    <span th:text="${#temporals.format(post.createdDate, 'yyyy.MM.dd')}"></span>
-                    <span>👁 <span th:text="${post.viewCount}"></span></span>
+                <!-- 🔹 하단: 작성자/평점 + 날짜/조회수 (카드 하단 고정) -->
+                <div class="post-bottom">
+                    <div class="post-extra">
+                        <span th:text="'작성자: ' + ${post.writer}"></span>
+                        <span class="post-rating">
+                            ⭐ <span th:text="${post.ratingAvg} ?: 0.0"></span>
+                        </span>
+                    </div>
+
+                    <div class="post-meta">
+                        <span th:text="${#temporals.format(post.createdDate, 'yyyy.MM.dd')}"></span>
+                        <span>👁 <span th:text="${post.viewCount}"></span></span>
+                    </div>
                 </div>
+
             </div>
         </div>
     </div>
@@ -45,28 +64,31 @@
             <div class="popular-item" th:each="post, iter : ${popularPosts}">
                 <span class="popular-rank"
                       th:classappend="${iter.index + 1 <= 3} ? ' top3' : ''"
-                      th:text="${iter.index + 1}"></span>
+                      th:text="${iter.index + 1}">
+                </span>
+
                 <a th:href="@{'/content/post/' + ${post.id}}"
                    class="popular-title"
                    th:text="${post.title}"></a>
-                <div class="popular-view">조회수: <span th:text="${post.viewCount}"></span></div>
+
+                <div class="popular-view">
+                    조회수: <span th:text="${post.viewCount}"></span>
+                </div>
             </div>
         </div>
     </aside>
 
 </div>
 
+<!-- ===============================
+     읽은 글 체크용 JS
+================================= -->
 <script>
     document.addEventListener("DOMContentLoaded", () => {
-
-        // localStorage에서 읽었던 글 목록 가져오기
         const readPosts = JSON.parse(localStorage.getItem("readPosts") || "[]");
 
-        // 모든 카드들 순회
         document.querySelectorAll(".post-card").forEach(card => {
-
             const postId = String(card.getAttribute("data-id") || "");
-
             if (postId && readPosts.includes(postId)) {
                 card.classList.add("read-post");
             }
@@ -78,13 +100,42 @@
      Style
 ================================= -->
 <style>
+    /* === 읽은 게시글 색상 처리 === */
     .post-card.read-post .post-title,
     .post-card.read-post .post-preview {
         color: #999;
     }
 
+    /* === 카드 전체 === */
     .post-card {
         cursor: pointer;
+        display: flex;
+        flex-direction: column;   /* 위: main, 아래: bottom */
+        gap: 10px;
+
+        padding: 16px;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        margin-bottom: 20px;
+        transition: 0.2s ease;
+    }
+
+    .post-card:hover {
+        transform: translateY(-3px);
+    }
+
+    /* === 상단: 제목/본문 + 썸네일 === */
+    .post-main {
+        display: flex;
+        justify-content: space-between;
+        gap: 18px;
+    }
+
+    .post-left {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
     }
 
     .post-title {
@@ -93,21 +144,58 @@
         margin-bottom: 6px;
     }
 
+    /* 본문 미리보기: 항상 2줄 공간 확보 */
     .post-preview {
         font-size: 0.95rem;
         color: #555;
         line-height: 1.35;
-        height: 2.7em; /* 2줄 높이 */
+        margin-bottom: 4px;
+
+        max-height: 2.7em;
+        min-height: 2.7em;   /* 본문이 없어도 동일 높이 유지 */
         overflow: hidden;
         text-overflow: ellipsis;
         display: -webkit-box;
-        -webkit-line-clamp: 2; /* 2줄 표시 */
+        -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
-        margin-bottom: 10px;
     }
 
-</style>
+    /* 썸네일 */
+    .post-thumb img {
+        width: 130px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 8px;
+        flex-shrink: 0;
+    }
 
+    /* === 하단: 작성자/평점 + 날짜/조회수 === */
+    .post-bottom {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        margin-top: 4px;
+    }
+
+    .post-extra {
+        font-size: 0.9rem;
+        color: #666;
+        display: flex;
+        gap: 12px;
+    }
+
+    .post-rating {
+        color: #f5b301;
+    }
+
+    .post-meta {
+        display: flex;
+        justify-content: space-between;  /* 왼쪽: 날짜 / 오른쪽: 조회수 */
+        align-items: center;
+        font-size: 0.85rem;
+        color: #666;
+    }
+</style>
 
 <!-- 3) footer -->
 <th:block th:replace="content/layout/footer :: footer"></th:block>

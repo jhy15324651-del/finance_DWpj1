@@ -24,6 +24,11 @@ public class ContentCommentService {
      */
     public void write(Long userId, String nickname, ContentCommentWriteDTO dto) {
 
+        // ⭐ rating 검증 추가
+        if (dto.getRating() == null || dto.getRating() == 0) {
+            throw new IllegalArgumentException("평점이 필요합니다.");
+        }
+
         ContentComment comment = ContentComment.builder()
                 .postId(dto.getPostId())
                 .userId(userId)
