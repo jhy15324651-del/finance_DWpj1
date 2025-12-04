@@ -63,7 +63,7 @@ public class StockBoardServiceImpl implements StockBoardService {
 
     //조회수 증가
     @Override
-    public void addView(Long id) {
+    public StockBoardDTO addView(Long id) {
         StockBoard board = stockBoardRepository.findById(id).orElseThrow();
         board.setView(board.getView() + 1);
 

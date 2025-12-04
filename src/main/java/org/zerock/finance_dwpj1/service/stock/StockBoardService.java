@@ -29,5 +29,5 @@ public interface StockBoardService {
    void addUnrecommend(Long id);
 
     //조회수
-    void addView(Long id);
+    StockBoardDTO addView(Long id);
 }
