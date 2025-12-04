@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface StockCommentRepository extends JpaRepository<StockComment, Long> {
 
-    List<StockComment> findByStock_IdOrderByComment_IdAsc(Long id);
+    List<StockComment> findByBoard_IdOrderByIdAsc(Long id);
 
-    int countByBoardId(Long boardId);
+    int countByBoard_Id(Long boardId);
 }
