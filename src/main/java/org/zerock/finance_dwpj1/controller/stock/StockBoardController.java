@@ -156,7 +156,9 @@ public class StockBoardController {
             return ResponseEntity.status(401).body("UNAUTHORIZED");
         }
 
-        stockBoardService.addRecommend(id);
+        Long userId = loginUser.getId();
+
+        stockBoardService.addRecommend(id, userId);
         return ResponseEntity.ok("추천");
     }
 
@@ -173,7 +175,9 @@ public class StockBoardController {
             return ResponseEntity.status(401).body("UNAUTHORIZED");
         }
 
-        stockBoardService.addUnrecommend(id);
+        Long userId = loginUser.getId();
+
+        stockBoardService.addUnrecommend(id, userId);
         return ResponseEntity.ok("비추");
     }
 
