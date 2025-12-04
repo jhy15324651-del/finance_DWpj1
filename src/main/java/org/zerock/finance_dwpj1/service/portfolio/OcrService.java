@@ -47,6 +47,7 @@ public class OcrService {
             @Value("${tesseract.page-seg-mode:6}") int pageSegMode
     ) {
         this.tesseract = new Tesseract();
+
         boolean tempAvailable = false;
 
         // Tesseract 설정
