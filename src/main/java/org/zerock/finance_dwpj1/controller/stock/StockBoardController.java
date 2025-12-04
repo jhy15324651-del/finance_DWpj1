@@ -84,6 +84,8 @@ public class StockBoardController {
                        @PathVariable Long id,
                        Model model) {
 
+        stockBoardService.addView(id);
+
         StockBoardDTO dto = stockBoardService.get(id);
 
         model.addAttribute("dto", dto);
@@ -94,22 +96,6 @@ public class StockBoardController {
 
 
 
-    /**
-     * 글 상세 보기
-     * GET /stock/board/005930/read/1
-//     */
-//    @GetMapping("/{ticker}/read/{id}")
-//    public String read(@PathVariable String ticker,
-//                       @PathVariable Long id,
-//                       Model model) {
-//
-//        StockBoardDTO dto = stockBoardService.get(id);
-//
-//        model.addAttribute("dto", dto);
-//        model.addAttribute("ticker", ticker);
-//
-//        return "stock/board/read"; // templates/stock/board/read.html
-//    }
 
     /**
      * 글 수정 폼
