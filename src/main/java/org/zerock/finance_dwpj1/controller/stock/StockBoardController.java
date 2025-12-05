@@ -24,7 +24,12 @@ public class StockBoardController {
 
 
 
-
+    //게시판 폼
+    @GetMapping("/{ticker}/list")
+    public String list(@PathVariable String ticker, Model model) {
+        model.addAttribute("ticker", ticker);
+        return "stock/board/list";   // templates/stock/board/list.html
+    }
 
     //글 쓰기 폼
     @GetMapping("/{ticker}/write")
@@ -69,7 +74,7 @@ public class StockBoardController {
 
         stockBoardService.register(dto);
 
-        return "redirect:/stock/board/" + ticker;
+        return "redirect:/stock/board/" + ticker + "/list";
     }
 
 

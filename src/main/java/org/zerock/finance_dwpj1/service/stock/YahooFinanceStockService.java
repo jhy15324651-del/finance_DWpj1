@@ -241,6 +241,10 @@ public class YahooFinanceStockService implements StockService {
             double change = price - prevClose;
             double changePercent = prevClose > 0 ? (change / prevClose) * 100 : 0;
 
+            // 🔥 시총 계산
+            long sharesOutstanding = getLongOrDefault(meta, "sharesOutstanding", 0L);
+            long marketCap = (long) (sharesOutstanding * price);
+
             return StockInfoDTO.builder()
                     .ticker(ticker)
                     .name(getStringOrDefault(meta, "shortName", ticker))
@@ -249,7 +253,7 @@ public class YahooFinanceStockService implements StockService {
                     .changeAmount(change)
                     .changeRate(changePercent)
                     .tradingVolume(getLongOrDefault(meta, "regularMarketVolume", 0L))
-                    .marketCap(0L) // v8 API에서는 marketCap 미제공
+                    .marketCap(marketCap) // v8 API에서는 marketCap 미제공
                     .high52Week(getDoubleOrDefault(meta, "fiftyTwoWeekHigh", 0.0))
                     .low52Week(getDoubleOrDefault(meta, "fiftyTwoWeekLow", 0.0))
                     .build();

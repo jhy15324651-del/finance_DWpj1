@@ -153,6 +153,9 @@ public class StockBoardServiceImpl implements StockBoardService {
                 .writer(board.getWriter())
                 .regDate(board.getRegDate())
                 .modDate(board.getModDate())
+                .view(board.getView())
+                .recommend(board.getRecommend())
+                .unrecommend(board.getUnrecommend())
                 .build();
     }
 

@@ -161,205 +161,6 @@
             color: #3182ce;
         }
 
-        .chart-controls {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .timeframe-buttons {
-            display: flex;
-            gap: 5px;
-        }
-
-        .timeframe-btn {
-            padding: 8px 15px;
-            background: white;
-            border: 2px solid #e2e8f0;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-weight: 600;
-        }
-
-        .timeframe-btn.active {
-            background: #667eea;
-            color: white;
-            border-color: #667eea;
-        }
-
-        .indicator-controls {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .indicator-label {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            padding: 5px 10px;
-            background: #f7fafc;
-            border-radius: 6px;
-            font-size: 0.9rem;
-        }
-
-        .indicator-toggle {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            padding: 5px 10px;
-            background: #f7fafc;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .indicator-toggle:hover {
-            background: #edf2f7;
-        }
-
-        .indicator-toggle input {
-            cursor: pointer;
-        }
-
-        .color-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-        }
-
-        .date-range-controls {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
-
-        .date-input {
-            padding: 8px 12px;
-            border: 2px solid #e2e8f0;
-            border-radius: 6px;
-            font-size: 0.9rem;
-        }
-
-        .date-input:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        .btn-small {
-            padding: 8px 15px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 0.9rem;
-        }
-
-        .btn-small:hover {
-            background: #5568d3;
-        }
-
-        .btn-secondary {
-            background: #718096;
-        }
-
-        .btn-secondary:hover {
-            background: #4a5568;
-        }
-
-        #chart-container {
-            width: 100%;
-            height: 600px;
-            position: relative;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #718096;
-            font-size: 1.1rem;
-        }
-
-        .error {
-            text-align: center;
-            padding: 40px;
-            color: #e53e3e;
-            font-size: 1.1rem;
-        }
-
-        @media (max-width: 768px) {
-            .stock-info {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            #chart-container {
-                height: 400px;
-            }
-
-            .chart-controls {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .timeframe-buttons {
-                width: 100%;
-                justify-content: space-around;
-            }
-
-
-
-        }
-
-
-        .chart-layout {
-            display: flex;
-            gap: 20px;
-        }
-
-        .chart-left {
-            flex: 2;   /* 2:1 비율 → 좌측이 더 넓음 */
-        }
-
-        .chart-right {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .chart-overlay-controls {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: rgba(255,255,255,0.9);
-            padding: 8px 12px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
-            display: flex;
-            gap: 10px;
-            z-index: 10;
-        }
-
-        .chart-overlay-controls label {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            cursor: pointer;
-        }
-
-        .chart-left {
-            position: relative;
-        }
 
     </style>
 </head>
@@ -417,56 +218,106 @@
 
     <div id="dynamic-area">
 
-        <div th:fragment="content">
-            <!-- 게시글 제목 -->
-            <h2 style="margin-bottom:15px; font-size:1.4rem; font-weight:700;">
-                [[${dto.title}]]
-            </h2>
+        <!-- 📌 게시글 전체 Wrapper -->
+        <div style="background:#fff; padding:25px; border-radius:10px; border:1px solid #ddd; margin-bottom:30px;">
 
-            <!-- 작성 정보 -->
-            <div style="color:#666; font-size:0.9rem; margin-bottom:20px;">
-                <span>작성자: [[${dto.writer}]]</span> ·
-                <span>작성일: [[${#temporals.format(dto.regDate, 'yyyy-MM-dd HH:mm')}]]</span>
+            <!-- 🔥 헤더 영역 (제목 / 작성자 / 조회·추천·날짜) -->
+            <div style="display:flex; justify-content:space-between; padding-bottom:15px; border-bottom:2px solid #e2e8f0; margin-bottom:20px;">
+
+                <!-- 제목 & 작성자 -->
+                <div>
+                    <h1 style="font-size:1.8rem; font-weight:700; margin-bottom:8px;">[[${dto.title}]]</h1>
+                    <div style="font-size:0.95rem; color:#555;">
+                        작성자: [[${dto.writer}]]
+                    </div>
+                </div>
+
+                <!-- 조회수 / 추천 / 비추천 / 날짜 -->
+                <div style="text-align:right; font-size:0.9rem; color:#555;">
+                    <div style="margin-bottom:5px;">
+                        👁 [[${dto.view}]] &nbsp;&nbsp;
+                        👍 [[${dto.recommend}]] &nbsp;&nbsp;
+                        👎 [[${dto.unrecommend}]]
+                    </div>
+                    <div>
+                        [[${#temporals.format(dto.regDate, 'yyyy-MM-dd HH:mm')}]]
+                    </div>
+                </div>
+
             </div>
 
-            <!-- 내용 박스 -->
+
+            <!-- 📌 본문 영역 -->
             <div style="
-        background:#ffffff;
+        min-height:250px;
         padding:20px;
+        border:0px solid #ccc;
         border-radius:10px;
-        border:1px solid #e2e8f0;
-        margin-bottom:25px;
+        margin-bottom:30px;
+        line-height:1.7;
+        font-size:1.05rem;
         white-space:pre-line;
-        line-height:1.6;
-        font-size:1rem;">
+    ">
                 [[${dto.content}]]
             </div>
 
-            <!-- 버튼 영역 -->
-            <div style="display:flex; gap:10px; margin-bottom:40px;">
+
+            <!-- 📌 추천 / 비추천 버튼 (중앙 정렬) -->
+            <div style="text-align:center; margin-bottom:40px;">
+                <button
+                        onclick="location.href='/stock/board/${ticker}/recommend/[[${dto.id}]]'"
+                        style="padding:10px 25px; background:#e53e3e; color:white; border:none; border-radius:6px; margin-right:20px; cursor:pointer;">
+                    👍 추천
+                </button>
+
+                <button
+                        onclick="location.href='/stock/board/${ticker}/unrecommend/[[${dto.id}]]'"
+                        style="padding:10px 25px; background:#3182ce; color:white; border:none; border-radius:6px; cursor:pointer;">
+                    👎 비추천
+                </button>
+            </div>
+
+
+            <!-- 📌 댓글 영역 -->
+            <div style="padding:20px; border:1px solid #ddd; border-radius:10px; margin-bottom:10px;">
+                <h3 style="margin-bottom:15px;">댓글</h3>
+
+                <!-- 댓글 리스트 삽입 준비 -->
+                <div id="reply-list">
+                    <!-- 댓글 들어갈 자리 -->
+                </div>
+
+                <!-- 댓글 입력 -->
+                <div style="margin-top:15px;">
+            <textarea id="reply-content" placeholder="댓글을 입력하세요"
+                      style="width:100%; height:80px; padding:10px; border:1px solid #bbb; border-radius:6px;"></textarea>
+
+                    <button style="margin-top:10px; float:right; padding:8px 18px; background:#667eea; color:white; border:none; border-radius:6px; cursor:pointer;"
+                            onclick="registerComment()">
+                        댓글 등록
+                    </button>
+                </div>
+            </div>
+
+
+            <!-- 📌 수정/삭제 (글쓴이만 보여야 함) -->
+            <div style="text-align:right; margin-top:20px; font-size:0.9rem;">
+
                 <!-- 수정 버튼 -->
-                <a th:href="@{/stock/chart/{ticker}/edit/{id}(ticker=${ticker}, id=${dto.id})}"
-                   class="btn"
-                   style="padding:10px 20px; background:#4a5568; color:white; border-radius:6px; text-decoration:none;">
+                <a th:href="@{/stock/board/{ticker}/edit/{id}(ticker=${ticker}, id=${dto.id})}"
+                   style="margin-right:10px; color:#2b6cb0;">
                     수정
                 </a>
 
                 <!-- 삭제 버튼 -->
-                <form th:action="@{/stock/chart/{ticker}/delete/{id}(ticker=${ticker}, id=${dto.id})}"
-                      method="post"
-                      onsubmit="return confirm('정말 삭제하시겠습니까?');">
-                    <button type="submit"
-                            style="padding:10px 20px; background:#e53e3e; color:white; border:none; border-radius:6px; cursor:pointer;">
-                        삭제
-                    </button>
-                </form>
-
-                <!-- 목록 버튼 -->
-                <a th:href="@{/stock/chart/{ticker}(ticker=${ticker})}"
-                   style="padding:10px 20px; background:#2b6cb0; color:white; border-radius:6px; text-decoration:none;">
-                    목록
+                <a th:href="@{/stock/board/{ticker}/delete/{id}(ticker=${ticker}, id=${dto.id})}"
+                   onclick="return confirm('정말 삭제하시겠습니까?');"
+                   style="color:#e53e3e;">
+                    삭제
                 </a>
+
             </div>
+
         </div>
 
 
@@ -499,17 +350,18 @@
 
         <!-- 게시판 테이블 -->
         <table id="board-table" style="width:100%; border-collapse:collapse; display:none;">
-            <thead>
-            <tr style="background:#f1f5f9;">
-                <th style="padding:12px; border-bottom:2px solid #e2e8f0;">번호</th>
-                <th style="padding:12px; border-bottom:2px solid #e2e8f0;">제목</th>
-                <th style="padding:12px; border-bottom:2px solid #e2e8f0;">작성자</th>
-                <th style="padding:12px; border-bottom:2px solid #e2e8f0;">작성일</th>
-            </tr>
-            </thead>
-            <tbody id="board-body">
-            </tbody>
-        </table>
+        <thead>
+        <tr style="background:#f1f5f9;">
+            <th style="width:6%; padding:12px;">번호</th>
+            <th style="width:50%; padding:12px;">제목</th>
+            <th style="width:12%; padding:12px;">작성자</th>
+            <th style="width:10%; padding:12px;">조회수</th>
+            <th style="width:10%; padding:12px;">추천</th>
+            <th style="width:12%; padding:12px;">작성일</th>
+        </tr>
+        </thead>
+        <tbody id="board-body"></tbody>
+    </table>
 
         <!-- 페이지 네비게이션 -->
         <div id="board-pagination"
@@ -529,41 +381,7 @@
     let currentTicker = null;
     let currentTimeframe = 'D';
 
-    // 차트 초기화
-    function initChart() {
-        const chartContainer = document.getElementById('chart-container');
-        chartContainer.innerHTML = '';
 
-        chart = LightweightCharts.createChart(chartContainer, {
-            width: chartContainer.clientWidth,
-            height: 600,
-            layout: {
-                background: { color: '#ffffff' },
-                textColor: '#333',
-            },
-            grid: {
-                vertLines: { color: '#f0f0f0' },
-                horzLines: { color: '#f0f0f0' },
-            },
-            crosshair: {
-                mode: LightweightCharts.CrosshairMode.Normal,
-            },
-            rightPriceScale: {
-                borderColor: '#e0e0e0',
-            },
-            timeScale: {
-                borderColor: '#e0e0e0',
-                timeVisible: true,
-            },
-        });
-
-        // 반응형 크기 조정
-        window.addEventListener('resize', () => {
-            chart.applyOptions({
-                width: chartContainer.clientWidth,
-            });
-        });
-    }
 
     // 종목 로드
     async function loadStock(ticker) {
@@ -701,19 +519,19 @@
         });
     }
 
-    // 날짜 범위 초기화 (전체 데이터 표시)
-    function resetDateRange() {
-        if (!chart) return;
 
-        document.getElementById('start-date').value = '';
-        document.getElementById('end-date').value = '';
+    //guy
 
-        chart.timeScale().fitContent();
+    // 페이지 로드 시 기본 종목 표시
+
+    function getTickerFromURL() {
+        const path = window.location.pathname;   // "/stock/chart/TSLA"
+        const parts = path.split('/');
+        return parts[3] || '005930';             // 티커가 없으면 삼성 기본값
     }
 
-    // 페이지 로드 시 기본 종목 표시 (삼성전자)
     window.addEventListener('load', () => {
-        // 날짜 입력 기본값 설정 (최근 6개월)
+        // 날짜 기본값 설정
         const today = new Date();
         const sixMonthsAgo = new Date();
         sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
@@ -721,7 +539,11 @@
         document.getElementById('end-date').value = today.toISOString().split('T')[0];
         document.getElementById('start-date').value = sixMonthsAgo.toISOString().split('T')[0];
 
-        loadStock('005930');
+        // URL에서 ticker 가져오기
+        const ticker = getTickerFromURL();
+
+        // 그 티커로 로딩
+        loadStock(ticker);
     });
 
     // 📌 종토방 자동 로드 (currentTicker가 바뀔 때 실행)
@@ -765,19 +587,31 @@
 
             // 테이블 렌더링
             list.content.forEach(board => {
+
                 const row = `
-                <tr style="border-bottom:1px solid #edf2f7;">
-                    <td style="padding:10px;">${board.id}</td>
-                    <td style="padding:10px;">
-                        <a href="/stock/board/${currentTicker}/read/${board.id}"
-                           style="color:#2b6cb0; text-decoration:none;">
-                            ${board.title}
-                        </a>
-                    </td>
-                    <td style="padding:10px;">${board.writer}</td>
-                    <td style="padding:10px;">${board.regDate?.replace('T', ' ').substring(0,16)}</td>
-                </tr>
-            `;
+        <tr style="border-bottom:1px solid #edf2f7;">
+            <td style="padding:10px;">${board.id}</td>
+
+            <td style="padding:10px;">
+                <a href="/stock/board/${currentTicker}/read/${board.id}"
+                   style="color:#2b6cb0; text-decoration:none;">
+                    ${board.title}
+                </a>
+            </td>
+
+            <td style="padding:10px; text-align:right;">${board.writer}</td>
+
+            <td style="padding:10px; text-align:center;">${board.view}</td>
+
+            <td style="padding:10px; text-align:center; color:#e53e3e; font-weight:600;">
+                ${board.recommend}
+            </td>
+
+
+            <td style="padding:10px;">${board.regDate?.replace('T', ' ').substring(0,16)}</td>
+        </tr>
+    `;
+
                 tbody.insertAdjacentHTML("beforeend", row);
             });
 
@@ -803,27 +637,94 @@
         loadBoard(currentTicker, page);
     }
 
-    // // 📌 종목 불러올 때마다 게시판도 같이 로드
-    // async function loadStock(ticker) {
-    //     currentTicker = ticker.toUpperCase();
-    //     document.getElementById('ticker-input').value = currentTicker;
-    //
-    //     try {
-    //         // 기존 로직 수행
-    //         const infoResponse = await fetch(`/stock/api/info/${currentTicker}`);
-    //         if (!infoResponse.ok) throw new Error('종목을 찾을 수 없습니다.');
-    //         const stockInfo = await infoResponse.json();
-    //         displayStockInfo(stockInfo);
-    //
-    //         await loadChartData();
-    //
-    //         // 📌 종목 토론방도 함께 로드
-    //         await loadBoard();
-    //
-    //     } catch (error) {
-    //         console.error('종목 로드 실패:', error);
-    //     }
-    // }
+    async function loadComments() {
+        try {
+            const res = await fetch(`/comments/${boardId}`);
+            if (!res.ok) {
+                console.error("댓글 목록 조회 실패:", res.status);
+                return;
+            }
+
+            const comments = await res.json();
+            const listEl = document.getElementById("reply-list");
+            listEl.innerHTML = "";
+
+            if (comments.length === 0) {
+                listEl.innerHTML = "<div style='color:#777;'>등록된 댓글이 없습니다.</div>";
+                return;
+            }
+
+            comments.forEach(reply => {
+                const item = `
+                <div style="border-bottom:1px solid #eee; padding:10px 0;">
+                    <div style="font-weight:600; margin-bottom:4px;">
+                        ${reply.writer ?? '익명'}
+                    </div>
+                    <div style="white-space:pre-line; margin-bottom:6px;">
+                        ${reply.content}
+                    </div>
+                    <div style="font-size:0.8rem; color:#888; display:flex; justify-content:space-between;">
+                        <span>${reply.regDate ? reply.regDate.replace('T',' ').substring(0,16) : ''}</span>
+                        <button type="button"
+                                onclick="deleteComment(${reply.id})"
+                                style="background:none; border:none; color:#e53e3e; cursor:pointer; font-size:0.8rem;">
+                            삭제
+                        </button>
+                    </div>
+                </div>
+            `;
+                listEl.insertAdjacentHTML("beforeend", item);
+            });
+
+        } catch (e) {
+            console.error("댓글 불러오기 중 오류:", e);
+        }
+    }
+
+    async function registerComment() {
+        const textarea = document.getElementById("reply-content");
+        const content = textarea.value.trim();
+
+        if (!content) {
+            alert("댓글을 입력하세요.");
+            return;
+        }
+
+        const dto = {
+            boardId: Number(boardId),
+            content: content,
+            writer: "익명"   // 나중에 로그인 연동되면 현재 유저 닉네임 넣기
+        };
+
+        try {
+            const res = await fetch("/comments", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(dto)
+            });
+
+            if (!res.ok) {
+                console.error("댓글 등록 실패:", res.status);
+                alert("댓글 등록에 실패했습니다.");
+                return;
+            }
+
+            // 성공 시 입력창 비우고 목록 다시 로드
+            textarea.value = "";
+            await loadComments();
+
+        } catch (e) {
+            console.error("댓글 등록 중 오류:", e);
+        }
+    }
+
+    window.addEventListener("load", () => {
+        loadComments();
+    });
+
+
 
 
 

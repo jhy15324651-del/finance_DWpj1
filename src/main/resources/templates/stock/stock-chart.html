@@ -511,18 +511,18 @@
             </button>
         </div>
 
-        <!-- 게시판 테이블 -->
         <table id="board-table" style="width:100%; border-collapse:collapse; display:none;">
             <thead>
             <tr style="background:#f1f5f9;">
-                <th style="padding:12px; border-bottom:2px solid #e2e8f0;">번호</th>
-                <th style="padding:12px; border-bottom:2px solid #e2e8f0;">제목</th>
-                <th style="padding:12px; border-bottom:2px solid #e2e8f0;">작성자</th>
-                <th style="padding:12px; border-bottom:2px solid #e2e8f0;">작성일</th>
+                <th style="width:6%; padding:12px;">번호</th>
+                <th style="width:50%; padding:12px;">제목</th>
+                <th style="width:12%; padding:12px;">작성자</th>
+                <th style="width:10%; padding:12px;">조회수</th>
+                <th style="width:10%; padding:12px;">추천</th>
+                <th style="width:12%; padding:12px;">작성일</th>
             </tr>
             </thead>
-            <tbody id="board-body">
-            </tbody>
+            <tbody id="board-body"></tbody>
         </table>
 
         <!-- 페이지 네비게이션 -->
@@ -935,19 +935,31 @@
 
             // 테이블 렌더링
             list.content.forEach(board => {
+
                 const row = `
-                <tr style="border-bottom:1px solid #edf2f7;">
-                    <td style="padding:10px;">${board.id}</td>
-                    <td style="padding:10px;">
-                        <a href="/stock/board/${currentTicker}/read/${board.id}"
-                           style="color:#2b6cb0; text-decoration:none;">
-                            ${board.title}
-                        </a>
-                    </td>
-                    <td style="padding:10px;">${board.writer}</td>
-                    <td style="padding:10px;">${board.regDate?.replace('T', ' ').substring(0,16)}</td>
-                </tr>
-            `;
+        <tr style="border-bottom:1px solid #edf2f7;">
+            <td style="padding:10px;">${board.id}</td>
+
+            <td style="padding:10px;">
+                <a href="/stock/board/${currentTicker}/read/${board.id}"
+                   style="color:#2b6cb0; text-decoration:none;">
+                    ${board.title}
+                </a>
+            </td>
+
+            <td style="padding:10px;text-align:right;">${board.writer}</td>
+
+            <td style="padding:10px; text-align:center;">${board.view}</td>
+
+            <td style="padding:10px; text-align:center; color:#e53e3e; font-weight:600;">
+                ${board.recommend}
+            </td>
+
+
+            <td style="padding:10px;">${board.regDate?.replace('T', ' ').substring(0,16)}</td>
+        </tr>
+    `;
+
                 tbody.insertAdjacentHTML("beforeend", row);
             });
 
