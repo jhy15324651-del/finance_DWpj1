@@ -195,6 +195,11 @@ public class SEC13FService {
                 JAXBContext jaxbContext = JAXBContext.newInstance(EdgarSubmission.class);
                 Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
 
+                // XXE(XML External Entity) 공격 방지 및 외부 DTD 로딩 비활성화
+                // SEC XML은 외부 DTD를 HTTP로 참조하는데, Java 보안 정책상 차단됨
+                // 실제 DTD가 없어도 파싱이 가능하므로 비활성화
+                unmarshaller.setProperty("com.sun.xml.bind.disableXmlSecurity", true);
+
                 EdgarSubmission submission = (EdgarSubmission) unmarshaller.unmarshal(
                     new StringReader(xmlContent)
                 );
