@@ -1,7 +1,3 @@
-
-
-
-
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
@@ -9,10 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>종목 차트 & 토론방</title>
 
-    <!-- TradingView Lightweight Charts (v3.8.0 - stable API) -->
+    <!-- TradingView Lightweight Charts -->
     <script src="https://unpkg.com/lightweight-charts@3.8.0/dist/lightweight-charts.standalone.production.js"></script>
 
     <style>
+
         * {
             margin: 0;
             padding: 0;
@@ -161,34 +158,34 @@
             color: #3182ce;
         }
 
-
     </style>
 </head>
+
 <body>
-<!-- 네비게이션 바 -->
+
+<!-- 네비게이션 -->
 <div class="navbar">
     <div class="navbar-content">
         <div class="navbar-logo" onclick="location.href='/'">📈 Finance Platform</div>
-        <div>
-            <button class="btn" onclick="location.href='/news-insights'">뉴스 인사이트</button>
-        </div>
+        <button class="btn" onclick="location.href='/news-insights'">뉴스 인사이트</button>
     </div>
 </div>
 
+
 <div class="container">
-    <!-- 검색 섹션 -->
+
+    <!-- 검색 -->
     <div class="search-section">
-        <h2 style="margin-bottom: 15px;">종목 검색</h2>
+        <h2>종목 검색</h2>
+
         <div class="search-box">
-            <input type="text"
-                   id="ticker-input"
-                   class="search-input"
-                   placeholder="티커 또는 종목명 입력 (예: 005930, AAPL, 삼성전자)"
+            <input type="text" id="ticker-input" class="search-input" placeholder="티커/종목명 입력"
                    onkeypress="handleSearchKeyPress(event)">
             <button class="btn" onclick="searchStock()">검색</button>
         </div>
+
         <div class="quick-search">
-            <span style="color: #718096; margin-right: 10px;">빠른 검색:</span>
+            <span style="color:#718096;">빠른 검색:</span>
             <button class="quick-btn" onclick="loadStock('005930')">삼성전자</button>
             <button class="quick-btn" onclick="loadStock('035420')">NAVER</button>
             <button class="quick-btn" onclick="loadStock('035720')">카카오</button>
@@ -198,191 +195,129 @@
         </div>
     </div>
 
-
+    <!-- 종목 정보 -->
     <div id="stock-info-container" style="display:none; margin: 20px 0;">
-        <div class="stock-info" id="stock-info">
-            <!-- 종목 정보 표시 -->
-        </div>
-
-
-        <div class="date-range-controls" style="display:none">
-<!--            <span style="color: #718096; font-size: 0.9rem;">기간:</span>-->
-            <input type="date" id="start-date" class="date-input">
-<!--            <span>~</span>-->
-            <input type="date" id="end-date" class="date-input">
-<!--            <button class="btn-small" onclick="applyDateRange()">적용</button>-->
-<!--            <button class="btn-small btn-secondary" onclick="resetDateRange()">초기화</button>-->
-        </div>
+        <div id="stock-info" class="stock-info"></div>
     </div>
 
 
+    <!-- 🔥 게시글 영역 -->
     <div id="dynamic-area">
 
-        <!-- 📌 게시글 전체 Wrapper -->
-        <div style="background:#fff; padding:25px; border-radius:10px; border:1px solid #ddd; margin-bottom:30px;">
+        <div style="background:#fff; padding:25px; border-radius:12px; border:1px solid #ddd; margin-bottom:30px;">
 
-            <!-- 🔥 헤더 영역 (제목 / 작성자 / 조회·추천·날짜) -->
-            <div style="display:flex; justify-content:space-between; padding-bottom:15px; border-bottom:2px solid #e2e8f0; margin-bottom:20px;">
+            <!-- 글 헤더 -->
+            <div style="display:flex; justify-content:space-between; padding-bottom:15px; border-bottom:2px solid #e2e8f0;">
 
-                <!-- 제목 & 작성자 -->
                 <div>
-                    <h1 style="font-size:1.8rem; font-weight:700; margin-bottom:8px;">[[${dto.title}]]</h1>
-                    <div style="font-size:0.95rem; color:#555;">
-                        작성자: [[${dto.writer}]]
-                    </div>
+                    <h1 style="font-size:1.8rem;">[[${dto.title}]]</h1>
+                    <div style="color:#555;">작성자: [[${dto.writer}]]</div>
                 </div>
 
-                <!-- 조회수 / 추천 / 비추천 / 날짜 -->
-                <div style="text-align:right; font-size:0.9rem; color:#555;">
-                    <div style="margin-bottom:5px;">
-                        👁 [[${dto.view}]] &nbsp;&nbsp;
-                        👍 [[${dto.recommend}]] &nbsp;&nbsp;
-                        👎 [[${dto.unrecommend}]]
-                    </div>
+                <div style="text-align:right; color:#555;">
                     <div>
-                        [[${#temporals.format(dto.regDate, 'yyyy-MM-dd HH:mm')}]]
+                        👁 [[${dto.view}]] &nbsp; 👍 [[${dto.recommend}]] &nbsp; 👎 [[${dto.unrecommend}]]
                     </div>
+                    <div>[[${#temporals.format(dto.regDate, 'yyyy-MM-dd HH:mm')}]]</div>
                 </div>
 
             </div>
 
-
-            <!-- 📌 본문 영역 -->
-            <div style="
-        min-height:250px;
-        padding:20px;
-        border:0px solid #ccc;
-        border-radius:10px;
-        margin-bottom:30px;
-        line-height:1.7;
-        font-size:1.05rem;
-        white-space:pre-line;
-    ">
+            <!-- 본문 -->
+            <div style="padding:20px; min-height:250px; white-space:pre-line;">
                 [[${dto.content}]]
             </div>
 
-
-            <!-- 📌 추천 / 비추천 버튼 (중앙 정렬) -->
-            <div style="text-align:center; margin-bottom:40px;">
-                <button
-                        onclick="location.href='/stock/board/${ticker}/recommend/[[${dto.id}]]'"
-                        style="padding:10px 25px; background:#e53e3e; color:white; border:none; border-radius:6px; margin-right:20px; cursor:pointer;">
-                    👍 추천
+            <!-- 추천 / 비추천 -->
+            <div style="text-align:center; margin-bottom:30px;">
+                <button onclick="doRecommend()"
+                         style="padding:10px 25px; background:#e53e3e; color:white; border-radius:6px; font-weight:bold;">
+                    👍 추천 [[${dto.recommend}]]
                 </button>
-
-                <button
-                        onclick="location.href='/stock/board/${ticker}/unrecommend/[[${dto.id}]]'"
-                        style="padding:10px 25px; background:#3182ce; color:white; border:none; border-radius:6px; cursor:pointer;">
-                    👎 비추천
+                <button onclick="doUnrecommend()"
+                        style="padding:10px 25px; background:#3182ce; color:white; border-radius:6px; font-weight:bold;">
+                    👎 비추천 [[${dto.unrecommend}]]
                 </button>
             </div>
 
+            <!-- 댓글 -->
+            <div style="border:1px solid #ddd; border-radius:10px; padding:20px;">
+                <h3>댓글</h3>
 
-            <!-- 📌 댓글 영역 -->
-            <div style="padding:20px; border:1px solid #ddd; border-radius:10px; margin-bottom:10px;">
-                <h3 style="margin-bottom:15px;">댓글</h3>
+                <div style="border-bottom:1px solid #ddd; margin:10px 0;"></div>
 
-                <!-- 댓글 리스트 삽입 준비 -->
-                <div id="reply-list">
-                    <!-- 댓글 들어갈 자리 -->
-                </div>
 
-                <!-- 댓글 입력 -->
-                <div style="margin-top:15px;">
-            <textarea id="reply-content" placeholder="댓글을 입력하세요"
-                      style="width:100%; height:80px; padding:10px; border:1px solid #bbb; border-radius:6px;"></textarea>
+                <div id="reply-list"></div>
 
-                    <button style="margin-top:10px; float:right; padding:8px 18px; background:#667eea; color:white; border:none; border-radius:6px; cursor:pointer;"
-                            onclick="registerComment()">
-                        댓글 등록
+                <textarea id="reply-content" style="width:100%; height:80px; padding:10px; margin-top:10px;"
+                          placeholder="댓글을 입력하세요"></textarea>
+
+                <button onclick="registerComment()" class="btn" style="float:right; margin-top:10px;">
+                    댓글 등록
+                </button>
+            </div>
+
+            <!-- 수정/삭제 -->
+            <div style="text-align:right; margin-top:20px;">
+                <div th:if="${loginUser != null && loginUser.nickname == dto.writer}">
+                    <button class="btn edit-btn" data-ticker="[[${ticker}]]" data-id="[[${dto.id}]]">
+                        수정
+                    </button>
+
+                    <button class="btn delete-btn" data-ticker="[[${ticker}]]" data-id="[[${dto.id}]]"
+                            style="background:#e53e3e;">
+                        삭제
                     </button>
                 </div>
             </div>
 
+        </div> <!-- 게시글 Wrapper 닫기 -->
 
-            <!-- 📌 수정/삭제 (글쓴이만 보여야 함) -->
-            <div style="text-align:right; margin-top:20px; font-size:0.9rem;">
-
-                <!-- 수정 버튼 -->
-                <a th:href="@{/stock/board/{ticker}/edit/{id}(ticker=${ticker}, id=${dto.id})}"
-                   style="margin-right:10px; color:#2b6cb0;">
-                    수정
-                </a>
-
-                <!-- 삭제 버튼 -->
-                <a th:href="@{/stock/board/{ticker}/delete/{id}(ticker=${ticker}, id=${dto.id})}"
-                   onclick="return confirm('정말 삭제하시겠습니까?');"
-                   style="color:#e53e3e;">
-                    삭제
-                </a>
-
-            </div>
-
-        </div>
+    </div> <!-- dynamic-area 닫기 -->
 
 
+    <!-- 🔥 종토방 -->
+    <div class="board-section" style="margin-top:40px;">
 
-        <!-- 여기에 차트 또는 글 내용을 Thymeleaf fragment로 끼울 것 -->
-    </div>
+        <h2>종목 토론방</h2>
 
-
-    <!-- 차트 섹션 -->
-
-    <!-- 📌 종토방 (Stock Discussion Board) -->
-    <div class="board-section" style="margin-top: 40px;">
-        <h2 style="margin-bottom: 15px;">종목 토론방</h2>
-
-        <!-- 종목 정보 -->
-        <div id="board-stock-title"
-             style="font-size: 1.2rem; font-weight: 600; margin-bottom: 15px; color:#4a5568;">
+        <div id="board-stock-title" style="font-size:1.2rem; margin-bottom:20px;">
             종목을 선택하면 토론방이 표시됩니다.
         </div>
 
-        <!-- 글쓰기 버튼 -->
+        <button class="btn" id="board-write-btn" style="display:none; margin-bottom:20px;">
+            글쓰기
+        </button>
 
-
-        <div style="margin-bottom: 20px;">
-            <button class="btn"
-                    id="board-write-btn"
-                    style="display:none;"
-                    onclick="">
-                글쓰기
-            </button>
-        </div>
-
-        <!-- 게시판 테이블 -->
         <table id="board-table" style="width:100%; border-collapse:collapse; display:none;">
-        <thead>
-        <tr style="background:#f1f5f9;">
-            <th style="width:6%; padding:12px;">번호</th>
-            <th style="width:50%; padding:12px;">제목</th>
-            <th style="width:12%; padding:12px;">작성자</th>
-            <th style="width:10%; padding:12px;">조회수</th>
-            <th style="width:10%; padding:12px;">추천</th>
-            <th style="width:12%; padding:12px;">작성일</th>
-        </tr>
-        </thead>
-        <tbody id="board-body"></tbody>
-    </table>
+            <thead>
+            <tr style="background:#f1f5f9;">
+                <th style="width:6%; padding:12px;">번호</th>
+                <th style="width:50%; padding:12px;">제목</th>
+                <th style="width:12%; padding:12px;">작성자</th>
+                <th style="width:10%; padding:12px;">조회수</th>
+                <th style="width:10%; padding:12px;">추천</th>
+                <th style="width:12%; padding:12px;">작성일</th>
+            </tr>
+            </thead>
+            <tbody id="board-body"></tbody>
+        </table>
 
-        <!-- 페이지 네비게이션 -->
-        <div id="board-pagination"
-             style="margin-top: 20px; text-align: center; display:none;">
-        </div>
-    </div>
+        <div id="board-pagination" style="text-align:center; margin-top:20px; display:none;"></div>
 
-</div>
-</div>
+    </div> <!-- 종토방 끝 -->
 
-<script>
+</div> <!-- container 끝 -->
+
+<script th:inline="javascript">
+
+    let currentTicker = /*[[${ticker}]]*/ "";
     let chart = null;
     let candlestickSeries = null;
     let sma20Series = null;
     let sma60Series = null;
     let sma120Series = null;
-    let currentTicker = null;
     let currentTimeframe = 'D';
-
 
 
 
@@ -399,8 +334,6 @@
         }
     }
 
-    // 페이지 로드 시 로그인 상태 불러오기
-    window.addEventListener("load", loadLoginStatus);
 
 
     // 종목 로드
@@ -539,11 +472,6 @@
         });
     }
 
-
-    //guy
-
-    // 페이지 로드 시 기본 종목 표시
-
     function getTickerFromURL() {
         const path = window.location.pathname;   // "/stock/chart/TSLA"
         const parts = path.split('/');
@@ -565,6 +493,18 @@
         // 그 티커로 로딩
         loadStock(ticker);
     });
+
+
+    window.addEventListener("DOMContentLoaded", () => {
+        if (currentTicker && currentTicker !== '') {
+            // 🔥 검색창 자동 채우기
+            document.getElementById("ticker-input").value = currentTicker;
+
+            // 🔥 종목 정보 + 종토방 자동 로드
+            loadStock(currentTicker);
+        }
+    });
+
 
     // 📌 종토방 자동 로드 (currentTicker가 바뀔 때 실행)
     async function loadBoard() {
@@ -602,16 +542,20 @@
             // 테이블 렌더링
             list.content.forEach(board => {
 
+                const commentBadge = board.commentCount > 0
+                    ? ` <span style="font-size:0.8rem; color:#e53e3e;">[${board.commentCount}]</span>`
+                    : "";   // 0개면 표시 안함
+
                 const row = `
         <tr style="border-bottom:1px solid #edf2f7;">
             <td style="padding:10px;">${board.id}</td>
 
-            <td style="padding:10px;">
-                <a href="/stock/board/${currentTicker}/read/${board.id}"
-                   style="color:#2b6cb0; text-decoration:none;">
-                    ${board.title}
-                </a>
-            </td>
+             <td style="padding:10px;">
+        <a href="/stock/board/${currentTicker}/read/${board.id}"
+           style="color:#2b6cb0; text-decoration:none;">
+            ${board.title}${commentBadge}
+        </a>
+    </td>
 
             <td style="padding:10px; text-align:right;">${board.writer}</td>
 
@@ -785,7 +729,38 @@
         }
     }
 
+    //추천
+    function doRecommend() {
+        fetch(`/stock/board/${currentTicker}/recommend/${boardId}`, { method: "POST" })
+            .then(res => res.text())
+            .then(msg => {
+                if (msg === "UNAUTHORIZED") {
+                    alert("로그인이 필요합니다.");
+                    return location.href = "/user/login";
+                }
+                if (msg === "DUPLICATE_RECOMMEND") {
+                    return alert("이미 추천한 게시글입니다.");
+                }
+                alert("게시글을 추천했습니다.");
+                location.reload();
+            });
+    }
 
+    function doUnrecommend() {
+        fetch(`/stock/board/${currentTicker}/unrecommend/${boardId}`, { method: "POST" })
+            .then(res => res.text())
+            .then(msg => {
+                if (msg === "UNAUTHORIZED") {
+                    alert("로그인이 필요합니다.");
+                    return location.href = "/user/login";
+                }
+                if (msg === "DUPLICATE_UNRECOMMEND") {
+                    return alert("이미 비추천한 게시글입니다.");
+                }
+                alert("게시글을 비추천했습니다.");
+                location.reload();
+            });
+    }
 
 
 

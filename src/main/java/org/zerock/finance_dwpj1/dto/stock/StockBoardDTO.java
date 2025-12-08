@@ -29,5 +29,5 @@ public class StockBoardDTO {
 
     private Integer unrecommend;
 
-    private String commentCount;
+    private Integer commentCount;
 }

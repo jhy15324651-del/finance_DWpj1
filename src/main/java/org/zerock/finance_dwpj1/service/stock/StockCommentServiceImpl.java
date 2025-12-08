@@ -77,10 +77,11 @@ public class StockCommentServiceImpl implements StockCommentService {
         stockCommentRepository.deleteById(id);
     }
 
+
+
+    //댓글 갯수
     @Override
-    @Transactional(readOnly=true)
-    public int getCountByBoard(Long boardId){
+    public int getCountByBoard(Long boardId) {
         return stockCommentRepository.countByBoard_Id(boardId);
     }
-
 }

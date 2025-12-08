@@ -12,6 +12,7 @@ import org.zerock.finance_dwpj1.entity.stock.StockGechu;
 import org.zerock.finance_dwpj1.repository.stock.StockBichuRepository;
 import org.zerock.finance_dwpj1.repository.stock.StockBoardRepository;
 import org.zerock.finance_dwpj1.repository.stock.StockGechuRepository;
+import org.zerock.finance_dwpj1.service.stock.StockCommentService;
 
 import java.time.LocalDateTime;
 
@@ -23,6 +24,7 @@ public class StockBoardServiceImpl implements StockBoardService {
     private final StockBoardRepository stockBoardRepository;
     private final StockGechuRepository stockGechuRepository;
     private final StockBichuRepository stockBichuRepository;
+    private final StockCommentService stockCommentService;
 
 
     @Override
@@ -81,7 +83,7 @@ public class StockBoardServiceImpl implements StockBoardService {
 
     //추천
     @Override
-    public void addRecommend(Long id, Long userId){
+    public boolean addRecommend(Long id, Long userId){
         StockBoard board = stockBoardRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("게시글이 없습니다."));
 
@@ -90,7 +92,7 @@ public class StockBoardServiceImpl implements StockBoardService {
                 .isPresent();
 
         if(exist){
-            return;
+            return false;  // 중복 체크
         }
 
         board.setRecommend(board.getRecommend() + 1);
@@ -101,11 +103,13 @@ public class StockBoardServiceImpl implements StockBoardService {
                         .userId(userId)
                         .build()
         );
+
+        return true;  // 추천 성공
     }
 
     //비추천
     @Override
-    public void addUnrecommend(Long id, Long userId){
+    public boolean addUnrecommend(Long id, Long userId){
         StockBoard board = stockBoardRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("게시글이 없습니다."));
 
@@ -114,7 +118,7 @@ public class StockBoardServiceImpl implements StockBoardService {
                 .isPresent();
 
         if(exist){
-            return;
+            return false;  // 중복 체크
         }
 
         board.setUnrecommend(board.getUnrecommend() + 1);
@@ -125,24 +129,18 @@ public class StockBoardServiceImpl implements StockBoardService {
                         .userId(userId)
                         .build()
         );
+
+        return true; //비추천 성공
     }
 
 
+    @Override
+    public int commentCount(Long boardId) {
+
+        return stockCommentService.getCountByBoard(boardId);
+    }
 
 
-//    @Override
-//    public void addRecommend(Long boardId, Long memberId){
-//
-//        if (voteService.hasVoted(boardId, memberId)){
-//            throw new IllegalStateException("이미 추천한 글입니다.");
-//        }
-//
-//        StockBoard board = stockBoardRepository.findById(boardId);
-//
-//    }
-
-
-    // ======== 변환 메서드 ========
 
     private StockBoardDTO entityToDto(StockBoard board) {
         return StockBoardDTO.builder()
@@ -154,8 +152,10 @@ public class StockBoardServiceImpl implements StockBoardService {
                 .regDate(board.getRegDate())
                 .modDate(board.getModDate())
                 .view(board.getView())
+                .commentCount(commentCount(board.getId()))
                 .recommend(board.getRecommend())
                 .unrecommend(board.getUnrecommend())
+
                 .build();
     }
 

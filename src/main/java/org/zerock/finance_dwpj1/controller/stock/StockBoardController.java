@@ -91,7 +91,9 @@ public class StockBoardController {
     @GetMapping("/{ticker}/read/{id}")
     public String read(@PathVariable String ticker,
                        @PathVariable Long id,
-                       Model model) {
+                       @AuthenticationPrincipal CustomUserDetails loginUser,
+                       Model model
+    ) {
 
         stockBoardService.addView(id);
 
@@ -99,6 +101,7 @@ public class StockBoardController {
 
         model.addAttribute("dto", dto);
         model.addAttribute("ticker", ticker);
+        model.addAttribute("loginUser", loginUser);
 
         return "stock/board/read";
     }
@@ -161,38 +164,44 @@ public class StockBoardController {
     //추천
     @PostMapping("/{ticker}/recommend/{id}")
     @ResponseBody
-    public ResponseEntity<String> recommend(@PathVariable String ticker,
-                                            @PathVariable Long id,
-                                            @AuthenticationPrincipal CustomUserDetails loginUser) {
+    public ResponseEntity<String> recommend(
+            @PathVariable String ticker,
+            @PathVariable Long id,
+            @AuthenticationPrincipal CustomUserDetails loginUser) {
 
         if (loginUser == null) {
-            // 401: 인증 필요함
             return ResponseEntity.status(401).body("UNAUTHORIZED");
         }
 
-        Long userId = loginUser.getId();
+        boolean success = stockBoardService.addRecommend(id, loginUser.getId());
 
-        stockBoardService.addRecommend(id, userId);
-        return ResponseEntity.ok("추천");
+        if (!success) {
+            return ResponseEntity.ok("DUPLICATE_RECOMMEND"); // 추천 중복
+        }
+
+        return ResponseEntity.ok("OK");
     }
 
 
     //비추
     @PostMapping("/{ticker}/unrecommend/{id}")
     @ResponseBody
-    public ResponseEntity<String> unrecommend(@PathVariable String ticker,
-                                            @PathVariable Long id,
-                                            @AuthenticationPrincipal CustomUserDetails loginUser) {
+    public ResponseEntity<String> unrecommend(
+            @PathVariable String ticker,
+            @PathVariable Long id,
+            @AuthenticationPrincipal CustomUserDetails loginUser) {
 
         if (loginUser == null) {
-            // 401: 인증 필요함
             return ResponseEntity.status(401).body("UNAUTHORIZED");
         }
 
-        Long userId = loginUser.getId();
+        boolean success = stockBoardService.addUnrecommend(id, loginUser.getId());
 
-        stockBoardService.addUnrecommend(id, userId);
-        return ResponseEntity.ok("비추");
+        if (!success) {
+            return ResponseEntity.ok("DUPLICATE_UNRECOMMEND"); // 비추천 중복
+        }
+
+        return ResponseEntity.ok("OK");
     }
 
 
