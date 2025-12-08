@@ -19,6 +19,11 @@ import org.zerock.finance_dwpj1.repository.portfolio.InvestorProfileRepository;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.parsers.SAXParser;
+import javax.xml.transform.sax.SAXSource;
+import org.xml.sax.InputSource;
+import org.xml.sax.XMLReader;
 import java.io.StringReader;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -40,18 +45,22 @@ public class SEC13FService {
 
     private static final String SEC_SUBMISSIONS_API = "https://data.sec.gov/submissions/CIK%s.json";
     private static final String SEC_13F_DETAIL_BASE = "https://www.sec.gov/cgi-bin/browse-edgar";
-    private static final String USER_AGENT = "YourAppName/1.0 (your.email@example.com)"; // SEC 요구사항
+
+    // SEC 권장 User-Agent (실제 앱 이름과 이메일 필수, )
+    private static final String USER_AGENT = "FinanceDWPJ1/1.0 (jhy15324651@gmail.com)";
 
     private final OkHttpClient httpClient = new OkHttpClient.Builder()
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(60, TimeUnit.SECONDS)
             .addInterceptor(chain -> {
-                // SEC는 User-Agent 필수
+                // SEC 권장 헤더 추가 (Host는 자동 설정됨)
                 Request request = chain.request().newBuilder()
                         .header("User-Agent", USER_AGENT)
+                        .header("Accept", "application/xml, text/xml, application/json, */*")
                         .build();
                 try {
-                    Thread.sleep(200); // SEC API rate limit: 10 requests/second
+                    // SEC API rate limit 방지: 초당 10회 이하 (500ms 딜레이)
+                    Thread.sleep(500);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     throw new RuntimeException("SEC API 요청 중 인터럽트 발생", e);
@@ -134,13 +143,51 @@ public class SEC13FService {
                     .build();
 
             try (Response response = httpClient.newCall(request).execute()) {
+                // 상세 응답 로그 (디버깅용)
+                int statusCode = response.code();
+                String contentType = response.header("Content-Type", "unknown");
+                log.info("SEC API 응답 - Status: {}, Content-Type: {}", statusCode, contentType);
+
                 if (!response.isSuccessful() || response.body() == null) {
-                    log.error("SEC API 호출 실패: {}", response.code());
+                    log.error("SEC API 호출 실패: {} ({})", statusCode, response.message());
                     return null;
                 }
 
-                String json = response.body().string();
-                JsonObject root = JsonParser.parseString(json).getAsJsonObject();
+                String responseBody = response.body().string();
+
+                // 응답 미리보기 로그 (처음 500자)
+                String preview = responseBody.substring(0, Math.min(500, responseBody.length()));
+                log.debug("SEC API 응답 미리보기 (처음 500자): {}", preview);
+
+                // HTML 응답 감지 (SEC가 차단/에러 시 HTML 반환)
+                String trimmedBody = responseBody.trim().toLowerCase();
+                if (trimmedBody.startsWith("<!doctype html") || trimmedBody.startsWith("<html")) {
+                    log.warn("⚠️ SEC API가 HTML 페이지를 반환했습니다!");
+                    log.warn("가능한 원인: Rate Limit, IP 차단, User-Agent 거부, 또는 SEC 서버 오류");
+                    log.warn("응답 시작 부분: {}", preview);
+                    return null;
+                }
+
+                // XSSI (Cross-Site Script Inclusion) prefix 제거
+                // 일부 API는 ")]}',\n" 같은 프리픽스를 추가함
+                String jsonBody = responseBody;
+                if (jsonBody.startsWith(")]}',")) {
+                    log.debug("XSSI prefix 감지, 제거 중...");
+                    jsonBody = jsonBody.substring(5).trim();
+                }
+
+                // JSON 파싱 (관대 모드 사용)
+                JsonObject root;
+                try {
+                    root = JsonParser.parseString(jsonBody).getAsJsonObject();
+                } catch (com.google.gson.JsonSyntaxException e) {
+                    log.error("❌ JSON 파싱 실패! 응답이 유효한 JSON이 아닙니다.");
+                    log.error("응답 시작 부분: {}", preview);
+                    log.error("Content-Type: {}", contentType);
+                    log.error("파싱 에러: {}", e.getMessage());
+                    return null;
+                }
+
                 JsonObject filings = root.getAsJsonObject("filings");
                 JsonObject recent = filings.getAsJsonObject("recent");
 
@@ -153,14 +200,15 @@ public class SEC13FService {
                     String form = forms.get(i).getAsString();
                     if ("13F-HR".equals(form) || "13F-HR/A".equals(form)) {
                         String accessionNumber = accessionNumbers.get(i).getAsString().replace("-", "");
-                        String primaryDoc = primaryDocuments.get(i).getAsString();
 
-                        // 13F 정보테이블 XML URL 구성
-                        String fileUrl = String.format("https://www.sec.gov/Archives/edgar/data/%s/%s/%s",
-                                cik, accessionNumber, primaryDoc);
+                        // index.json에서 실제 13F XML 파일 찾기
+                        // primaryDocument는 XSLT 변환 파일이므로 사용하지 않음
+                        String fileUrl = find13FXmlFromIndex(cik, accessionNumber);
 
-                        log.info("최신 13F 파일 찾음: {}", fileUrl);
-                        return fileUrl;
+                        if (fileUrl != null) {
+                            log.info("최신 13F 파일 찾음: {}", fileUrl);
+                            return fileUrl;
+                        }
                     }
                 }
             }
@@ -191,29 +239,45 @@ public class SEC13FService {
                 String xmlContent = response.body().string();
                 log.info("13F XML 파일 다운로드 완료 ({}자)", xmlContent.length());
 
-                // JAXB로 XML 파싱
-                JAXBContext jaxbContext = JAXBContext.newInstance(EdgarSubmission.class);
-                Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-
-                EdgarSubmission submission = (EdgarSubmission) unmarshaller.unmarshal(
-                    new StringReader(xmlContent)
-                );
-
-                // CoverPage에서 분기 및 날짜 추출
-                CoverPage coverPage = submission.getCoverPage();
-                if (coverPage == null) {
-                    log.error("CoverPage를 찾을 수 없습니다");
-                    return holdings;
+                // HTML 응답 감지 및 스킵 (SEC가 XML 대신 HTML 페이지를 반환한 경우)
+                String trimmedContent = xmlContent.trim().toLowerCase();
+                if (trimmedContent.startsWith("<!doctype html") || trimmedContent.startsWith("<html")) {
+                    log.warn("⚠️ HTML 응답 감지! SEC가 XML 대신 HTML 페이지를 반환했습니다.");
+                    log.warn("URL: {}", fileUrl);
+                    log.warn("가능한 원인: User-Agent 부족, Rate Limit, 파일이 실제로 HTML, 또는 SEC 접근 제한");
+                    log.warn("이 투자자의 13F 데이터는 건너뜁니다.");
+                    return holdings; // 빈 리스트 반환
                 }
 
-                String reportDate = coverPage.getReportCalendarOrQuarter(); // MM-DD-YYYY
-                LocalDate filingDate = parseReportDate(reportDate);
+                // JAXB로 XML 파싱 - InformationTable 직접 파싱
+                // 46994.xml은 <informationTable>만 포함하므로 EdgarSubmission이 아닌 InformationTable로 파싱
+                JAXBContext jaxbContext = JAXBContext.newInstance(InformationTable.class);
+                Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+
+                // XXE(XML External Entity) 공격 방지 및 외부 DTD 로딩 비활성화
+                // SEC XML은 외부 DTD를 HTTP로 참조하는데, Java 보안 정책상 차단됨
+                // SAXParser를 사용하여 외부 엔티티 및 DTD 로딩을 비활성화
+                SAXParserFactory spf = SAXParserFactory.newInstance();
+                spf.setFeature("http://xml.org/sax/features/external-general-entities", false);
+                spf.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+                spf.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+                spf.setNamespaceAware(true);
+
+                SAXParser saxParser = spf.newSAXParser();
+                XMLReader xmlReader = saxParser.getXMLReader();
+
+                InputSource inputSource = new InputSource(new StringReader(xmlContent));
+                SAXSource saxSource = new SAXSource(xmlReader, inputSource);
+
+                InformationTable infoTable = (InformationTable) unmarshaller.unmarshal(saxSource);
+
+                // 분기 및 날짜 계산 (CoverPage가 없으므로 현재 분기 사용)
+                LocalDate filingDate = LocalDate.now();
                 String quarter = extractQuarter(filingDate);
 
                 log.info("13F 보고서 분기: {}, 날짜: {}", quarter, filingDate);
 
                 // InformationTable에서 보유 종목 추출
-                InformationTable infoTable = submission.getInformationTable();
                 if (infoTable == null || infoTable.getInfoTables() == null) {
                     log.warn("InformationTable이 비어있습니다");
                     return holdings;
@@ -326,5 +390,74 @@ public class SEC13FService {
         }
 
         return LocalDate.now().getYear() + "Q1";
+    }
+
+    /**
+     * index.json에서 실제 13F Information Table XML 파일 찾기
+     * SEC EDGAR는 primaryDocument에 XSLT 변환 파일 경로를 반환하므로,
+     * index.json을 파싱하여 실제 데이터 XML 파일을 찾아야 함
+     */
+    private String find13FXmlFromIndex(String cik, String accessionNumber) {
+        String indexUrl = String.format("https://www.sec.gov/Archives/edgar/data/%s/%s/index.json",
+                cik, accessionNumber);
+        log.debug("index.json 조회: {}", indexUrl);
+
+        try {
+            Request request = new Request.Builder()
+                    .url(indexUrl)
+                    .build();
+
+            try (Response response = httpClient.newCall(request).execute()) {
+                if (!response.isSuccessful() || response.body() == null) {
+                    log.error("index.json 조회 실패: {}", response.code());
+                    return null;
+                }
+
+                String jsonBody = response.body().string();
+                JsonObject index = JsonParser.parseString(jsonBody).getAsJsonObject();
+                JsonObject directory = index.getAsJsonObject("directory");
+                JsonArray items = directory.getAsJsonArray("item");
+
+                // .xml 파일 중 가장 큰 파일 찾기 (Information Table은 보통 가장 큼)
+                String largestXmlFile = null;
+                long largestSize = 0;
+
+                for (JsonElement element : items) {
+                    JsonObject item = element.getAsJsonObject();
+                    String name = item.get("name").getAsString();
+
+                    // .xml 파일만 확인
+                    if (name.endsWith(".xml")) {
+                        String sizeStr = item.get("size").getAsString();
+
+                        // size가 빈 문자열이 아닌 경우에만 파싱
+                        if (!sizeStr.isEmpty()) {
+                            try {
+                                long size = Long.parseLong(sizeStr);
+                                if (size > largestSize) {
+                                    largestSize = size;
+                                    largestXmlFile = name;
+                                }
+                            } catch (NumberFormatException e) {
+                                log.debug("파일 크기 파싱 실패: {} ({})", name, sizeStr);
+                            }
+                        }
+                    }
+                }
+
+                if (largestXmlFile != null) {
+                    String fileUrl = String.format("https://www.sec.gov/Archives/edgar/data/%s/%s/%s",
+                            cik, accessionNumber, largestXmlFile);
+                    log.info("13F XML 파일 발견: {} ({}bytes)", largestXmlFile, largestSize);
+                    return fileUrl;
+                } else {
+                    log.warn("index.json에서 .xml 파일을 찾을 수 없습니다");
+                    return null;
+                }
+            }
+        } catch (Exception e) {
+            log.error("index.json 파싱 중 오류", e);
+            return null;
+        }
     }
 }

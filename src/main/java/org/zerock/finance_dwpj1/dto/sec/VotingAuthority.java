@@ -11,12 +11,12 @@ import javax.xml.bind.annotation.*;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class VotingAuthority {
 
-    @XmlElement(name = "Sole")
+    @XmlElement(name = "Sole", namespace = "http://www.sec.gov/edgar/document/thirteenf/informationtable")
     private Long sole;
 
-    @XmlElement(name = "Shared")
+    @XmlElement(name = "Shared", namespace = "http://www.sec.gov/edgar/document/thirteenf/informationtable")
     private Long shared;
 
-    @XmlElement(name = "None")
+    @XmlElement(name = "None", namespace = "http://www.sec.gov/edgar/document/thirteenf/informationtable")
     private Long none;
 }
