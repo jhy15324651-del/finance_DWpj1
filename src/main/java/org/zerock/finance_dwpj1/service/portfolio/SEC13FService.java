@@ -57,7 +57,6 @@ public class SEC13FService {
                 Request request = chain.request().newBuilder()
                         .header("User-Agent", USER_AGENT)
                         .header("Accept", "application/xml, text/xml, application/json, */*")
-                        .header("Accept-Encoding", "gzip, deflate")
                         .build();
                 try {
                     // SEC API rate limit 방지: 초당 10회 이하 (500ms 딜레이)
@@ -201,14 +200,15 @@ public class SEC13FService {
                     String form = forms.get(i).getAsString();
                     if ("13F-HR".equals(form) || "13F-HR/A".equals(form)) {
                         String accessionNumber = accessionNumbers.get(i).getAsString().replace("-", "");
-                        String primaryDoc = primaryDocuments.get(i).getAsString();
 
-                        // 13F 정보테이블 XML URL 구성
-                        String fileUrl = String.format("https://www.sec.gov/Archives/edgar/data/%s/%s/%s",
-                                cik, accessionNumber, primaryDoc);
+                        // index.json에서 실제 13F XML 파일 찾기
+                        // primaryDocument는 XSLT 변환 파일이므로 사용하지 않음
+                        String fileUrl = find13FXmlFromIndex(cik, accessionNumber);
 
-                        log.info("최신 13F 파일 찾음: {}", fileUrl);
-                        return fileUrl;
+                        if (fileUrl != null) {
+                            log.info("최신 13F 파일 찾음: {}", fileUrl);
+                            return fileUrl;
+                        }
                     }
                 }
             }
@@ -249,8 +249,9 @@ public class SEC13FService {
                     return holdings; // 빈 리스트 반환
                 }
 
-                // JAXB로 XML 파싱
-                JAXBContext jaxbContext = JAXBContext.newInstance(EdgarSubmission.class);
+                // JAXB로 XML 파싱 - InformationTable 직접 파싱
+                // 46994.xml은 <informationTable>만 포함하므로 EdgarSubmission이 아닌 InformationTable로 파싱
+                JAXBContext jaxbContext = JAXBContext.newInstance(InformationTable.class);
                 Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
 
                 // XXE(XML External Entity) 공격 방지 및 외부 DTD 로딩 비활성화
@@ -268,23 +269,15 @@ public class SEC13FService {
                 InputSource inputSource = new InputSource(new StringReader(xmlContent));
                 SAXSource saxSource = new SAXSource(xmlReader, inputSource);
 
-                EdgarSubmission submission = (EdgarSubmission) unmarshaller.unmarshal(saxSource);
+                InformationTable infoTable = (InformationTable) unmarshaller.unmarshal(saxSource);
 
-                // CoverPage에서 분기 및 날짜 추출
-                CoverPage coverPage = submission.getCoverPage();
-                if (coverPage == null) {
-                    log.error("CoverPage를 찾을 수 없습니다");
-                    return holdings;
-                }
-
-                String reportDate = coverPage.getReportCalendarOrQuarter(); // MM-DD-YYYY
-                LocalDate filingDate = parseReportDate(reportDate);
+                // 분기 및 날짜 계산 (CoverPage가 없으므로 현재 분기 사용)
+                LocalDate filingDate = LocalDate.now();
                 String quarter = extractQuarter(filingDate);
 
                 log.info("13F 보고서 분기: {}, 날짜: {}", quarter, filingDate);
 
                 // InformationTable에서 보유 종목 추출
-                InformationTable infoTable = submission.getInformationTable();
                 if (infoTable == null || infoTable.getInfoTables() == null) {
                     log.warn("InformationTable이 비어있습니다");
                     return holdings;
@@ -397,5 +390,74 @@ public class SEC13FService {
         }
 
         return LocalDate.now().getYear() + "Q1";
+    }
+
+    /**
+     * index.json에서 실제 13F Information Table XML 파일 찾기
+     * SEC EDGAR는 primaryDocument에 XSLT 변환 파일 경로를 반환하므로,
+     * index.json을 파싱하여 실제 데이터 XML 파일을 찾아야 함
+     */
+    private String find13FXmlFromIndex(String cik, String accessionNumber) {
+        String indexUrl = String.format("https://www.sec.gov/Archives/edgar/data/%s/%s/index.json",
+                cik, accessionNumber);
+        log.debug("index.json 조회: {}", indexUrl);
+
+        try {
+            Request request = new Request.Builder()
+                    .url(indexUrl)
+                    .build();
+
+            try (Response response = httpClient.newCall(request).execute()) {
+                if (!response.isSuccessful() || response.body() == null) {
+                    log.error("index.json 조회 실패: {}", response.code());
+                    return null;
+                }
+
+                String jsonBody = response.body().string();
+                JsonObject index = JsonParser.parseString(jsonBody).getAsJsonObject();
+                JsonObject directory = index.getAsJsonObject("directory");
+                JsonArray items = directory.getAsJsonArray("item");
+
+                // .xml 파일 중 가장 큰 파일 찾기 (Information Table은 보통 가장 큼)
+                String largestXmlFile = null;
+                long largestSize = 0;
+
+                for (JsonElement element : items) {
+                    JsonObject item = element.getAsJsonObject();
+                    String name = item.get("name").getAsString();
+
+                    // .xml 파일만 확인
+                    if (name.endsWith(".xml")) {
+                        String sizeStr = item.get("size").getAsString();
+
+                        // size가 빈 문자열이 아닌 경우에만 파싱
+                        if (!sizeStr.isEmpty()) {
+                            try {
+                                long size = Long.parseLong(sizeStr);
+                                if (size > largestSize) {
+                                    largestSize = size;
+                                    largestXmlFile = name;
+                                }
+                            } catch (NumberFormatException e) {
+                                log.debug("파일 크기 파싱 실패: {} ({})", name, sizeStr);
+                            }
+                        }
+                    }
+                }
+
+                if (largestXmlFile != null) {
+                    String fileUrl = String.format("https://www.sec.gov/Archives/edgar/data/%s/%s/%s",
+                            cik, accessionNumber, largestXmlFile);
+                    log.info("13F XML 파일 발견: {} ({}bytes)", largestXmlFile, largestSize);
+                    return fileUrl;
+                } else {
+                    log.warn("index.json에서 .xml 파일을 찾을 수 없습니다");
+                    return null;
+                }
+            }
+        } catch (Exception e) {
+            log.error("index.json 파싱 중 오류", e);
+            return null;
+        }
     }
 }
