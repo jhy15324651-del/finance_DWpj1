@@ -4,58 +4,153 @@
       layout:decorate="~{layouts/layout1}">
 
 <head>
-<!--    <meta name="_csrf" th:content="${_csrf.token}"/>-->
-<!--    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>-->
+    <meta charset="UTF-8">
+    <title>게시글 작성</title>
+
+    <style>
+        .write-wrapper {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        /* 제목 */
+        .write-title {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #1a202c;
+            margin-bottom: 35px;
+            border-left: 8px solid #4c6ef5;
+            padding-left: 18px;
+        }
+
+        /* 카드 박스 */
+        .write-card {
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e2e8f0;
+        }
+
+        /* 라벨 */
+        .write-label {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            display: block;
+            color: #2d3748;
+        }
+
+        /* 입력 박스 */
+        .write-input,
+        .write-textarea {
+            width: 100%;
+            font-size: 1.1rem;
+            padding: 16px 18px;
+            border-radius: 12px;
+            border: 2px solid #cbd5e0;
+            background: #f8fafc;
+            transition: 0.2s;
+        }
+
+        .write-input:focus,
+        .write-textarea:focus {
+            border-color: #4c6ef5;
+            background: white;
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(76, 110, 245, 0.2);
+        }
+
+        .write-textarea {
+            height: 320px;
+            resize: vertical;
+        }
+
+        /* 버튼 영역 */
+        .write-btn-area {
+            margin-top: 40px;
+            display: flex;
+            gap: 14px;
+        }
+
+        .btn-primary {
+            background: #4c6ef5;
+            color: white;
+            padding: 15px 35px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: #3b5bdb;
+        }
+
+        .btn-secondary {
+            background: #a0aec0;
+            color: white;
+            padding: 15px 35px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border-radius: 10px;
+            text-decoration: none;
+            display: inline-block;
+            transition: 0.2s;
+        }
+
+        .btn-secondary:hover {
+            background: #718096;
+        }
+    </style>
 </head>
 
-<div layout:fragment="content" class="container mt-4">
+<body>
 
-    <h2 class="mb-4">[ [[${ticker}]] ] 게시판 글쓰기</h2>
+<div layout:fragment="content" class="write-wrapper">
 
-    <form th:action="@{|/stock/board/${ticker}/write|}"
-          th:object="${dto}"
-          method="post">
+    <!-- 페이지 타이틀 -->
+    <div class="write-title">
+        [ <span th:text="${ticker}"></span> ] 게시글 작성
+    </div>
 
-        <!-- 제목 -->
-        <div class="form-group mb-3">
-            <label>제목</label>
-            <input type="text" class="form-control"
+    <div class="write-card">
+
+        <form th:action="@{|/stock/board/${ticker}/write|}"
+              th:object="${dto}"
+              method="post">
+
+            <!-- 제목 -->
+            <label class="write-label">제목</label>
+            <input type="text"
                    th:field="*{title}"
+                   class="write-input"
                    placeholder="제목을 입력하세요"
                    required>
-        </div>
 
-<!--        &lt;!&ndash; 작성자 &ndash;&gt;-->
-<!--        <div class="form-group mb-3">-->
-<!--            <label>작성자</label>-->
-<!--            <input type="text" class="form-control"-->
-<!--                   th:field="*{writer}"-->
-<!--                   placeholder="닉네임 또는 작성자명"-->
-<!--                   required>-->
-<!--        </div>-->
-
-        <!-- 내용 -->
-        <div class="form-group mb-3">
-            <label>내용</label>
-            <textarea class="form-control"
-                      th:field="*{content}"
-                      rows="10"
+            <!-- 내용 -->
+            <label class="write-label" style="margin-top:28px;">내용</label>
+            <textarea th:field="*{content}"
+                      class="write-textarea"
                       placeholder="내용을 입력하세요"
                       required></textarea>
-        </div>
 
-        <!-- 감춰진 ticker 값 -->
-        <input type="hidden" th:field="*{ticker}"/>
+            <input type="hidden" th:field="*{ticker}"/>
 
-        <!-- 버튼 영역 -->
-        <div class="mt-4">
-            <button type="submit" class="btn btn-primary">등록하기</button>
-            <a th:href="@{|/stock/board/${ticker}|}"
-               class="btn btn-secondary">뒤로가기</a>
-        </div>
+            <!-- 버튼 -->
+            <div class="write-btn-area">
+                <button type="submit" class="btn-primary">등록하기</button>
+                <a th:href="@{|/stock/board/${ticker}|}" class="btn-secondary">뒤로가기</a>
+            </div>
 
-    </form>
+        </form>
+
+    </div>
 
 </div>
 
+</body>
 </html>

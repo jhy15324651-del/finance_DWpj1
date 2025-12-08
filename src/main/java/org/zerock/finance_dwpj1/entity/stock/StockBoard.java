@@ -56,5 +56,4 @@ public class StockBoard {
 
     @Column(nullable = false)
     private int view = 0;
-
 }

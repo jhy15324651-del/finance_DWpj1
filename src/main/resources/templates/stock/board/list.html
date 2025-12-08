@@ -1,15 +1,15 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>종목 차트 & 토론방</title>
 
-    <!-- TradingView Lightweight Charts -->
+    <!-- TradingView Lightweight Charts (v3.8.0 - stable API) -->
     <script src="https://unpkg.com/lightweight-charts@3.8.0/dist/lightweight-charts.standalone.production.js"></script>
 
     <style>
-
         * {
             margin: 0;
             padding: 0;
@@ -158,34 +158,34 @@
             color: #3182ce;
         }
 
+
     </style>
 </head>
-
 <body>
-
-<!-- 네비게이션 -->
+<!-- 네비게이션 바 -->
 <div class="navbar">
     <div class="navbar-content">
         <div class="navbar-logo" onclick="location.href='/'">📈 Finance Platform</div>
-        <button class="btn" onclick="location.href='/news-insights'">뉴스 인사이트</button>
+        <div>
+            <button class="btn" onclick="location.href='/news-insights'">뉴스 인사이트</button>
+        </div>
     </div>
 </div>
 
-
 <div class="container">
-
-    <!-- 검색 -->
+    <!-- 검색 섹션 -->
     <div class="search-section">
-        <h2>종목 검색</h2>
-
+        <h2 style="margin-bottom: 15px;">종목 검색</h2>
         <div class="search-box">
-            <input type="text" id="ticker-input" class="search-input" placeholder="티커/종목명 입력"
+            <input type="text"
+                   id="ticker-input"
+                   class="search-input"
+                   placeholder="티커 또는 종목명 입력 (예: 005930, AAPL, 삼성전자)"
                    onkeypress="handleSearchKeyPress(event)">
             <button class="btn" onclick="searchStock()">검색</button>
         </div>
-
         <div class="quick-search">
-            <span style="color:#718096;">빠른 검색:</span>
+            <span style="color: #718096; margin-right: 10px;">빠른 검색:</span>
             <button class="quick-btn" onclick="loadStock('005930')">삼성전자</button>
             <button class="quick-btn" onclick="loadStock('035420')">NAVER</button>
             <button class="quick-btn" onclick="loadStock('035720')">카카오</button>
@@ -195,130 +195,82 @@
         </div>
     </div>
 
-    <!-- 종목 정보 -->
+
     <div id="stock-info-container" style="display:none; margin: 20px 0;">
-        <div id="stock-info" class="stock-info"></div>
+        <div class="stock-info" id="stock-info">
+            <!-- 종목 정보 표시 -->
+        </div>
+
+
+        <div class="date-range-controls" style="display:none">
+            <!--            <span style="color: #718096; font-size: 0.9rem;">기간:</span>-->
+            <input type="date" id="start-date" class="date-input">
+            <!--            <span>~</span>-->
+            <input type="date" id="end-date" class="date-input">
+            <!--            <button class="btn-small" onclick="applyDateRange()">적용</button>-->
+            <!--            <button class="btn-small btn-secondary" onclick="resetDateRange()">초기화</button>-->
+        </div>
     </div>
 
 
-    <!-- 🔥 게시글 영역 -->
     <div id="dynamic-area">
 
-        <div style="background:#fff; padding:25px; border-radius:12px; border:1px solid #ddd; margin-bottom:30px;">
+        <div class="board-section" style="margin-top: 40px;">
+            <h2 style="margin-bottom: 15px;">종목 토론방</h2>
 
-            <!-- 글 헤더 -->
-            <div style="display:flex; justify-content:space-between; padding-bottom:15px; border-bottom:2px solid #e2e8f0;">
-
-                <div>
-                    <h1 style="font-size:1.8rem;">[[${dto.title}]]</h1>
-                    <div style="color:#555;">작성자: [[${dto.writer}]]</div>
-                </div>
-
-                <div style="text-align:right; color:#555;">
-                    <div>
-                        👁 [[${dto.view}]] &nbsp; 👍 [[${dto.recommend}]] &nbsp; 👎 [[${dto.unrecommend}]]
-                    </div>
-                    <div>[[${#temporals.format(dto.regDate, 'yyyy-MM-dd HH:mm')}]]</div>
-                </div>
-
+            <!-- 종목 정보 -->
+            <div id="board-stock-title"
+                 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 15px; color:#4a5568;">
+                종목을 선택하면 토론방이 표시됩니다.
             </div>
 
-            <!-- 본문 -->
-            <div style="padding:20px; min-height:250px; white-space:pre-line;">
-                [[${dto.content}]]
-            </div>
-
-            <!-- 추천 / 비추천 -->
-            <div style="text-align:center; margin-bottom:30px;">
-                <button onclick="doRecommend()"
-                         style="padding:10px 25px; background:#e53e3e; color:white; border-radius:6px; font-weight:bold;">
-                    👍 추천 [[${dto.recommend}]]
-                </button>
-                <button onclick="doUnrecommend()"
-                        style="padding:10px 25px; background:#3182ce; color:white; border-radius:6px; font-weight:bold;">
-                    👎 비추천 [[${dto.unrecommend}]]
+            <!-- 글쓰기 버튼 -->
+            <div style="margin-bottom: 20px;">
+                <button class="btn"
+                        id="board-write-btn"
+                        style="display:none;"
+                        onclick="">
+                    글쓰기
                 </button>
             </div>
 
-            <!-- 댓글 -->
-            <div style="border:1px solid #ddd; border-radius:10px; padding:20px;">
-                <h3>댓글</h3>
+            <!-- 게시판 테이블 -->
+            <table id="board-table" style="width:100%; border-collapse:collapse; display:none;">
+                <thead>
+                <tr style="background:#f1f5f9;">
+                    <th style="width:6%; padding:12px;">번호</th>
+                    <th style="width:50%; padding:12px;">제목</th>
+                    <th style="width:12%; padding:12px;">작성자</th>
+                    <th style="width:10%; padding:12px;">조회수</th>
+                    <th style="width:10%; padding:12px;">추천</th>
+                    <th style="width:12%; padding:12px;">작성일</th>
+                </tr>
+                </thead>
+                <tbody id="board-body"></tbody>
+            </table>
 
-                <div style="border-bottom:1px solid #ddd; margin:10px 0;"></div>
-
-
-                <div id="reply-list"></div>
-
-                <textarea id="reply-content" style="width:100%; height:80px; padding:10px; margin-top:10px;"
-                          placeholder="댓글을 입력하세요"></textarea>
-
-                <button onclick="registerComment()" class="btn" style="float:right; margin-top:10px;">
-                    댓글 등록
-                </button>
+            <!-- 페이지 네비게이션 -->
+            <div id="board-pagination"
+                 style="margin-top: 20px; text-align: center; display:none;">
             </div>
-
-            <!-- 수정/삭제 -->
-            <div style="text-align:right; margin-top:20px;">
-                <div th:if="${loginUser != null && loginUser.nickname == dto.writer}">
-                    <button class="btn edit-btn" data-ticker="[[${ticker}]]" data-id="[[${dto.id}]]">
-                        수정
-                    </button>
-
-                    <button class="btn delete-btn" data-ticker="[[${ticker}]]" data-id="[[${dto.id}]]"
-                            style="background:#e53e3e;">
-                        삭제
-                    </button>
-                </div>
-            </div>
-
-        </div> <!-- 게시글 Wrapper 닫기 -->
-
-    </div> <!-- dynamic-area 닫기 -->
-
-
-    <!-- 🔥 종토방 -->
-    <div class="board-section" style="margin-top:40px;">
-
-        <h2>종목 토론방</h2>
-
-        <div id="board-stock-title" style="font-size:1.2rem; margin-bottom:20px;">
-            종목을 선택하면 토론방이 표시됩니다.
         </div>
 
-        <button class="btn" id="board-write-btn" style="display:none; margin-bottom:20px;">
-            글쓰기
-        </button>
 
-        <table id="board-table" style="width:100%; border-collapse:collapse; display:none;">
-            <thead>
-            <tr style="background:#f1f5f9;">
-                <th style="width:6%; padding:12px;">번호</th>
-                <th style="width:50%; padding:12px;">제목</th>
-                <th style="width:12%; padding:12px;">작성자</th>
-                <th style="width:10%; padding:12px;">조회수</th>
-                <th style="width:10%; padding:12px;">추천</th>
-                <th style="width:12%; padding:12px;">작성일</th>
-            </tr>
-            </thead>
-            <tbody id="board-body"></tbody>
-        </table>
+        <!-- 차트 섹션 -->
 
-        <div id="board-pagination" style="text-align:center; margin-top:20px; display:none;"></div>
+        <!-- 📌 종토방 (Stock Discussion Board) -->
 
-    </div> <!-- 종토방 끝 -->
+    </div>
+</div>
 
-</div> <!-- container 끝 -->
-
-<script th:inline="javascript">
-
-    let currentTicker = /*[[${ticker}]]*/ "";
+<script>
     let chart = null;
     let candlestickSeries = null;
     let sma20Series = null;
     let sma60Series = null;
     let sma120Series = null;
+    let currentTicker = null;
     let currentTimeframe = 'D';
-
 
 
     //로그인 체크
@@ -472,6 +424,11 @@
         });
     }
 
+
+    //guy
+
+    // 페이지 로드 시 기본 종목 표시
+
     function getTickerFromURL() {
         const path = window.location.pathname;   // "/stock/chart/TSLA"
         const parts = path.split('/');
@@ -494,22 +451,9 @@
         loadStock(ticker);
     });
 
-
-    window.addEventListener("DOMContentLoaded", () => {
-        if (currentTicker && currentTicker !== '') {
-            // 🔥 검색창 자동 채우기
-            document.getElementById("ticker-input").value = currentTicker;
-
-            // 🔥 종목 정보 + 종토방 자동 로드
-            loadStock(currentTicker);
-        }
-    });
-
-
     window.addEventListener("load", () => {
         loadLoginStatus();
     });
-
 
     // 📌 종토방 자동 로드 (currentTicker가 바뀔 때 실행)
     async function loadBoard() {
@@ -518,6 +462,20 @@
         document.getElementById("board-stock-title").innerText =
             ` ${currentTicker} 토론방`;
 
+        // 글쓰기 버튼 링크 세팅
+        const writeBtn = document.getElementById("board-write-btn");
+        writeBtn.style.display = "inline-block";
+        writeBtn.onclick = () => {
+
+            // 🔒 로그인 체크
+            if (!isLogin) {
+                alert("로그인 후 글쓰기가 가능합니다.");
+                location.href = "/user/login";
+                return;
+            }
+
+            location.href = `/stock/board/${currentTicker}/write`;
+        };
 
         // 게시글 목록 API 요청
         try {
@@ -574,7 +532,6 @@
             <td style="padding:10px;">${board.regDate?.replace('T', ' ').substring(0,16)}</td>
         </tr>
     `;
-
                 tbody.insertAdjacentHTML("beforeend", row);
             });
 
@@ -594,178 +551,30 @@
         }
     }
 
-    //글쓰기 버튼
-    const writeBtn = document.getElementById("board-write-btn");
-    writeBtn.style.display = "inline-block";
-    writeBtn.onclick = () => {
-
-        // 🔒 로그인 체크
-        if (!isLogin) {
-            alert("로그인 후 글쓰기가 가능합니다.");
-            location.href = "/user/login";
-            return;
-        }
-
-        location.href = `/stock/board/${currentTicker}/write`;
-    };
-
     // 📌 게시판 페이지 변경
     function changeBoardPage(page) {
         if (page < 0) return;
         loadBoard(currentTicker, page);
     }
 
-    async function loadComments() {
-        try {
-            const res = await fetch(`/comments/${boardId}`);
-            if (!res.ok) {
-                console.error("댓글 목록 조회 실패:", res.status);
-                return;
-            }
+    function formatBoardDate(dateStr) {
+        if (!dateStr) return "";
 
-            const comments = await res.json();
-            const listEl = document.getElementById("reply-list");
-            listEl.innerHTML = "";
+        const date = new Date(dateStr);
+        const now = new Date();
 
-            if (comments.length === 0) {
-                listEl.innerHTML = "<div style='color:#777;'>등록된 댓글이 없습니다.</div>";
-                return;
-            }
+        const isToday =
+            date.getFullYear() === now.getFullYear() &&
+            date.getMonth() === now.getMonth() &&
+            date.getDate() === now.getDate();
 
-            comments.forEach(reply => {
-                const item = `
-                <div style="border-bottom:1px solid #eee; padding:10px 0;">
-                    <div style="font-weight:600; margin-bottom:4px;">
-                        ${reply.writer ?? '익명'}
-                    </div>
-                    <div style="white-space:pre-line; margin-bottom:6px;">
-                        ${reply.content}
-                    </div>
-                    <div style="font-size:0.8rem; color:#888; display:flex; justify-content:space-between;">
-                        <span>${reply.regDate ? reply.regDate.replace('T',' ').substring(0,16) : ''}</span>
-                        <button type="button"
-                                onclick="deleteComment(${reply.id})"
-                                style="background:none; border:none; color:#e53e3e; cursor:pointer; font-size:0.8rem;">
-                            삭제
-                        </button>
-                    </div>
-                </div>
-            `;
-                listEl.insertAdjacentHTML("beforeend", item);
-            });
-
-        } catch (e) {
-            console.error("댓글 불러오기 중 오류:", e);
+        if (isToday) {
+            return dateStr.substring(11, 16);  // HH:mm
+        } else {
+            return dateStr.substring(0, 10);   // yyyy-MM-dd
         }
     }
 
-    const boardId = [[${dto.id}]];
-
-
-    async function registerComment() {
-
-
-        // 🔒 로그인 체크
-        if (!isLogin) {
-            alert("로그인 후 댓글 작성이 가능합니다.");
-            location.href = "/user/login";
-            return;
-        }
-
-        const textarea = document.getElementById("reply-content");
-        const content = textarea.value.trim();
-
-        if (!content) {
-            alert("댓글을 입력하세요.");
-            return;
-        }
-
-        const dto = {
-            boardId: Number(boardId),
-            content: content
-        };
-
-        try {
-            const res = await fetch("/comments", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(dto)
-            });
-
-            if (!res.ok) {
-                console.error("댓글 등록 실패:", res.status);
-                alert("댓글 등록에 실패했습니다.");
-                return;
-            }
-
-            // 성공 시 입력창 비우고 목록 다시 로드
-            textarea.value = "";
-            await loadComments();
-
-        } catch (e) {
-            console.error("댓글 등록 중 오류:", e);
-        }
-    }
-
-    window.addEventListener("load", () => {
-        loadComments();
-    });
-
-
-    //댓글 삭제
-    async function deleteComment(id) {
-        if (!confirm("댓글을 삭제하시겠습니까?")) return;
-
-        try {
-            const res = await fetch(`/comments/${id}`, {
-                method: "DELETE"
-            });
-
-            if (!res.ok) {
-                alert("삭제 실패 (권한 없음 또는 서버 오류)");
-                return;
-            }
-
-            await loadComments(); // 새로고침
-        } catch (e) {
-            console.error("댓글 삭제 중 오류:", e);
-        }
-    }
-
-    //추천
-    function doRecommend() {
-        fetch(`/stock/board/${currentTicker}/recommend/${boardId}`, { method: "POST" })
-            .then(res => res.text())
-            .then(msg => {
-                if (msg === "UNAUTHORIZED") {
-                    alert("로그인이 필요합니다.");
-                    return location.href = "/user/login";
-                }
-                if (msg === "DUPLICATE_RECOMMEND") {
-                    return alert("이미 추천한 게시글입니다.");
-                }
-                alert("게시글을 추천했습니다.");
-                location.reload();
-            });
-    }
-
-    function doUnrecommend() {
-        fetch(`/stock/board/${currentTicker}/unrecommend/${boardId}`, { method: "POST" })
-            .then(res => res.text())
-            .then(msg => {
-                if (msg === "UNAUTHORIZED") {
-                    alert("로그인이 필요합니다.");
-                    return location.href = "/user/login";
-                }
-                if (msg === "DUPLICATE_UNRECOMMEND") {
-                    return alert("이미 비추천한 게시글입니다.");
-                }
-                alert("게시글을 비추천했습니다.");
-                location.reload();
-            });
-    }
 
 
 

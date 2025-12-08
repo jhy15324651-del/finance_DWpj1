@@ -14,6 +14,8 @@ import org.zerock.finance_dwpj1.dto.user.UserSessionDTO;
 import org.zerock.finance_dwpj1.service.stock.StockBoardService;
 import org.zerock.finance_dwpj1.service.user.CustomUserDetails;
 
+import java.util.Map;
+
 @Slf4j
 @Controller
 @RequestMapping("/stock/board")
@@ -24,7 +26,19 @@ public class StockBoardController {
 
 
 
+    //로그인 체크
+    @GetMapping("/api/login-check")
+    @ResponseBody
+    public Map<String, Boolean> loginCheck(@AuthenticationPrincipal CustomUserDetails user) {
+        return Map.of("login", user != null);
+    }
 
+    //게시판 폼
+    @GetMapping("/{ticker}/list")
+    public String list(@PathVariable String ticker, Model model) {
+        model.addAttribute("ticker", ticker);
+        return "stock/board/list";   // templates/stock/board/list.html
+    }
 
     //글 쓰기 폼
     @GetMapping("/{ticker}/write")
@@ -69,7 +83,7 @@ public class StockBoardController {
 
         stockBoardService.register(dto);
 
-        return "redirect:/stock/board/" + ticker;
+        return "redirect:/stock/board/" + ticker + "/list";
     }
 
 
@@ -77,7 +91,9 @@ public class StockBoardController {
     @GetMapping("/{ticker}/read/{id}")
     public String read(@PathVariable String ticker,
                        @PathVariable Long id,
-                       Model model) {
+                       @AuthenticationPrincipal CustomUserDetails loginUser,
+                       Model model
+    ) {
 
         stockBoardService.addView(id);
 
@@ -85,6 +101,7 @@ public class StockBoardController {
 
         model.addAttribute("dto", dto);
         model.addAttribute("ticker", ticker);
+        model.addAttribute("loginUser", loginUser);
 
         return "stock/board/read";
     }
@@ -147,38 +164,44 @@ public class StockBoardController {
     //추천
     @PostMapping("/{ticker}/recommend/{id}")
     @ResponseBody
-    public ResponseEntity<String> recommend(@PathVariable String ticker,
-                                            @PathVariable Long id,
-                                            @AuthenticationPrincipal CustomUserDetails loginUser) {
+    public ResponseEntity<String> recommend(
+            @PathVariable String ticker,
+            @PathVariable Long id,
+            @AuthenticationPrincipal CustomUserDetails loginUser) {
 
         if (loginUser == null) {
-            // 401: 인증 필요함
             return ResponseEntity.status(401).body("UNAUTHORIZED");
         }
 
-        Long userId = loginUser.getId();
+        boolean success = stockBoardService.addRecommend(id, loginUser.getId());
 
-        stockBoardService.addRecommend(id, userId);
-        return ResponseEntity.ok("추천");
+        if (!success) {
+            return ResponseEntity.ok("DUPLICATE_RECOMMEND"); // 추천 중복
+        }
+
+        return ResponseEntity.ok("OK");
     }
 
 
     //비추
     @PostMapping("/{ticker}/unrecommend/{id}")
     @ResponseBody
-    public ResponseEntity<String> unrecommend(@PathVariable String ticker,
-                                            @PathVariable Long id,
-                                            @AuthenticationPrincipal CustomUserDetails loginUser) {
+    public ResponseEntity<String> unrecommend(
+            @PathVariable String ticker,
+            @PathVariable Long id,
+            @AuthenticationPrincipal CustomUserDetails loginUser) {
 
         if (loginUser == null) {
-            // 401: 인증 필요함
             return ResponseEntity.status(401).body("UNAUTHORIZED");
         }
 
-        Long userId = loginUser.getId();
+        boolean success = stockBoardService.addUnrecommend(id, loginUser.getId());
 
-        stockBoardService.addUnrecommend(id, userId);
-        return ResponseEntity.ok("비추");
+        if (!success) {
+            return ResponseEntity.ok("DUPLICATE_UNRECOMMEND"); // 비추천 중복
+        }
+
+        return ResponseEntity.ok("OK");
     }
 
 
