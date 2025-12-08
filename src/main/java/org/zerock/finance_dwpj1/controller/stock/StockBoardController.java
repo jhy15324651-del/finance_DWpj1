@@ -14,6 +14,8 @@ import org.zerock.finance_dwpj1.dto.user.UserSessionDTO;
 import org.zerock.finance_dwpj1.service.stock.StockBoardService;
 import org.zerock.finance_dwpj1.service.user.CustomUserDetails;
 
+import java.util.Map;
+
 @Slf4j
 @Controller
 @RequestMapping("/stock/board")
@@ -23,6 +25,13 @@ public class StockBoardController {
     private final StockBoardService stockBoardService;
 
 
+
+    //로그인 체크
+    @GetMapping("/api/login-check")
+    @ResponseBody
+    public Map<String, Boolean> loginCheck(@AuthenticationPrincipal CustomUserDetails user) {
+        return Map.of("login", user != null);
+    }
 
     //게시판 폼
     @GetMapping("/{ticker}/list")

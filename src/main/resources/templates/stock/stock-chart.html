@@ -546,6 +546,23 @@
 
 
 
+    //로그인 체크
+    let isLogin = false;
+
+    async function loadLoginStatus() {
+        try {
+            const res = await fetch("/stock/board/api/login-check");
+            const data = await res.json();
+            isLogin = data.login;
+        } catch (e) {
+            console.error("로그인 체크 실패", e);
+        }
+    }
+
+    // 페이지 로드 시 로그인 상태 불러오기
+    window.addEventListener("load", loadLoginStatus);
+
+
     window.formatPrice = function(num, currency) {
         if (currency === "KRW") {
             return num.toLocaleString("ko-KR") + " ₩";
@@ -905,6 +922,14 @@
         const writeBtn = document.getElementById("board-write-btn");
         writeBtn.style.display = "inline-block";
         writeBtn.onclick = () => {
+
+            // 로그인 체크
+            if (!isLogin) {
+                alert("로그인 후 글쓰기가 가능합니다.");
+                location.href = "/user/login";
+                return;
+            }
+
             location.href = `/stock/board/${currentTicker}/write`;
         };
 

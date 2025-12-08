@@ -3,9 +3,12 @@ package org.zerock.finance_dwpj1.controller.stock;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.zerock.finance_dwpj1.dto.stock.StockCommentDTO;
 import org.zerock.finance_dwpj1.service.stock.StockCommentService;
+import org.zerock.finance_dwpj1.service.user.CustomUserDetails;
 
 import java.util.List;
 
@@ -19,9 +22,23 @@ public class StockCommentController {
 
     //댓글 등록
     @PostMapping
-    public Long register(@RequestBody StockCommentDTO dto){
-        log.info("댓글 등록", dto);
-        return stockCommentService.register(dto);
+    public ResponseEntity<?> register(
+            @RequestBody StockCommentDTO dto,
+            @AuthenticationPrincipal CustomUserDetails user
+    ){
+        log.info("댓글 등록 요청: {}", dto);
+
+        // 🔒 로그인 필요
+        if (user == null) {
+            return ResponseEntity.status(401).body("UNAUTHORIZED");
+        }
+
+        // 🔥 로그인 상태 → 작성자 자동 설정
+        dto.setWriter(user.getNickname());
+
+        Long commentId = stockCommentService.register(dto);
+
+        return ResponseEntity.ok(commentId);
     }
 
     //글 댓글 목록 조회
