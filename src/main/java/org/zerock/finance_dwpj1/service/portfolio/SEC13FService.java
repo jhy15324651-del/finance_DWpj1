@@ -45,18 +45,23 @@ public class SEC13FService {
 
     private static final String SEC_SUBMISSIONS_API = "https://data.sec.gov/submissions/CIK%s.json";
     private static final String SEC_13F_DETAIL_BASE = "https://www.sec.gov/cgi-bin/browse-edgar";
-    private static final String USER_AGENT = "YourAppName/1.0 (your.email@example.com)"; // SEC 요구사항
+
+    // SEC 권장 User-Agent (실제 앱 이름과 이메일 필수)
+    private static final String USER_AGENT = "FinanceDWPJ1/1.0 (jhy15324651@gmail.com)";
 
     private final OkHttpClient httpClient = new OkHttpClient.Builder()
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(60, TimeUnit.SECONDS)
             .addInterceptor(chain -> {
-                // SEC는 User-Agent 필수
+                // SEC 권장 헤더 추가 (Host는 자동 설정됨)
                 Request request = chain.request().newBuilder()
                         .header("User-Agent", USER_AGENT)
+                        .header("Accept", "application/xml, text/xml, application/json, */*")
+                        .header("Accept-Encoding", "gzip, deflate")
                         .build();
                 try {
-                    Thread.sleep(200); // SEC API rate limit: 10 requests/second
+                    // SEC API rate limit 방지: 초당 10회 이하 (500ms 딜레이)
+                    Thread.sleep(500);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     throw new RuntimeException("SEC API 요청 중 인터럽트 발생", e);
@@ -195,6 +200,16 @@ public class SEC13FService {
 
                 String xmlContent = response.body().string();
                 log.info("13F XML 파일 다운로드 완료 ({}자)", xmlContent.length());
+
+                // HTML 응답 감지 및 스킵 (SEC가 XML 대신 HTML 페이지를 반환한 경우)
+                String trimmedContent = xmlContent.trim().toLowerCase();
+                if (trimmedContent.startsWith("<!doctype html") || trimmedContent.startsWith("<html")) {
+                    log.warn("⚠️ HTML 응답 감지! SEC가 XML 대신 HTML 페이지를 반환했습니다.");
+                    log.warn("URL: {}", fileUrl);
+                    log.warn("가능한 원인: User-Agent 부족, Rate Limit, 파일이 실제로 HTML, 또는 SEC 접근 제한");
+                    log.warn("이 투자자의 13F 데이터는 건너뜁니다.");
+                    return holdings; // 빈 리스트 반환
+                }
 
                 // JAXB로 XML 파싱
                 JAXBContext jaxbContext = JAXBContext.newInstance(EdgarSubmission.class);
