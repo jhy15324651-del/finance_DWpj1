@@ -1,9 +1,6 @@
-
-
-
-
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -259,11 +256,11 @@
         </div>
 
 
-    <!-- 차트 섹션 -->
+        <!-- 차트 섹션 -->
 
-    <!-- 📌 종토방 (Stock Discussion Board) -->
+        <!-- 📌 종토방 (Stock Discussion Board) -->
 
-</div>
+    </div>
 </div>
 
 <script>
@@ -274,7 +271,6 @@
     let sma120Series = null;
     let currentTicker = null;
     let currentTimeframe = 'D';
-
 
 
     //로그인 체크
@@ -289,9 +285,6 @@
             console.error("로그인 체크 실패", e);
         }
     }
-
-    // 페이지 로드 시 로그인 상태 불러오기
-    window.addEventListener("load", loadLoginStatus);
 
 
 
