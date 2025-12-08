@@ -46,7 +46,7 @@ public class SEC13FService {
     private static final String SEC_SUBMISSIONS_API = "https://data.sec.gov/submissions/CIK%s.json";
     private static final String SEC_13F_DETAIL_BASE = "https://www.sec.gov/cgi-bin/browse-edgar";
 
-    // SEC 권장 User-Agent (실제 앱 이름과 이메일 필수)
+    // SEC 권장 User-Agent (실제 앱 이름과 이메일 필수, )
     private static final String USER_AGENT = "FinanceDWPJ1/1.0 (jhy15324651@gmail.com)";
 
     private final OkHttpClient httpClient = new OkHttpClient.Builder()
@@ -144,13 +144,51 @@ public class SEC13FService {
                     .build();
 
             try (Response response = httpClient.newCall(request).execute()) {
+                // 상세 응답 로그 (디버깅용)
+                int statusCode = response.code();
+                String contentType = response.header("Content-Type", "unknown");
+                log.info("SEC API 응답 - Status: {}, Content-Type: {}", statusCode, contentType);
+
                 if (!response.isSuccessful() || response.body() == null) {
-                    log.error("SEC API 호출 실패: {}", response.code());
+                    log.error("SEC API 호출 실패: {} ({})", statusCode, response.message());
                     return null;
                 }
 
-                String json = response.body().string();
-                JsonObject root = JsonParser.parseString(json).getAsJsonObject();
+                String responseBody = response.body().string();
+
+                // 응답 미리보기 로그 (처음 500자)
+                String preview = responseBody.substring(0, Math.min(500, responseBody.length()));
+                log.debug("SEC API 응답 미리보기 (처음 500자): {}", preview);
+
+                // HTML 응답 감지 (SEC가 차단/에러 시 HTML 반환)
+                String trimmedBody = responseBody.trim().toLowerCase();
+                if (trimmedBody.startsWith("<!doctype html") || trimmedBody.startsWith("<html")) {
+                    log.warn("⚠️ SEC API가 HTML 페이지를 반환했습니다!");
+                    log.warn("가능한 원인: Rate Limit, IP 차단, User-Agent 거부, 또는 SEC 서버 오류");
+                    log.warn("응답 시작 부분: {}", preview);
+                    return null;
+                }
+
+                // XSSI (Cross-Site Script Inclusion) prefix 제거
+                // 일부 API는 ")]}',\n" 같은 프리픽스를 추가함
+                String jsonBody = responseBody;
+                if (jsonBody.startsWith(")]}',")) {
+                    log.debug("XSSI prefix 감지, 제거 중...");
+                    jsonBody = jsonBody.substring(5).trim();
+                }
+
+                // JSON 파싱 (관대 모드 사용)
+                JsonObject root;
+                try {
+                    root = JsonParser.parseString(jsonBody).getAsJsonObject();
+                } catch (com.google.gson.JsonSyntaxException e) {
+                    log.error("❌ JSON 파싱 실패! 응답이 유효한 JSON이 아닙니다.");
+                    log.error("응답 시작 부분: {}", preview);
+                    log.error("Content-Type: {}", contentType);
+                    log.error("파싱 에러: {}", e.getMessage());
+                    return null;
+                }
+
                 JsonObject filings = root.getAsJsonObject("filings");
                 JsonObject recent = filings.getAsJsonObject("recent");
 
