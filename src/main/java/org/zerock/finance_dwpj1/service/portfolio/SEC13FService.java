@@ -19,6 +19,11 @@ import org.zerock.finance_dwpj1.repository.portfolio.InvestorProfileRepository;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.parsers.SAXParser;
+import javax.xml.transform.sax.SAXSource;
+import org.xml.sax.InputSource;
+import org.xml.sax.XMLReader;
 import java.io.StringReader;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -197,12 +202,20 @@ public class SEC13FService {
 
                 // XXE(XML External Entity) 공격 방지 및 외부 DTD 로딩 비활성화
                 // SEC XML은 외부 DTD를 HTTP로 참조하는데, Java 보안 정책상 차단됨
-                // 실제 DTD가 없어도 파싱이 가능하므로 비활성화
-                unmarshaller.setProperty("com.sun.xml.bind.disableXmlSecurity", true);
+                // SAXParser를 사용하여 외부 엔티티 및 DTD 로딩을 비활성화
+                SAXParserFactory spf = SAXParserFactory.newInstance();
+                spf.setFeature("http://xml.org/sax/features/external-general-entities", false);
+                spf.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+                spf.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+                spf.setNamespaceAware(true);
 
-                EdgarSubmission submission = (EdgarSubmission) unmarshaller.unmarshal(
-                    new StringReader(xmlContent)
-                );
+                SAXParser saxParser = spf.newSAXParser();
+                XMLReader xmlReader = saxParser.getXMLReader();
+
+                InputSource inputSource = new InputSource(new StringReader(xmlContent));
+                SAXSource saxSource = new SAXSource(xmlReader, inputSource);
+
+                EdgarSubmission submission = (EdgarSubmission) unmarshaller.unmarshal(saxSource);
 
                 // CoverPage에서 분기 및 날짜 추출
                 CoverPage coverPage = submission.getCoverPage();
