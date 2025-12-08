@@ -911,6 +911,10 @@
         loadStock('005930');
     });
 
+    window.addEventListener("load", () => {
+        loadLoginStatus();
+    });
+
     // 📌 종토방 자동 로드 (currentTicker가 바뀔 때 실행)
     async function loadBoard() {
         if (!currentTicker) return;
@@ -921,7 +925,9 @@
         // 글쓰기 버튼 링크 세팅
         const writeBtn = document.getElementById("board-write-btn");
         writeBtn.style.display = "inline-block";
-        writeBtn.onclick = () => {
+        writeBtn.onclick = async () => {
+
+            await loadLoginStatus(); // 🔥 최신 로그인 정보 확인 강제
 
             // 로그인 체크
             if (!isLogin) {
@@ -961,18 +967,22 @@
             // 테이블 렌더링
             list.content.forEach(board => {
 
+                const commentBadge = board.commentCount > 0
+                    ? ` <span style="font-size:0.8rem; color:#e53e3e;">[${board.commentCount}]</span>`
+                    : "";   // 0개면 표시 안함
+
                 const row = `
         <tr style="border-bottom:1px solid #edf2f7;">
             <td style="padding:10px;">${board.id}</td>
 
-            <td style="padding:10px;">
-                <a href="/stock/board/${currentTicker}/read/${board.id}"
-                   style="color:#2b6cb0; text-decoration:none;">
-                    ${board.title}
-                </a>
-            </td>
+             <td style="padding:10px;">
+        <a href="/stock/board/${currentTicker}/read/${board.id}"
+           style="color:#2b6cb0; text-decoration:none;">
+            ${board.title}${commentBadge}
+        </a>
+    </td>
 
-            <td style="padding:10px;text-align:right;">${board.writer}</td>
+            <td style="padding:10px; text-align:right;">${board.writer}</td>
 
             <td style="padding:10px; text-align:center;">${board.view}</td>
 

@@ -506,6 +506,11 @@
     });
 
 
+    window.addEventListener("load", () => {
+        loadLoginStatus();
+    });
+
+
     // 📌 종토방 자동 로드 (currentTicker가 바뀔 때 실행)
     async function loadBoard() {
         if (!currentTicker) return;
