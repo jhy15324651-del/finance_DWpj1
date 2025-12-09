@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.zerock.finance_dwpj1.entity.portfolio.Investor13FHolding;
@@ -29,6 +30,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * SEC 13F 분기보고서 데이터 수집 서비스
@@ -42,6 +44,11 @@ public class SEC13FService {
     private final InvestorProfileRepository profileRepository;
     private final Investor13FHoldingRepository holdingRepository;
     private final CusipToTickerService cusipService;
+
+
+    private final AtomicBoolean stopRequested = new AtomicBoolean(false);
+    private final AtomicBoolean collecting = new AtomicBoolean(false);
+
 
     private static final String SEC_SUBMISSIONS_API = "https://data.sec.gov/submissions/CIK%s.json";
     private static final String SEC_13F_DETAIL_BASE = "https://www.sec.gov/cgi-bin/browse-edgar";
@@ -72,25 +79,21 @@ public class SEC13FService {
     /**
      * 특정 투자대가의 최신 13F 데이터 수집
      */
-    @Transactional
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.REQUIRES_NEW)
     public int fetch13FDataForInvestor(String investorId) {
         log.info("=== {} 투자대가 13F 데이터 수집 시작 ===", investorId);
 
-        // 1. 투자대가 정보 조회
         InvestorProfile profile = profileRepository.findById(investorId)
                 .orElseThrow(() -> new IllegalArgumentException("투자대가를 찾을 수 없습니다: " + investorId));
 
-        // 2. SEC API에서 최신 13F 파일 URL 가져오기
         String latest13FUrl = getLatest13FFileUrl(profile.getCik());
         if (latest13FUrl == null) {
             log.warn("{}의 13F 파일을 찾을 수 없습니다", profile.getName());
             return 0;
         }
 
-        // 3. 13F 파일 파싱
         List<Investor13FHolding> holdings = parse13FFile(latest13FUrl, investorId);
 
-        // 4. 이미 있는 데이터는 건너뛰기
         if (!holdings.isEmpty()) {
             String quarter = holdings.get(0).getFilingQuarter();
             if (holdingRepository.existsByInvestorIdAndFilingQuarter(investorId, quarter)) {
@@ -98,8 +101,8 @@ public class SEC13FService {
                 return 0;
             }
 
-            // 5. DB에 저장
             holdingRepository.saveAll(holdings);
+            holdingRepository.flush();
             log.info("{}의 13F 데이터 {}건 저장 완료 (분기: {})",
                     profile.getName(), holdings.size(), quarter);
             return holdings.size();
@@ -111,23 +114,57 @@ public class SEC13FService {
     /**
      * 모든 투자대가의 13F 데이터 수집
      */
-    @Transactional
-    public void fetchAll13FData() {
+    // 전체 투자자 13F 수집 (실제 작업 메서드, 내부에서만 호출)
+    private void fetchAll13FData() {
+
+        // 이미 실행 중이면 바로 리턴
+        if (!collecting.compareAndSet(false, true)) {
+            log.warn("⚠️ 이미 13F 데이터 수집이 실행 중입니다");
+            return;
+        }
+
+        stopRequested.set(false);
+
         List<InvestorProfile> profiles = profileRepository.findByActiveTrue();
         log.info("=== 전체 투자대가 13F 데이터 수집 시작 ({} 명) ===", profiles.size());
 
         int totalCount = 0;
-        for (InvestorProfile profile : profiles) {
-            try {
-                int count = fetch13FDataForInvestor(profile.getInvestorId());
-                totalCount += count;
-            } catch (Exception e) {
-                log.error("{}의 13F 데이터 수집 실패", profile.getName(), e);
-            }
-        }
+        int processedCount = 0;
 
-        log.info("=== 전체 13F 데이터 수집 완료: 총 {}건 ===", totalCount);
+        try {
+            for (InvestorProfile profile : profiles) {
+
+                // 중단 플래그 확인
+                if (stopRequested.get()) {
+                    log.warn("⏸️ 중단 요청 감지 - 현재까지 {}/{}명 처리 완료",
+                            processedCount, profiles.size());
+                    break;
+                }
+
+                try {
+                    log.info("처리 중: {} ({}/{})", profile.getName(),
+                            processedCount + 1, profiles.size());
+
+                    int count = fetch13FDataForInvestor(profile.getInvestorId());
+                    totalCount += count;
+                    processedCount++;
+
+                } catch (Exception e) {
+                    log.error("{}의 13F 데이터 수집 실패", profile.getName(), e);
+                    processedCount++;
+                }
+            }
+
+            log.info("=== 전체 13F 데이터 수집 완료: 총 {}건 ({}/{}명 처리) ===",
+                    totalCount, processedCount, profiles.size());
+
+        } finally {
+            // 무조건 collecting false로 돌려줌
+            collecting.set(false);
+        }
     }
+
+
 
     /**
      * SEC API에서 최신 13F 파일 URL 가져오기
@@ -460,4 +497,30 @@ public class SEC13FService {
             return null;
         }
     }
+
+
+    // 컨트롤러에서 호출하는 **비동기 시작 메서드**
+    @Async
+    public void startAsyncCollection() {
+        log.info("🚀 비동기 13F 데이터 수집 시작 요청 수신");
+
+        fetchAll13FData();   // 위에서 만든 실제 작업 메서드 호출
+
+        log.info("✅ 비동기 13F 데이터 수집 작업 종료");
+    }
+
+    public void stopCollection() {
+        if (!collecting.get()) {
+            log.warn("⚠️ 실행 중인 13F 수집 작업이 없습니다");
+            return;
+        }
+        log.info("🛑 13F 수집 중단 요청 플래그 ON");
+        stopRequested.set(true);
+    }
+
+    // 상태 조회 (Controller에서 /status에 사용)
+    public boolean isCollecting() {
+        return collecting.get();
+    }
+
 }

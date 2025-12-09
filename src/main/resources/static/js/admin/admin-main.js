@@ -333,3 +333,87 @@ window.onclick = function(event) {
         closeModal();
     }
 }
+
+// ======================
+// 13F 데이터 수집 제어
+// ======================
+
+/**
+ * 13F 데이터 수집 시작
+ */
+function start13FCollection() {
+    const statusDiv = document.getElementById('fetch-status');
+
+    statusDiv.className = 'fetch-status show loading';
+    statusDiv.innerHTML = `
+        <strong>⏳ 13F 데이터 수집 시작 중...</strong><br>
+        전체 투자자의 13F 데이터를 수집합니다.<br>
+        <small>※ 로그를 확인하세요. 진행 상황은 서버 로그에 표시됩니다.</small>
+    `;
+
+    fetch('/api/13f/start', {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            statusDiv.className = 'fetch-status show success';
+            statusDiv.innerHTML = `
+                <strong>✅ ${data.message}</strong><br>
+                진행 상황은 서버 로그를 확인하세요.
+            `;
+        } else {
+            statusDiv.className = 'fetch-status show error';
+            statusDiv.innerHTML = `
+                <strong>❌ ${data.message}</strong>
+            `;
+        }
+    })
+    .catch(error => {
+        console.error('13F 데이터 수집 시작 실패:', error);
+        statusDiv.className = 'fetch-status show error';
+        statusDiv.innerHTML = `
+            <strong>❌ 수집 시작 실패</strong><br>
+            ${error.message}
+        `;
+    });
+}
+
+/**
+ * 13F 데이터 수집 중단
+ */
+function stop13FCollection() {
+    const statusDiv = document.getElementById('fetch-status');
+
+    statusDiv.className = 'fetch-status show loading';
+    statusDiv.innerHTML = `
+        <strong>⏸️ 수집 중단 요청 중...</strong>
+    `;
+
+    fetch('/api/13f/stop', {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            statusDiv.className = 'fetch-status show success';
+            statusDiv.innerHTML = `
+                <strong>✅ ${data.message}</strong><br>
+                현재 처리 중인 투자자 완료 후 중단됩니다.
+            `;
+        } else {
+            statusDiv.className = 'fetch-status show error';
+            statusDiv.innerHTML = `
+                <strong>⚠️ ${data.message}</strong>
+            `;
+        }
+    })
+    .catch(error => {
+        console.error('13F 데이터 수집 중단 실패:', error);
+        statusDiv.className = 'fetch-status show error';
+        statusDiv.innerHTML = `
+            <strong>❌ 중단 요청 실패</strong><br>
+            ${error.message}
+        `;
+    });
+}

@@ -161,7 +161,7 @@ public class PortfolioAnalyzerController {
 
             contents.add(PortfolioAnalysisResponse.ContentRecommendation.builder()
                     .contentId(5L)
-                    .title("2024년 주목해야 할 산업과 종목")
+                    .title("2025년 주목해야 할 산업과 종목")
                     .category("시장 분석")
                     .rating(4.5)
                     .thumbnailUrl("/images/content/dummy5.jpg")

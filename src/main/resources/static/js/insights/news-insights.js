@@ -327,11 +327,10 @@ function scrollToCommentForm() {
 
 // 댓글 작성
 async function submitComment() {
-    const userName = document.getElementById('comment-user-name').value.trim();
     const content = document.getElementById('comment-content').value.trim();
 
-    if (!userName || !content) {
-        alert('이름과 의견을 모두 입력해주세요.');
+    if (!content) {
+        alert('의견을 입력해주세요.');
         return;
     }
 
@@ -342,7 +341,6 @@ async function submitComment() {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                userName: userName,
                 content: content
             })
         });
@@ -414,11 +412,10 @@ function closeReplyModal() {
 
 // 답글 작성
 async function submitReply() {
-    const userName = document.getElementById('reply-user-name').value.trim();
     const content = document.getElementById('reply-content').value.trim();
 
-    if (!userName || !content) {
-        alert('이름과 답글을 모두 입력해주세요.');
+    if (!content) {
+        alert('답글을 입력해주세요.');
         return;
     }
 
@@ -429,7 +426,6 @@ async function submitReply() {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                userName: userName,
                 content: content,
                 parentCommentId: currentReplyParentId
             })

@@ -209,6 +209,28 @@ body {
     color: white;
 }
 
+.btn-danger {
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #f56565 0%, #c53030 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(245, 101, 101, 0.4);
+}
+
+.btn-danger:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
 .btn-link {
     padding: 8px 16px;
     color: #667eea;
