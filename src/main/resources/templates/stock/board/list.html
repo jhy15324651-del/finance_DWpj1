@@ -290,16 +290,24 @@
                 종목을 선택하면 토론방이 표시됩니다.
             </div>
 
-            <!-- 글쓰기 버튼 -->
-            <div style="margin-bottom: 20px;">
+            <div style="margin-bottom: 20px; display:flex; justify-content:space-between; align-items:center;">
+
+                <!-- 왼쪽: 목록으로 버튼 -->
+                <button class="btn btn-secondary"
+                        id="board-list-btn"
+                        style="background:#718096;"
+                        onclick="goBoardList()">
+                    목록 새로 고침
+                </button>
+
+                <!-- 오른쪽: 글쓰기 버튼 -->
                 <button class="btn"
                         id="board-write-btn"
-                        style="display:none;"
-                        onclick="">
+                        style="display:none;">
                     글쓰기
                 </button>
-            </div>
 
+            </div>
             <!-- 게시판 테이블 -->
             <table id="board-table" style="width:100%; border-collapse:collapse; display:none;">
                 <thead>
@@ -547,12 +555,24 @@
         loadLoginStatus();
     });
 
+
+    function goBoardList() {
+        if (!currentTicker) {
+            alert("종목을 먼저 선택하세요.");
+            return;
+        }
+        location.href = `/stock/board/${currentTicker}`;
+    }
+
+
+
     // 📌 종토방 자동 로드 (currentTicker가 바뀔 때 실행)
     async function loadBoard() {
         if (!currentTicker) return;
 
         document.getElementById("board-stock-title").innerText =
             ` ${currentTicker} 토론방`;
+
 
         // 글쓰기 버튼 링크 세팅
         const writeBtn = document.getElementById("board-write-btn");

@@ -529,21 +529,21 @@
                 </div>
 
 
-                <div class="chart-right" id="side-detail-panel">
-                    <h3 style="margin-bottom:10px;"> 종목 상세 정보</h3>
 
-                    <div style="color:#718096; font-size:0.9rem;">
-                        아직 상세 정보가 없습니다.<br>
-                        추후 뉴스 / 재무 데이터 / 기업정보 등을 여기에 넣으면 됩니다.
+                <div class="chart-right">
+
+                    <h3 style="margin-bottom:10px;">종목 상세 정보</h3>
+                    <div id="detail-panel">
+                        <!-- JS가 여기에 상세 정보만 넣음 -->
                     </div>
 
-                    <hr style="margin: 20px 0; border-color:#e2e8f0;">
+                    <hr style="margin:20px 0;">
 
-                    <h3 style="margin-bottom:10px;"> 관련 뉴스</h3>
-                    <div id="news-area" style="color:#adb5bd; font-size:0.9rem;">
-                        아직 뉴스 데이터가 없습니다.<br>
-                        나중에 API 연동하면 자동으로 들어갑니다.
+                    <h3 style="margin-bottom:10px;">관련 뉴스</h3>
+                    <div id="news-area">
+                        <!-- 뉴스는 loadNews()가 채움 -->
                     </div>
+
                 </div>
 
 
@@ -568,14 +568,23 @@
             종목을 선택하면 토론방이 표시됩니다.
         </div>
 
-        <!-- 글쓰기 버튼 -->
-        <div style="margin-bottom: 20px;">
+        <div style="margin-bottom: 20px; display:flex; justify-content:space-between; align-items:center;">
+
+            <!-- 왼쪽: 목록으로 버튼 -->
+            <button class="btn btn-secondary"
+                    id="board-list-btn"
+                    style="background:#718096;"
+                    onclick="goBoardList()">
+                목록
+            </button>
+
+            <!-- 오른쪽: 글쓰기 버튼 -->
             <button class="btn"
                     id="board-write-btn"
-                    style="display:none;"
-                    onclick="">
+                    style="display:none;">
                 글쓰기
             </button>
+
         </div>
 
         <table id="board-table" style="width:100%; border-collapse:collapse; display:none;">
@@ -738,6 +747,7 @@
 
             // 차트 데이터 로드
             await loadChartData();
+            await loadStockDetail();
             await loadNews();
             await loadBoard();
 
@@ -983,6 +993,18 @@
         loadLoginStatus();
     });
 
+
+
+    function goBoardList() {
+        if (!currentTicker) {
+            alert("종목을 먼저 선택하세요.");
+            return;
+        }
+        location.href = `/stock/board/${currentTicker}`;
+    }
+
+
+
     // 📌 종토방 자동 로드 (currentTicker가 바뀔 때 실행)
     async function loadBoard() {
         if (!currentTicker) return;
@@ -1088,27 +1110,55 @@
         loadBoard(currentTicker, page);
     }
 
-    // // 📌 종목 불러올 때마다 게시판도 같이 로드
-    // async function loadStock(ticker) {
-    //     currentTicker = ticker.toUpperCase();
-    //     document.getElementById('ticker-input').value = currentTicker;
-    //
-    //     try {
-    //         // 기존 로직 수행
-    //         const infoResponse = await fetch(`/stock/api/info/${currentTicker}`);
-    //         if (!infoResponse.ok) throw new Error('종목을 찾을 수 없습니다.');
-    //         const stockInfo = await infoResponse.json();
-    //         displayStockInfo(stockInfo);
-    //
-    //         await loadChartData();
-    //
-    //         // 📌 종목 토론방도 함께 로드
-    //         await loadBoard();
-    //
-    //     } catch (error) {
-    //         console.error('종목 로드 실패:', error);
-    //     }
-    // }
+
+    async function loadStockDetail() {
+        if (!currentTicker) return;
+
+        const panel = document.getElementById("detail-panel");
+        panel.innerHTML = `
+        <div style="color:#718096; font-size:0.9rem;">
+            상세 정보 로딩 중...
+        </div>
+    `;
+
+        try {
+            const res = await fetch(`/stock/api/detail/${currentTicker}`);
+            if (!res.ok) {
+                panel.innerHTML = "<div style='color:red;'>상세 정보를 불러올 수 없습니다.</div>";
+                return;
+            }
+
+            const d = await res.json();
+
+            panel.innerHTML = `
+            <h3 style="margin-bottom:10px; font-weight:700;">📌 기업 상세 정보</h3>
+
+            <div style="background:#f7fafc; padding:15px; border-radius:8px; font-size:0.95rem; line-height:1.6;">
+
+                <div><b>기업명:</b> ${d.name ?? "-"}</div>
+                <div><b>섹터:</b> ${d.sector ?? "-"}</div>
+                <div><b>산업군:</b> ${d.industry ?? "-"}</div>
+                <div><b>상장 거래소:</b> ${d.exchange ?? "-"}</div>
+                <div><b>국가:</b> ${d.country ?? "-"}</div>
+
+                <div style="margin-top:10px;"><b>시가총액:</b> ${formatMarketCap(d.marketCap)}</div>
+                <div><b>거래량:</b> ${d.volume?.toLocaleString('ko-KR') ?? "-"}</div>
+            </div>
+
+            <hr style="margin:20px 0; border-color:#e2e8f0;">
+
+            <h3 style="margin-bottom:10px;">📰 관련 뉴스</h3>
+            <div id="news-area" style="font-size:0.9rem; color:#666;">
+                <!-- 기존 loadNews()가 여기에 채움 -->
+            </div>
+        `;
+        } catch (e) {
+            console.error("상세정보 로드 실패:", e);
+            panel.innerHTML = "<div style='color:red;'>상세 정보 로딩 실패</div>";
+        }
+    }
+
+
 
     async function loadNews() {
         if (!currentTicker) return;
