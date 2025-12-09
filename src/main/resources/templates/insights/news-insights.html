@@ -119,7 +119,9 @@
         <div class="comment-form-section" id="comment-form-section">
             <h3 class="form-title">의견 등록하기</h3>
             <div class="comment-form">
-                <input type="text" id="comment-user-name" placeholder="이름" maxlength="50">
+                <input type="text" id="comment-user-name" readonly
+                       style="background-color: #f0f0f0; cursor: not-allowed;"
+                       placeholder="로그인 후 작성 가능">
                 <textarea id="comment-content" placeholder="의견을 입력하세요" rows="4"></textarea>
                 <button class="btn-submit" onclick="submitComment()">등록하기</button>
             </div>
@@ -137,7 +139,9 @@
         <div class="modal-body">
             <div class="reply-to" id="reply-to-user"></div>
             <div class="comment-form">
-                <input type="text" id="reply-user-name" placeholder="이름" maxlength="50">
+                <input type="text" id="reply-user-name" readonly
+                       style="background-color: #f0f0f0; cursor: not-allowed;"
+                       placeholder="로그인 후 작성 가능">
                 <textarea id="reply-content" placeholder="답글을 입력하세요" rows="4"></textarea>
                 <button class="btn-submit" onclick="submitReply()">답글 등록</button>
             </div>

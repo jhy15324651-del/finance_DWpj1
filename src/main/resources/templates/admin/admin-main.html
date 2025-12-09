@@ -24,16 +24,16 @@
 
     <!-- 탭 네비게이션 -->
     <nav class="admin-tabs">
-        <button class="tab-btn active" data-tab="twitter">
+        <button type="button" class="tab-btn active" data-tab="twitter">
             🐦 트위터 관리
         </button>
-        <button class="tab-btn" data-tab="portfolio">
+        <button type="button" class="tab-btn" data-tab="portfolio">
             💼 포트폴리오 관리
         </button>
-        <button class="tab-btn" data-tab="news">
+        <button  type="button" class="tab-btn" data-tab="news">
             📰 뉴스 관리
         </button>
-        <button class="tab-btn" data-tab="content">
+        <button type="button" class="tab-btn" data-tab="content">
             📝 콘텐츠리뷰 관리
         </button>
         <!-- 확장 가능 공간 -->
@@ -47,8 +47,8 @@
             <div class="tab-header">
                 <h2>트위터 인사이트 관리</h2>
                 <div class="header-buttons">
-                    <button class="btn-primary" onclick="openAddModal()">+ 새 트윗 추가</button>
-                    <button class="btn-secondary" onclick="initializeDummyData()">더미 데이터 초기화</button>
+                    <button type="button" class="btn-primary" onclick="openAddModal()">+ 새 트윗 추가</button>
+                    <button type="button" class="btn-secondary" onclick="initializeDummyData()">더미 데이터 초기화</button>
                 </div>
             </div>
 
@@ -92,8 +92,11 @@
                 </p>
 
                 <div class="action-buttons">
-                    <button class="btn-primary btn-large" onclick="fetchAll13FData()">
-                        📊 전체 투자자 13F 데이터 수집
+                    <button type="button" class="btn-primary btn-large" onclick="start13FCollection()">
+                        ▶️ 13F 데이터 수집 시작
+                    </button>
+                    <button type="button" class="btn-danger btn-large" onclick="stop13FCollection()">
+                        ⏸️ 수집 중단
                     </button>
                 </div>
 
@@ -102,16 +105,16 @@
                 <div class="investor-list">
                     <h4>개별 투자자 데이터 수집</h4>
                     <div class="investor-grid">
-                        <button class="investor-btn" onclick="fetch13FData('buffett')">Warren Buffett</button>
-                        <button class="investor-btn" onclick="fetch13FData('wood')">Cathie Wood</button>
-                        <button class="investor-btn" onclick="fetch13FData('dalio')">Ray Dalio</button>
-                        <button class="investor-btn" onclick="fetch13FData('soros')">George Soros</button>
-                        <button class="investor-btn" onclick="fetch13FData('lynch')">Peter Lynch</button>
-                        <button class="investor-btn" onclick="fetch13FData('graham')">Benjamin Graham</button>
-                        <button class="investor-btn" onclick="fetch13FData('thiel')">Peter Thiel</button>
-                        <button class="investor-btn" onclick="fetch13FData('fink')">Larry Fink</button>
-                        <button class="investor-btn" onclick="fetch13FData('simons')">Jim Simons</button>
-                        <button class="investor-btn" onclick="fetch13FData('ackman')">Bill Ackman</button>
+                        <button type="button" class="investor-btn" onclick="fetch13FData('buffett')">Warren Buffett</button>
+                        <button type="button" class="investor-btn" onclick="fetch13FData('wood')">Cathie Wood</button>
+                        <button type="button" class="investor-btn" onclick="fetch13FData('dalio')">Ray Dalio</button>
+                        <button type="button" class="investor-btn" onclick="fetch13FData('soros')">George Soros</button>
+                        <button type="button" class="investor-btn" onclick="fetch13FData('lynch')">Peter Lynch</button>
+                        <button type="button" class="investor-btn" onclick="fetch13FData('graham')">Benjamin Graham</button>
+                        <button type="button" class="investor-btn" onclick="fetch13FData('thiel')">Peter Thiel</button>
+                        <button type="button" class="investor-btn" onclick="fetch13FData('fink')">Larry Fink</button>
+                        <button type="button" class="investor-btn" onclick="fetch13FData('simons')">Jim Simons</button>
+                        <button type="button" class="investor-btn" onclick="fetch13FData('ackman')">Bill Ackman</button>
                     </div>
                 </div>
             </div>

@@ -109,8 +109,14 @@ public class DailyNewsController {
     @PostMapping("/{newsId}/comments")
     public ResponseEntity<InsightsCommentDTO> addComment(
             @PathVariable Long newsId,
-            @RequestBody InsightsCommentDTO commentDTO) {
-        log.info("댓글 작성 - 뉴스 ID: {}, 작성자: {}", newsId, commentDTO.getUserName());
+            @RequestBody InsightsCommentDTO commentDTO,
+            java.security.Principal principal) {
+
+        // 로그인한 유저의 username 자동 설정 (클라이언트에서 보낸 값 무시)
+        String username = principal != null ? principal.getName() : "익명";
+        commentDTO.setUserName(username);
+
+        log.info("댓글 작성 - 뉴스 ID: {}, 작성자: {}", newsId, username);
         commentDTO.setNewsId(newsId);
         InsightsCommentDTO savedComment = dailyNewsService.addComment(commentDTO);
         return ResponseEntity.ok(savedComment);

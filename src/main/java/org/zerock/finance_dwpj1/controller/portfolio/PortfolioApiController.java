@@ -50,17 +50,17 @@ public class PortfolioApiController {
         log.info("=== 관리자 - 전체 13F 데이터 수집 시작 ===");
         Map<String, Object> response = new HashMap<>();
 
-        try {
-            sec13FService.fetchAll13FData();
-            response.put("success", true);
-            response.put("message", "전체 투자자의 13F 데이터 수집이 완료되었습니다.");
-        } catch (Exception e) {
-            log.error("13F 데이터 수집 실패", e);
+        if (sec13FService.isCollecting()) {
             response.put("success", false);
-            response.put("error", e.getMessage());
-            response.put("message", "13F 데이터 수집 중 오류가 발생했습니다: " + e.getMessage());
+            response.put("message", "이미 13F 데이터 수집이 진행 중입니다.");
+            return response;
         }
 
+        // 🔹 비동기 시작 메서드 호출
+        sec13FService.startAsyncCollection();
+
+        response.put("success", true);
+        response.put("message", "전체 투자자의 13F 데이터 수집을 백그라운드에서 시작했습니다.");
         return response;
     }
 
