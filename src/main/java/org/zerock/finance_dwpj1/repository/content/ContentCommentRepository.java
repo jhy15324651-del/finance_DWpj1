@@ -16,4 +16,10 @@ public interface ContentCommentRepository extends JpaRepository<ContentComment, 
 
     int countByPostIdAndRatingIsNotNull(Long postId);
 
+    /**
+     * 내가 쓴 댓글(마이페이지)
+     */
+    List<ContentComment> findByWriter(String writer);
+
+
 }
