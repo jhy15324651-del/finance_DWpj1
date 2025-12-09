@@ -1,0 +1,94 @@
+<div class="mypage-section">
+    <h2>📌 내가 작성한 게시글</h2>
+
+    <!-- 아무 글도 없을 때 -->
+    <div th:if="${#lists.isEmpty(posts)}" class="empty-message">
+        아직 작성한 게시글이 없습니다.
+    </div>
+
+    <!-- 글 있을 때 -->
+    <ul class="post-list" th:each="p : ${posts}">
+        <li class="post-item">
+
+            <!-- 🟦 (1) 카테고리 표시 -->
+            <span class="post-category"
+                  th:text="${p.category}">
+            </span>
+
+            <!-- 🟦 (2) 게시글 제목 + 상세보기 링크 -->
+            <a class="post-title"
+               th:href="${p.link}"
+               th:text="${p.title}">
+            </a>
+
+            <!-- 🟦 (3) 작성일 -->
+            <span class="post-date"
+                  th:text="${#temporals.format(p.date, 'yyyy.MM.dd')}">
+            </span>
+
+            <!-- 🟦 (4) 조회수 -->
+            <span class="post-views"
+                  th:text="'조회수 ' + ${p.viewCount}">
+            </span>
+
+        </li>
+    </ul>
+</div>
+
+<style>
+    .mypage-section h2 {
+        margin-bottom: 20px;
+        font-size: 22px;
+        font-weight: bold;
+    }
+
+    .post-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .post-item {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 12px 0;
+        border-bottom: 1px solid #e5e5e5;
+    }
+
+    .post-category {
+        background: #eceaff;
+        color: #5a4eff;
+        padding: 3px 8px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .post-title {
+        flex: 1;
+        font-size: 16px;
+        color: #333;
+        text-decoration: none;
+    }
+
+    .post-title:hover {
+        text-decoration: underline;
+    }
+
+    .post-date {
+        color: #888;
+        font-size: 13px;
+    }
+
+    .post-views {
+        color: #666;
+        font-size: 13px;
+    }
+
+    .empty-message {
+        color: #555;
+        padding: 20px 0;
+    }
+
+</style>

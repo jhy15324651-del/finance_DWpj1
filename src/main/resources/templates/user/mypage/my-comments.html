@@ -1,0 +1,119 @@
+<div class="mypage-section">
+    <h2>💬 내가 작성한 댓글</h2>
+
+    <!-- 댓글이 하나도 없을 때 -->
+    <div th:if="${#lists.isEmpty(comments)}" class="empty-message">
+        아직 작성한 댓글이 없습니다.
+    </div>
+
+    <!-- 댓글 목록 -->
+    <ul class="comment-list" th:each="c : ${comments}">
+        <li class="comment-item">
+
+            <!-- 카테고리 -->
+            <span class="comment-category"
+                  th:classappend="${c.category == '[삭제된 게시글]'} ? 'deleted'"
+                  th:text="${c.category}">
+            </span>
+
+            <!-- 게시글 제목 -->
+            <div class="comment-post-title">
+
+                <!-- 링크가 존재하는 경우 -->
+                <a th:if="${c.postLink != null}"
+                   th:href="${c.postLink}"
+                   th:text="${c.postTitle}">
+                </a>
+
+                <!-- 삭제된 게시글 -->
+                <span th:if="${c.postLink == null}"
+                      class="deleted-title"
+                      th:text="${c.postTitle}">
+                </span>
+            </div>
+
+            <!-- 댓글 내용 (요약 표시) -->
+            <div class="comment-content"
+                 th:text="${#strings.abbreviate(c.content, 60)}">
+            </div>
+
+            <!-- 작성일 -->
+            <div class="comment-date"
+                 th:text="${#temporals.format(c.date, 'yyyy.MM.dd HH:mm')}">
+            </div>
+
+        </li>
+    </ul>
+</div>
+
+<style>
+    .mypage-section h2 {
+        margin-bottom: 20px;
+        font-size: 22px;
+        font-weight: bold;
+    }
+
+    .comment-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .comment-item {
+        padding: 15px 0;
+        border-bottom: 1px solid #e5e5e5;
+    }
+
+    .comment-category {
+        display: inline-block;
+        background: #eef2ff;
+        color: #4a57ff;
+        padding: 3px 8px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        margin-right: 8px;
+        margin-bottom: 6px;
+    }
+
+    .comment-category.deleted {
+        background: #f3f3f3;
+        color: #999;
+        font-style: italic;
+    }
+
+    .comment-post-title a {
+        font-weight: bold;
+        font-size: 15px;
+        color: #333;
+        text-decoration: none;
+    }
+
+    .comment-post-title a:hover {
+        text-decoration: underline;
+    }
+
+    .deleted-title {
+        font-weight: bold;
+        font-size: 15px;
+        color: #999;
+        font-style: italic;
+    }
+
+    .comment-content {
+        margin: 6px 0;
+        color: #555;
+        font-size: 14px;
+    }
+
+    .comment-date {
+        font-size: 12px;
+        color: #888;
+    }
+
+    .empty-message {
+        padding: 20px 0;
+        color: #666;
+        text-align: center;
+    }
+</style>

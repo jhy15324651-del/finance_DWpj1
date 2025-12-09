@@ -87,4 +87,13 @@ public interface ContentReviewRepository
 
     Page<ContentReview> findByHashtagsContainingAndContentContainingAndIsDeletedFalse(
             String tag, String keyword, Pageable pageable);
+
+
+    // ---------------------------------------------------------
+    // 🔥 9) 내가 작성한 글 목록 불러오기
+    // ---------------------------------------------------------
+    List<ContentReview> findByWriter(String writer);
+    List<ContentReview> findByWriterAndIsDeletedFalse(String writer);
+
+
 }
