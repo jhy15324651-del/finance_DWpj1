@@ -34,7 +34,7 @@ public class StockBoardController {
     }
 
     //게시판 폼
-    @GetMapping("/{ticker}/list")
+    @GetMapping("/{ticker}")
     public String list(@PathVariable String ticker, Model model) {
         model.addAttribute("ticker", ticker);
         return "stock/board/list";   // templates/stock/board/list.html
@@ -83,7 +83,7 @@ public class StockBoardController {
 
         stockBoardService.register(dto);
 
-        return "redirect:/stock/board/" + ticker + "/list";
+        return "redirect:/stock/board/" + ticker;
     }
 
 
@@ -105,8 +105,6 @@ public class StockBoardController {
 
         return "stock/board/read";
     }
-
-
 
 
     //글 수정 폼
@@ -137,7 +135,6 @@ public class StockBoardController {
 
         return "redirect:/stock/board/" + ticker + "/read/" + id;
     }
-
 
 
     //글 삭제

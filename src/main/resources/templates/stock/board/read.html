@@ -216,7 +216,7 @@
 
                 <div style="text-align:right; color:#555;">
                     <div>
-                        👁 [[${dto.view}]] &nbsp; 👍 [[${dto.recommend}]] &nbsp; 👎 [[${dto.unrecommend}]]
+                        👁 [[${dto.view}]] &nbsp; 👍 [[${dto.recommend}]] &nbsp; 👎 [[${dto.unrecommend}]] &nbsp; 💬 [[${dto.commentCount}]]
                     </div>
                     <div>[[${#temporals.format(dto.regDate, 'yyyy-MM-dd HH:mm')}]]</div>
                 </div>
@@ -252,13 +252,23 @@
                 <textarea id="reply-content" style="width:100%; height:80px; padding:10px; margin-top:10px;"
                           placeholder="댓글을 입력하세요"></textarea>
 
-                <button onclick="registerComment()" class="btn" style="float:right; margin-top:10px;">
-                    댓글 등록
-                </button>
+                <div style="text-align:right; margin-top:10px;">
+                    <button onclick="registerComment()"
+                            class="btn"
+                            style="background:#667eea; padding:10px 20px;">
+                        댓글 등록
+                    </button>
             </div>
 
+
+                <div style="border-bottom:1px solid #ddd; margin:10px 0;"></div>
+
             <!-- 수정/삭제 -->
-            <div style="text-align:right; margin-top:20px;">
+
+        </div> <!-- 게시글 Wrapper 닫기 -->
+
+
+            <div style="text-align:right; margin-top:25px;">
                 <div th:if="${loginUser != null && loginUser.nickname == dto.writer}">
                     <button class="btn edit-btn" data-ticker="[[${ticker}]]" data-id="[[${dto.id}]]">
                         수정
@@ -271,7 +281,6 @@
                 </div>
             </div>
 
-        </div> <!-- 게시글 Wrapper 닫기 -->
 
     </div> <!-- dynamic-area 닫기 -->
 
