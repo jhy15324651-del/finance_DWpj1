@@ -114,14 +114,16 @@
 
     <!-- 페이지 타이틀 -->
     <div class="write-title">
-        [ <span th:text="${stockName}"></span> ] 게시글 작성
+        글 수정
     </div>
 
     <div class="write-card">
 
-        <form th:action="@{|/stock/board/${ticker}/write|}"
+        <form th:action="@{|/stock/board/${ticker}/edit/${dto.id}|}"
               th:object="${dto}"
               method="post">
+
+            <input type="hidden" th:field="*{id}">
 
             <!-- 제목 -->
             <label class="write-label">제목</label>
@@ -143,7 +145,7 @@
             <!-- 버튼 -->
             <div class="write-btn-area">
                 <button type="submit" class="btn-primary">등록하기</button>
-                <a th:href="@{|/stock/board/${ticker}|}" class="btn-secondary">취소</a>
+                <a th:href="@{|/stock/board/${ticker}/read/${dto.id}|}" class="btn-secondary">취소</a>
             </div>
 
         </form>

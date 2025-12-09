@@ -10,8 +10,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.zerock.finance_dwpj1.dto.stock.StockBoardDTO;
+import org.zerock.finance_dwpj1.dto.stock.StockInfoDTO;
 import org.zerock.finance_dwpj1.dto.user.UserSessionDTO;
 import org.zerock.finance_dwpj1.service.stock.StockBoardService;
+import org.zerock.finance_dwpj1.service.stock.YahooFinanceStockService;
 import org.zerock.finance_dwpj1.service.user.CustomUserDetails;
 
 import java.util.Map;
@@ -23,6 +25,7 @@ import java.util.Map;
 public class StockBoardController {
 
     private final StockBoardService stockBoardService;
+    private final YahooFinanceStockService yahooFinanceStockService;
 
 
 
@@ -34,7 +37,7 @@ public class StockBoardController {
     }
 
     //게시판 폼
-    @GetMapping("/{ticker}/list")
+    @GetMapping("/{ticker}")
     public String list(@PathVariable String ticker, Model model) {
         model.addAttribute("ticker", ticker);
         return "stock/board/list";   // templates/stock/board/list.html
@@ -51,12 +54,16 @@ public class StockBoardController {
             return "redirect:/user/login";
         }
 
+        StockInfoDTO info = yahooFinanceStockService.getStockInfo(ticker);
+
+
         StockBoardDTO dto = StockBoardDTO.builder()
                 .ticker(ticker)
                 .build();
 
         model.addAttribute("dto", dto);
         model.addAttribute("ticker", ticker);
+        model.addAttribute("stockName", info != null ? info.getName() : ticker);
         model.addAttribute("loginUser", loginUser);
 
         return "stock/board/write";
@@ -83,7 +90,7 @@ public class StockBoardController {
 
         stockBoardService.register(dto);
 
-        return "redirect:/stock/board/" + ticker + "/list";
+        return "redirect:/stock/board/" + ticker;
     }
 
 
@@ -108,30 +115,49 @@ public class StockBoardController {
 
 
 
-
-    //글 수정 폼
+    //글 수정
     @GetMapping("/{ticker}/edit/{id}")
-    public String editForm(@PathVariable String ticker,
-                           @PathVariable Long id,
-                           Model model) {
+    public String editForm(
+            @PathVariable String ticker,
+            @PathVariable Long id,
+            @AuthenticationPrincipal CustomUserDetails loginUser,
+            Model model) {
+
+        if (loginUser == null) {
+            return "redirect:/user/login";
+        }
 
         StockBoardDTO dto = stockBoardService.get(id);
+
+        //권한 체크
+        if (!dto.getWriter().equals(loginUser.getNickname())) {
+            return "redirect:/stock/board/" + ticker + "/read/" + id;
+        }
 
         model.addAttribute("dto", dto);
         model.addAttribute("ticker", ticker);
 
-        return "stock/board/edit"; // 원하면 분리, 아니면 read랑 같이 써도 됨
+        return "stock/board/edit";
     }
 
 
-    //글 수정
+
+
+    //글 수정 포스트
     @PostMapping("/{ticker}/edit/{id}")
-    public String edit(@PathVariable String ticker,
-                       @PathVariable Long id,
-                       @ModelAttribute("dto") StockBoardDTO dto) {
+    public String edit(
+            @PathVariable String ticker,
+            @PathVariable Long id,
+            @ModelAttribute("dto") StockBoardDTO dto,
+            @AuthenticationPrincipal CustomUserDetails loginUser) {
+
+        if (loginUser == null) {
+            return "redirect:/user/login";
+        }
 
         dto.setId(id);
-        dto.setTicker(ticker); // 혹시 모를 조작 방지
+        dto.setTicker(ticker);
+        dto.setWriter(loginUser.getNickname());
 
         stockBoardService.modify(dto);
 
@@ -140,14 +166,31 @@ public class StockBoardController {
 
 
 
+
     //글 삭제
     @PostMapping("/{ticker}/delete/{id}")
-    public String delete(@PathVariable String ticker,
-                         @PathVariable Long id) {
+    @ResponseBody
+    public String delete(
+            @PathVariable String ticker,
+            @PathVariable Long id,
+            @AuthenticationPrincipal CustomUserDetails loginUser) {
+
+        if (loginUser == null) {
+            return "UNAUTHORIZED";
+        }
+
+        StockBoardDTO dto = stockBoardService.get(id);
+
+        // 권한 체크
+        if (!dto.getWriter().equals(loginUser.getNickname())) {
+            return "FORBIDDEN";
+        }
 
         stockBoardService.remove(id);
-        return "redirect:/stock/board/" + ticker;
+
+        return "OK";
     }
+
 
 
 
@@ -159,6 +202,7 @@ public class StockBoardController {
         PageRequest pageable = PageRequest.of(page, 10);
         return stockBoardService.getList(ticker, pageable);
     }
+
 
 
     //추천

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko"
-      xmlns:th="http://www.thymeleaf.org">
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -22,29 +23,6 @@
             color: #333;
         }
 
-        .navbar {
-            background: white;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-
-        .navbar-content {
-            max-width: 1600px;
-            margin: 0 auto;
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .navbar-logo {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #667eea;
-            cursor: pointer;
-        }
 
         .container {
             max-width: 1600px;
@@ -159,18 +137,106 @@
         }
 
 
+        .navbar {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar-logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #667eea;
+            cursor: pointer;
+        }
+
+        .navbar-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn-login {
+            padding: 10px 25px;
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-login:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-signup {
+            padding: 10px 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-signup:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102,126,234,0.4);
+        }
+
+
+
     </style>
 </head>
 <body>
 <!-- 네비게이션 바 -->
-<div class="navbar">
+<nav class="navbar">
     <div class="navbar-content">
         <div class="navbar-logo" onclick="location.href='/'">📈 Finance Platform</div>
-        <div>
-            <button class="btn" onclick="location.href='/news-insights'">뉴스 인사이트</button>
+
+        <div class="navbar-buttons">
+            <!-- 로그인 전 -->
+            <div sec:authorize="!isAuthenticated()">
+                <button class="btn-login" onclick="location.href='/user/login'">로그인</button>
+                <button class="btn-signup" onclick="location.href='/user/signup'">회원가입</button>
+            </div>
+
+
+            <!-- 관리자 로그인 -->
+            <div sec:authorize="hasRole('ADMIN')">
+                <span style="margin-right: 15px; color: #667eea; font-weight: 600;">
+                    <span sec:authentication="name"></span>님 (관리자)
+                </span>
+                <button class="btn-login" onclick="location.href='/admin'">관리자 페이지</button>
+                <button class="btn-signup" onclick="location.href='/user/logout'">로그아웃</button>
+            </div>
+
+            <!-- 일반 사용자 로그인 -->
+            <div sec:authorize="hasRole('USER') and !hasRole('ADMIN')">
+                <span style="margin-right: 15px; color: #667eea; font-weight: 600;">
+                    <span sec:authentication="name"></span>님
+                </span>
+                <button class="btn-login" onclick="location.href='/user/mypage'">마이페이지</button>
+                <button class="btn-signup" onclick="location.href='/user/logout'">로그아웃</button>
+            </div>
+
         </div>
     </div>
-</div>
+</nav>
 
 <div class="container">
     <!-- 검색 섹션 -->
@@ -287,6 +353,34 @@
     }
 
 
+    //단위
+    window.formatPrice = function(num, currency) {
+        if (currency === "KRW") {
+            return num.toLocaleString("ko-KR") + " ₩";
+        }
+        if (currency === "USD") {
+            return num.toLocaleString("en-US", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }) + " $";
+        }
+        if (currency === "JPY") {
+            return num.toLocaleString("ja-JP") + " ¥";
+        }
+        if (currency === "HKD") {
+            return num.toLocaleString("en-US", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }) + " HK$";
+        }
+        if (currency === "GBP") {
+            return num.toLocaleString("en-GB") + " £";
+        }
+
+        return num.toLocaleString();
+    };
+
+
 
     // 종목 로드
     async function loadStock(ticker) {
@@ -328,9 +422,7 @@
             </div>
             <div class="info-item">
                 <span class="info-label">현재가</span>
-                <span class="info-value ${priceClass}">
-                    ${formatNumber(info.currentPrice)}
-                </span>
+                <span class="info-value ${priceClass}">${formatPrice(info.currentPrice, info.currency)}</span>
             </div>
             <div class="info-item">
                 <span class="info-label">전일대비</span>
