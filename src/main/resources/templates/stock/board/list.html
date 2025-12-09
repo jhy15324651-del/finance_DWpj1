@@ -353,6 +353,34 @@
     }
 
 
+    //단위
+    window.formatPrice = function(num, currency) {
+        if (currency === "KRW") {
+            return num.toLocaleString("ko-KR") + " ₩";
+        }
+        if (currency === "USD") {
+            return num.toLocaleString("en-US", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }) + " $";
+        }
+        if (currency === "JPY") {
+            return num.toLocaleString("ja-JP") + " ¥";
+        }
+        if (currency === "HKD") {
+            return num.toLocaleString("en-US", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }) + " HK$";
+        }
+        if (currency === "GBP") {
+            return num.toLocaleString("en-GB") + " £";
+        }
+
+        return num.toLocaleString();
+    };
+
+
 
     // 종목 로드
     async function loadStock(ticker) {
@@ -394,9 +422,7 @@
             </div>
             <div class="info-item">
                 <span class="info-label">현재가</span>
-                <span class="info-value ${priceClass}">
-                    ${formatNumber(info.currentPrice)}
-                </span>
+                <span class="info-value ${priceClass}">${formatPrice(info.currentPrice, info.currency)}</span>
             </div>
             <div class="info-item">
                 <span class="info-label">전일대비</span>
