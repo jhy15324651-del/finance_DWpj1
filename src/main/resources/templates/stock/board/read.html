@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -22,29 +23,6 @@
             color: #333;
         }
 
-        .navbar {
-            background: white;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-
-        .navbar-content {
-            max-width: 1600px;
-            margin: 0 auto;
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .navbar-logo {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #667eea;
-            cursor: pointer;
-        }
 
         .container {
             max-width: 1600px;
@@ -158,19 +136,107 @@
             color: #3182ce;
         }
 
+        .navbar {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar-logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #667eea;
+            cursor: pointer;
+        }
+
+        .navbar-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn-login {
+            padding: 10px 25px;
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-login:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-signup {
+            padding: 10px 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-signup:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102,126,234,0.4);
+        }
+
+
     </style>
 </head>
 
 <body>
 
 <!-- 네비게이션 -->
-<div class="navbar">
+<nav class="navbar">
     <div class="navbar-content">
-        <div class="navbar-logo" onclick="location.href='/'">📈 Finance Platform</div>
-        <button class="btn" onclick="location.href='/news-insights'">뉴스 인사이트</button>
-    </div>
-</div>
+            <div class="navbar-logo" onclick="location.href='/'">📈 Finance Platform</div>
 
+        <div class="navbar-buttons">
+            <!-- 로그인 전 -->
+            <div sec:authorize="!isAuthenticated()">
+                <button class="btn-login" onclick="location.href='/user/login'">로그인</button>
+                <button class="btn-signup" onclick="location.href='/user/signup'">회원가입</button>
+            </div>
+
+
+            <!-- 관리자 로그인 -->
+            <div sec:authorize="hasRole('ADMIN')">
+                <span style="margin-right: 15px; color: #667eea; font-weight: 600;">
+                    <span sec:authentication="name"></span>님 (관리자)
+                </span>
+                <button class="btn-login" onclick="location.href='/admin'">관리자 페이지</button>
+                <button class="btn-signup" onclick="location.href='/user/logout'">로그아웃</button>
+            </div>
+
+            <!-- 일반 사용자 로그인 -->
+            <div sec:authorize="hasRole('USER') and !hasRole('ADMIN')">
+                <span style="margin-right: 15px; color: #667eea; font-weight: 600;">
+                    <span sec:authentication="name"></span>님
+                </span>
+                <button class="btn-login" onclick="location.href='/user/mypage'">마이페이지</button>
+                <button class="btn-signup" onclick="location.href='/user/logout'">로그아웃</button>
+            </div>
+
+        </div>
+    </div>
+</nav>
 
 <div class="container">
 
@@ -270,11 +336,13 @@
 
             <div style="text-align:right; margin-top:25px;">
                 <div th:if="${loginUser != null && loginUser.nickname == dto.writer}">
-                    <button class="btn edit-btn" data-ticker="[[${ticker}]]" data-id="[[${dto.id}]]">
+                    <button class="btn edit-btn"
+                            th:attr="data-ticker=${ticker}, data-id=${dto.id}">
                         수정
                     </button>
 
-                    <button class="btn delete-btn" data-ticker="[[${ticker}]]" data-id="[[${dto.id}]]"
+                    <button class="btn delete-btn"
+                            th:attr="data-ticker=${ticker}, data-id=${dto.id}"
                             style="background:#e53e3e;">
                         삭제
                     </button>
@@ -668,7 +736,7 @@
         }
     }
 
-    const boardId = [[${dto.id}]];
+    const boardId = /*[[${dto.id}]]*/0;
 
 
     async function registerComment() {
@@ -760,6 +828,8 @@
             });
     }
 
+
+    //비추천
     function doUnrecommend() {
         fetch(`/stock/board/${currentTicker}/unrecommend/${boardId}`, { method: "POST" })
             .then(res => res.text())
@@ -776,6 +846,43 @@
             });
     }
 
+
+    document.addEventListener("DOMContentLoaded", () => {
+
+        // 수정
+        document.querySelector(".edit-btn")?.addEventListener("click", function() {
+            const ticker = this.dataset.ticker;   // ★ dataset 사용!
+            const id = this.dataset.id;
+
+            location.href = `/stock/board/${ticker}/edit/${id}`;
+        });
+
+        // 삭제
+        document.querySelector(".delete-btn")?.addEventListener("click", function() {
+            if (!confirm("정말 삭제하시겠습니까?")) return;
+
+            const ticker = this.dataset.ticker;   // ★ dataset 사용!
+            const id = this.dataset.id;
+
+            fetch(`/stock/board/${ticker}/delete/${id}`, { method: "POST" })
+                .then(res => res.text())
+                .then(msg => {
+                    if (msg === "UNAUTHORIZED") {
+                        alert("로그인이 필요합니다.");
+                        location.href = "/user/login";
+                        return;
+                    }
+                    if (msg === "FORBIDDEN") {
+                        alert("삭제 권한이 없습니다.");
+                        return;
+                    }
+                    alert("글이 삭제되었습니다.");
+                    location.href = `/stock/board/${ticker}`;
+                })
+                .catch(err => console.error("삭제 실패:", err));
+        });
+
+    });
 
 
 </script>

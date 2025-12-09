@@ -114,7 +114,7 @@
 
     <!-- 페이지 타이틀 -->
     <div class="write-title">
-        [ <span th:text="${ticker}"></span> ] 게시글 작성
+        [ <span th:text="${stockName}"></span> ] 게시글 작성
     </div>
 
     <div class="write-card">
@@ -128,14 +128,14 @@
             <input type="text"
                    th:field="*{title}"
                    class="write-input"
-                   placeholder="제목을 입력하세요"
+                   placeholder="제목을 입력하세요."
                    required>
 
             <!-- 내용 -->
             <label class="write-label" style="margin-top:28px;">내용</label>
             <textarea th:field="*{content}"
                       class="write-textarea"
-                      placeholder="내용을 입력하세요"
+                      placeholder="내용을 입력하세요."
                       required></textarea>
 
             <input type="hidden" th:field="*{ticker}"/>
@@ -143,7 +143,7 @@
             <!-- 버튼 -->
             <div class="write-btn-area">
                 <button type="submit" class="btn-primary">등록하기</button>
-                <a th:href="@{|/stock/board/${ticker}|}" class="btn-secondary">뒤로가기</a>
+                <a th:href="@{|/stock/board/${ticker}|}" class="btn-secondary">취소</a>
             </div>
 
         </form>
