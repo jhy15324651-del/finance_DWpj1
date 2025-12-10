@@ -61,16 +61,26 @@ public class ContentReview {
     @Builder.Default
     private String type = "review";
 
-    @Column(name = "is_deleted")
-    @Builder.Default
-    private Boolean isDeleted = false;
-
     public void incrementViewCount() {
         this.viewCount++;
     }
 
+    //게시글 삭제 및 리포스트 기능
+    @Column(name = "is_deleted")
+    @Builder.Default
+    private Boolean isDeleted = false;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
     public void softDelete() {
         this.isDeleted = true;
+        this.deletedAt = LocalDateTime.now();
+    }
+
+    public void restore() {
+        this.isDeleted = false;
+        this.deletedAt = null;
     }
 
     @Transient

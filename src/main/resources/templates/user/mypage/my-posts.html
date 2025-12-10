@@ -10,29 +10,38 @@
     <ul class="post-list" th:each="p : ${posts}">
         <li class="post-item">
 
-            <!-- 🟦 (1) 카테고리 표시 -->
-            <span class="post-category"
-                  th:text="${p.category}">
-            </span>
+            <!-- 카테고리 -->
+            <span class="post-category" th:text="${p.category}"></span>
 
-            <!-- 🟦 (2) 게시글 제목 + 상세보기 링크 -->
-            <a class="post-title"
+            <!-- [삭제됨] 라벨 -->
+            <span th:if="${p.isDeleted}" class="deleted-label">[삭제됨]</span>
+
+            <!-- 삭제되지 않은 글: 원래 링크로 이동 -->
+            <a th:if="${!p.isDeleted}"
+               class="post-title"
                th:href="${p.link}"
                th:text="${p.title}">
             </a>
 
-            <!-- 🟦 (3) 작성일 -->
-            <span class="post-date"
-                  th:text="${#temporals.format(p.date, 'yyyy.MM.dd')}">
-            </span>
+            <!-- 삭제된 글: 리포스트 전용 페이지로 이동 -->
+            <a th:if="${p.isDeleted}"
+               class="post-title deleted-title"
+               th:href="@{/content/restore-page/{id}(id=${p.id})}"
+               th:text="${p.title}">
+            </a>
 
-            <!-- 🟦 (4) 조회수 -->
+            <!-- 작성일 -->
+            <span class="post-date"
+                  th:text="${#temporals.format(p.date, 'yyyy.MM.dd')}"></span>
+
+            <!-- 조회수 -->
             <span class="post-views"
-                  th:text="'조회수 ' + ${p.viewCount}">
-            </span>
+                  th:text="'조회수 ' + ${p.viewCount}"></span>
 
         </li>
     </ul>
+
+
 </div>
 
 <style>
@@ -91,4 +100,14 @@
         padding: 20px 0;
     }
 
+    /* 삭제된 게시글 UI */
+    .deleted-label {
+        color: #ff4e4e;
+        font-weight: 700;
+        margin-right: 6px;
+    }
+
+    .deleted-title {
+        color: #888 !important;
+    }
 </style>

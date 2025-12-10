@@ -14,4 +14,5 @@ public class UserPostDTO {
     private LocalDateTime date;
     private Integer viewCount;
     private String link;         // 클릭했을 때 이동할 URL
+    private Boolean isDeleted;
 }
