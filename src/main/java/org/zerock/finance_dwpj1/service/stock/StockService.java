@@ -1,7 +1,6 @@
 package org.zerock.finance_dwpj1.service.stock;
 
 import org.zerock.finance_dwpj1.dto.stock.StockCandleDTO;
-import org.zerock.finance_dwpj1.dto.stock.StockDetailDTO;
 import org.zerock.finance_dwpj1.dto.stock.StockInfoDTO;
 
 import java.util.List;
@@ -38,8 +37,6 @@ public interface StockService {
      * @return 검색 결과 리스트
      */
     List<StockInfoDTO> searchStocks(String query);
-
-    StockDetailDTO fetchCompanyDetail(String ticker);
 
 
 
