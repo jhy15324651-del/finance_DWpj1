@@ -94,6 +94,24 @@ public class DailyNewsController {
     }
 
     /**
+     * 현재 로그인한 사용자 정보 조회
+     */
+    @GetMapping("/current-user")
+    public ResponseEntity<Map<String, Object>> getCurrentUser(java.security.Principal principal) {
+        Map<String, Object> userInfo = new HashMap<>();
+
+        if (principal != null) {
+            userInfo.put("loggedIn", true);
+            userInfo.put("username", principal.getName());
+        } else {
+            userInfo.put("loggedIn", false);
+            userInfo.put("username", null);
+        }
+
+        return ResponseEntity.ok(userInfo);
+    }
+
+    /**
      * 댓글 목록 조회
      */
     @GetMapping("/{newsId}/comments")

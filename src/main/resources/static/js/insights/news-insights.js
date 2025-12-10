@@ -4,9 +4,11 @@ let displayedCommentsCount = 0;
 const COMMENTS_PER_PAGE = 10;
 let currentReplyParentId = null;
 const isAdmin = false; // 실제 환경에서는 서버에서 관리자 여부를 받아와야 함
+let currentUser = null; // 현재 로그인한 사용자 정보
 
 // 페이지 로드 시 데일리 뉴스 로드
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', async () => {
+    await loadCurrentUser(); // 사용자 정보 먼저 로드
     loadDailyNews();
     setupModalClose();
 
@@ -17,6 +19,38 @@ window.addEventListener('DOMContentLoaded', () => {
         showNewsDetail(parseInt(newsId));
     }
 });
+
+// 현재 로그인한 사용자 정보 로드
+async function loadCurrentUser() {
+    try {
+        const response = await fetch('/api/news/current-user');
+        currentUser = await response.json();
+        updateUserNameFields();
+    } catch (error) {
+        console.error('사용자 정보 로드 실패:', error);
+        currentUser = { loggedIn: false, username: null };
+    }
+}
+
+// 사용자 이름 필드 업데이트
+function updateUserNameFields() {
+    const commentUserNameField = document.getElementById('comment-user-name');
+    const replyUserNameField = document.getElementById('reply-user-name');
+
+    if (currentUser && currentUser.loggedIn) {
+        // 로그인 상태: 사용자 이름 표시
+        commentUserNameField.value = currentUser.username;
+        commentUserNameField.placeholder = currentUser.username;
+        replyUserNameField.value = currentUser.username;
+        replyUserNameField.placeholder = currentUser.username;
+    } else {
+        // 비로그인 상태: 기본 메시지
+        commentUserNameField.value = '';
+        commentUserNameField.placeholder = '로그인 후 작성 가능';
+        replyUserNameField.value = '';
+        replyUserNameField.placeholder = '로그인 후 작성 가능';
+    }
+}
 
 // 모달 닫기 설정
 function setupModalClose() {
@@ -213,6 +247,9 @@ async function showNewsDetail(newsId) {
         // 댓글 로드
         await loadComments(newsId);
 
+        // 사용자 이름 필드 업데이트
+        updateUserNameFields();
+
         // 모달 표시
         document.getElementById('newsModal').style.display = 'block';
 
@@ -329,6 +366,12 @@ function scrollToCommentForm() {
 async function submitComment() {
     const content = document.getElementById('comment-content').value.trim();
 
+    // 로그인 확인
+    if (!currentUser || !currentUser.loggedIn) {
+        alert('로그인 후 이용해주세요.');
+        return;
+    }
+
     if (!content) {
         alert('의견을 입력해주세요.');
         return;
@@ -346,8 +389,7 @@ async function submitComment() {
         });
 
         if (response.ok) {
-            // 입력 필드 초기화
-            document.getElementById('comment-user-name').value = '';
+            // 내용만 초기화 (사용자 이름은 유지)
             document.getElementById('comment-content').value = '';
 
             // 댓글 목록 새로고침
@@ -399,20 +441,26 @@ async function dislikeComment(commentId) {
 function openReplyModal(parentCommentId, parentUserName) {
     currentReplyParentId = parentCommentId;
     document.getElementById('reply-to-user').textContent = `@${parentUserName} 님에게 답글`;
+    updateUserNameFields(); // 사용자 이름 필드 업데이트
     document.getElementById('replyModal').style.display = 'block';
 }
 
 // 답글 모달 닫기
 function closeReplyModal() {
     document.getElementById('replyModal').style.display = 'none';
-    document.getElementById('reply-user-name').value = '';
-    document.getElementById('reply-content').value = '';
+    document.getElementById('reply-content').value = ''; // 내용만 초기화
     currentReplyParentId = null;
 }
 
 // 답글 작성
 async function submitReply() {
     const content = document.getElementById('reply-content').value.trim();
+
+    // 로그인 확인
+    if (!currentUser || !currentUser.loggedIn) {
+        alert('로그인 후 이용해주세요.');
+        return;
+    }
 
     if (!content) {
         alert('답글을 입력해주세요.');
