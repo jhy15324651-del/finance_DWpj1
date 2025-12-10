@@ -618,6 +618,7 @@
     let sma120Series = null;
     let currentTicker = null;
     let currentTimeframe = 'D';
+    let currentStockName = null;
 
 
 
@@ -834,6 +835,8 @@
 
     // 종목 정보 표시
     function displayStockInfo(info) {
+        currentStockName = info.name;
+
         document.getElementById('stock-info-container').style.display = 'block';
 
         const priceClass = info.changeRate >= 0 ? 'price-up' : 'price-down';
@@ -1006,11 +1009,15 @@
 
 
     // 📌 종토방 자동 로드 (currentTicker가 바뀔 때 실행)
-    async function loadBoard() {
+    async function loadBoard(page=0) {
+
+        const PAGE_SIZE = 10;
+
+
         if (!currentTicker) return;
 
         document.getElementById("board-stock-title").innerText =
-            ` ${currentTicker} 토론방`;
+            ` ${currentStockName} 토론방`;
 
         // 글쓰기 버튼 링크 세팅
         const writeBtn = document.getElementById("board-write-btn");
@@ -1031,7 +1038,7 @@
 
         // 게시글 목록 API 요청
         try {
-            const res = await fetch(`/stock/board/api/${currentTicker}`);
+            const res = await fetch(`/stock/board/api/${currentTicker}?page=${page}&size=${PAGE_SIZE}`);
             const list = await res.json();
 
             const table = document.getElementById("board-table");
@@ -1107,8 +1114,9 @@
     // 📌 게시판 페이지 변경
     function changeBoardPage(page) {
         if (page < 0) return;
-        loadBoard(currentTicker, page);
+        loadBoard(page);
     }
+
 
 
     async function loadStockDetail() {
@@ -1123,41 +1131,42 @@
 
         try {
             const res = await fetch(`/stock/api/detail/${currentTicker}`);
+
             if (!res.ok) {
-                panel.innerHTML = "<div style='color:red;'>상세 정보를 불러올 수 없습니다.</div>";
+                panel.innerHTML = `
+                <div style="color:#e53e3e;">상세 정보를 가져올 수 없습니다.</div>
+            `;
                 return;
             }
 
             const d = await res.json();
 
             panel.innerHTML = `
-            <h3 style="margin-bottom:10px; font-weight:700;">📌 기업 상세 정보</h3>
-
-            <div style="background:#f7fafc; padding:15px; border-radius:8px; font-size:0.95rem; line-height:1.6;">
-
-                <div><b>기업명:</b> ${d.name ?? "-"}</div>
-                <div><b>섹터:</b> ${d.sector ?? "-"}</div>
-                <div><b>산업군:</b> ${d.industry ?? "-"}</div>
-                <div><b>상장 거래소:</b> ${d.exchange ?? "-"}</div>
-                <div><b>국가:</b> ${d.country ?? "-"}</div>
-
-                <div style="margin-top:10px;"><b>시가총액:</b> ${formatMarketCap(d.marketCap)}</div>
-                <div><b>거래량:</b> ${d.volume?.toLocaleString('ko-KR') ?? "-"}</div>
+            <div><b>종목명:</b> ${d.name ?? '-'}</div>
+            <div><b>영문명:</b> ${d.companyNameEng ?? '-'}</div>
+            <div><b>설명:</b><br>
+                <span style="white-space:pre-line;">${d.description ?? '-'}</span>
             </div>
-
-            <hr style="margin:20px 0; border-color:#e2e8f0;">
-
-            <h3 style="margin-bottom:10px;">📰 관련 뉴스</h3>
-            <div id="news-area" style="font-size:0.9rem; color:#666;">
-                <!-- 기존 loadNews()가 여기에 채움 -->
-            </div>
+            <div><b>대표이사:</b> ${d.ceo ?? '-'}</div>
+            <div><b>설립일:</b> ${d.established ?? '-'}</div>
+            <div><b>상장일:</b> ${d.listedDate ?? '-'}</div>
+            <div><b>상장주식수:</b> ${d.sharesOutstanding
+                ? d.sharesOutstanding.toLocaleString("ko-KR") + " 주"
+                : "-"
+            }</div>
+            <div><b>시가총액:</b> ${
+                d.marketCap
+                    ? d.marketCap.toLocaleString("ko-KR") + " 원"
+                    : "-"
+            }</div>
         `;
         } catch (e) {
-            console.error("상세정보 로드 실패:", e);
-            panel.innerHTML = "<div style='color:red;'>상세 정보 로딩 실패</div>";
+            console.error(e);
+            panel.innerHTML = `
+            <div style="color:red;">상세 정보 로딩 실패</div>
+        `;
         }
     }
-
 
 
     async function loadNews() {

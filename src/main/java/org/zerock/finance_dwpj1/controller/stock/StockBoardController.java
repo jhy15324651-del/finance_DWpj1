@@ -197,12 +197,12 @@ public class StockBoardController {
     @GetMapping("/api/{ticker}")
     @ResponseBody
     public Page<StockBoardDTO> apiList(@PathVariable String ticker,
-                                       @RequestParam(defaultValue = "0") int page) {
+                                       @RequestParam(defaultValue = "0") int page,
+                                       @RequestParam(defaultValue = "10") int size) {
 
-        PageRequest pageable = PageRequest.of(page, 10);
+        PageRequest pageable = PageRequest.of(page, size);
         return stockBoardService.getList(ticker, pageable);
     }
-
 
 
     //추천

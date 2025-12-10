@@ -345,6 +345,7 @@
     let sma120Series = null;
     let currentTicker = null;
     let currentTimeframe = 'D';
+    let currentStockName = null;
 
 
     //로그인 체크
@@ -418,6 +419,8 @@
     }
     // 종목 정보 표시
     function displayStockInfo(info) {
+        currentStockName = info.name;
+
         document.getElementById('stock-info-container').style.display = 'block';
 
         const priceClass = info.changeRate >= 0 ? 'price-up' : 'price-down';
@@ -567,11 +570,13 @@
 
 
     // 📌 종토방 자동 로드 (currentTicker가 바뀔 때 실행)
-    async function loadBoard() {
+    async function loadBoard(page=0) {
         if (!currentTicker) return;
 
         document.getElementById("board-stock-title").innerText =
-            ` ${currentTicker} 토론방`;
+            ` ${currentStockName} 토론방`;
+
+
 
 
         // 글쓰기 버튼 링크 세팅
@@ -589,9 +594,13 @@
             location.href = `/stock/board/${currentTicker}/write`;
         };
 
+
+        const PAGE_SIZE = 20;
+
+
         // 게시글 목록 API 요청
         try {
-            const res = await fetch(`/stock/board/api/${currentTicker}`);
+            const res = await fetch(`/stock/board/api/${currentTicker}?page=${page}&size=${PAGE_SIZE}`);
             const list = await res.json();
 
             const table = document.getElementById("board-table");
@@ -666,7 +675,7 @@
     // 📌 게시판 페이지 변경
     function changeBoardPage(page) {
         if (page < 0) return;
-        loadBoard(currentTicker, page);
+        loadBoard(page);
     }
 
     function formatBoardDate(dateStr) {
