@@ -17,4 +17,6 @@ public interface StockCommentRepository extends JpaRepository<StockComment, Long
     //작성자(writer)로 댓글을 조회하는 메서드 추가
     List<StockComment> findByWriter(String writer);
 
+    int countByBoardId(Long boardId);
+
 }
