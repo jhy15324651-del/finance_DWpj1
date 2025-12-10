@@ -675,7 +675,7 @@
     // 📌 게시판 페이지 변경
     function changeBoardPage(page) {
         if (page < 0) return;
-        loadBoard(currentTicker);
+        loadBoard(page);
     }
 
     function formatBoardDate(dateStr) {

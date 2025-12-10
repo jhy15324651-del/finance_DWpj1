@@ -633,7 +633,11 @@
 
 
     // 📌 종토방 자동 로드 (currentTicker가 바뀔 때 실행)
-    async function loadBoard() {
+    async function loadBoard(page=0) {
+
+        const PAGE_SIZE = 10;
+
+
         if (!currentTicker) return;
 
         document.getElementById("board-stock-title").innerText =
@@ -642,7 +646,7 @@
 
         // 게시글 목록 API 요청
         try {
-            const res = await fetch(`/stock/board/api/${currentTicker}`);
+            const res = await fetch(`/stock/board/api/${currentTicker}?page=${page}&size=${PAGE_SIZE}`);
             const list = await res.json();
 
             const table = document.getElementById("board-table");
@@ -743,7 +747,7 @@
     // 📌 게시판 페이지 변경
     function changeBoardPage(page) {
         if (page < 0) return;
-        loadBoard(currentTicker, page);
+        loadBoard(page);
     }
 
     async function loadComments() {
