@@ -4,11 +4,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.zerock.finance_dwpj1.dto.insights.InsightsCommentDTO;
 import org.zerock.finance_dwpj1.dto.insights.InsightsDailyNewsDTO;
 import org.zerock.finance_dwpj1.service.insights.DailyNewsService;
 import org.zerock.finance_dwpj1.service.insights.NewsSchedulerService;
+import org.zerock.finance_dwpj1.service.user.CustomUserDetails;
 
 import java.util.HashMap;
 import java.util.List;
@@ -128,13 +130,13 @@ public class DailyNewsController {
     public ResponseEntity<InsightsCommentDTO> addComment(
             @PathVariable Long newsId,
             @RequestBody InsightsCommentDTO commentDTO,
-            java.security.Principal principal) {
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         // 로그인한 유저의 username 자동 설정 (클라이언트에서 보낸 값 무시)
-        String username = principal != null ? principal.getName() : "익명";
-        commentDTO.setUserName(username);
+        String nickname = userDetails != null ? userDetails.getNickname() : "익명";
+        commentDTO.setUserName(nickname);
 
-        log.info("댓글 작성 - 뉴스 ID: {}, 작성자: {}", newsId, username);
+        log.info("댓글 작성 - 뉴스 ID: {}, 작성자: {}", newsId, nickname);
         commentDTO.setNewsId(newsId);
         InsightsCommentDTO savedComment = dailyNewsService.addComment(commentDTO);
         return ResponseEntity.ok(savedComment);
