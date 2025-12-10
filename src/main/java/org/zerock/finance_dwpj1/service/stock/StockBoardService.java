@@ -4,6 +4,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.zerock.finance_dwpj1.dto.stock.StockBoardDTO;
 
+import java.util.List;
+
 public interface StockBoardService {
 
     // 종목별 게시글 목록
@@ -33,4 +35,12 @@ public interface StockBoardService {
 
     //댓글 숫자
     int commentCount(Long boardId);
+
+    //추천많은글
+    List<StockBoardDTO> getTopRecommend(String ticker);
+
+    //댓글많은글
+    List<StockBoardDTO> getTopComment(String ticker);
+
+
 }

@@ -2,6 +2,7 @@ package org.zerock.finance_dwpj1.service.stock;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +16,7 @@ import org.zerock.finance_dwpj1.repository.stock.StockGechuRepository;
 import org.zerock.finance_dwpj1.service.stock.StockCommentService;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -35,7 +37,7 @@ public class StockBoardServiceImpl implements StockBoardService {
                 .findByTickerOrderByIdDesc(ticker, pageable);
 
         // 엔티티 → DTO 변환
-        return result.map(this::entityToDto);
+        return result.map(this::entityToDTO);
     }
 
     @Override
@@ -44,7 +46,7 @@ public class StockBoardServiceImpl implements StockBoardService {
         StockBoard board = stockBoardRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 글입니다."));
 
-        return entityToDto(board);
+        return entityToDTO(board);
     }
 
     @Override
@@ -77,7 +79,7 @@ public class StockBoardServiceImpl implements StockBoardService {
         StockBoard board = stockBoardRepository.findById(id).orElseThrow();
         board.setView(board.getView() + 1);
 
-        return entityToDto(board);
+        return entityToDTO(board);
     }
 
 
@@ -140,9 +142,38 @@ public class StockBoardServiceImpl implements StockBoardService {
         return stockCommentService.getCountByBoard(boardId);
     }
 
+    //개추순위권찾기
+    @Override
+    public List<StockBoardDTO> getTopRecommend(String ticker) {
+
+        LocalDateTime since = LocalDateTime.now().minusDays(3);
+
+        Pageable limit3 = PageRequest.of(0, 3);
+
+        return stockBoardRepository.findTopRecommend(ticker, since, limit3)
+                .stream()
+                .map(this::entityToDTO)
+                .toList();
+    }
 
 
-    private StockBoardDTO entityToDto(StockBoard board) {
+    //댓글순위권찾기
+    @Override
+    public List<StockBoardDTO> getTopComment(String ticker) {
+
+        LocalDateTime since = LocalDateTime.now().minusDays(3);
+
+        Pageable limit3 = PageRequest.of(0, 3);
+
+        return stockBoardRepository.findTopComment(ticker, since, limit3)
+                .stream()
+                .map(this::entityToDTO)
+                .toList();
+    }
+
+
+
+    private StockBoardDTO entityToDTO(StockBoard board) {
         return StockBoardDTO.builder()
                 .id(board.getId())
                 .ticker(board.getTicker())
@@ -155,7 +186,6 @@ public class StockBoardServiceImpl implements StockBoardService {
                 .commentCount(commentCount(board.getId()))
                 .recommend(board.getRecommend())
                 .unrecommend(board.getUnrecommend())
-
                 .build();
     }
 

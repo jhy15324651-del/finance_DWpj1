@@ -199,6 +199,16 @@
         }
 
 
+        #hot-board-box {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+            margin: 20px 0;
+            display: none;
+        }
+
+
 
     </style>
 </head>
@@ -279,60 +289,63 @@
     </div>
 
 
-    <div id="dynamic-area">
+    <div id="dynamic-area" style="display:flex; gap:20px;">
 
-        <div class="board-section" style="margin-top: 40px;">
-            <h2 style="margin-bottom: 15px;">종목 토론방</h2>
+        <!-- 게시판 -->
+        <div style="flex: 1;">
+            <div class="board-section" style="margin-top: 40px;">
+                <h2 style="margin-bottom: 15px;">종목 토론방</h2>
+                <div id="board-stock-title"
+                     style="font-size: 1.2rem; font-weight: 600; margin-bottom: 15px; color:#4a5568;">
+                    종목을 선택하면 토론방이 표시됩니다.
+                </div>
 
-            <!-- 종목 정보 -->
-            <div id="board-stock-title"
-                 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 15px; color:#4a5568;">
-                종목을 선택하면 토론방이 표시됩니다.
-            </div>
+                <div style="margin-bottom: 20px; display:flex; justify-content:space-between; align-items:center;">
+                    <button class="btn btn-secondary"
+                            id="board-list-btn"
+                            style="background:#718096;"
+                            onclick="goBoardList()">
+                        목록 새로 고침
+                    </button>
 
-            <div style="margin-bottom: 20px; display:flex; justify-content:space-between; align-items:center;">
+                    <button class="btn"
+                            id="board-write-btn"
+                            style="display:none;">
+                        글쓰기
+                    </button>
+                </div>
 
-                <!-- 왼쪽: 목록으로 버튼 -->
-                <button class="btn btn-secondary"
-                        id="board-list-btn"
-                        style="background:#718096;"
-                        onclick="goBoardList()">
-                    목록 새로 고침
-                </button>
+                <table id="board-table"
+                       style="width:100%; border-collapse:collapse; display:none;">
+                    <thead>
+                    <tr style="background:#f1f5f9;">
+                        <th style="width:6%; padding:12px;">번호</th>
+                        <th style="width:50%; padding:12px;">제목</th>
+                        <th style="width:12%; padding:12px;">작성자</th>
+                        <th style="width:10%; padding:12px;">조회수</th>
+                        <th style="width:10%; padding:12px;">추천</th>
+                        <th style="width:12%; padding:12px;">작성일</th>
+                    </tr>
+                    </thead>
+                    <tbody id="board-body"></tbody>
+                </table>
 
-                <!-- 오른쪽: 글쓰기 버튼 -->
-                <button class="btn"
-                        id="board-write-btn"
-                        style="display:none;">
-                    글쓰기
-                </button>
-
-            </div>
-            <!-- 게시판 테이블 -->
-            <table id="board-table" style="width:100%; border-collapse:collapse; display:none;">
-                <thead>
-                <tr style="background:#f1f5f9;">
-                    <th style="width:6%; padding:12px;">번호</th>
-                    <th style="width:50%; padding:12px;">제목</th>
-                    <th style="width:12%; padding:12px;">작성자</th>
-                    <th style="width:10%; padding:12px;">조회수</th>
-                    <th style="width:10%; padding:12px;">추천</th>
-                    <th style="width:12%; padding:12px;">작성일</th>
-                </tr>
-                </thead>
-                <tbody id="board-body"></tbody>
-            </table>
-
-            <!-- 페이지 네비게이션 -->
-            <div id="board-pagination"
-                 style="margin-top: 20px; text-align: center; display:none;">
+                <div id="board-pagination"
+                     style="margin-top: 20px; text-align: center; display:none;">
+                </div>
             </div>
         </div>
 
 
-        <!-- 차트 섹션 -->
-
-        <!-- 📌 종토방 (Stock Discussion Board) -->
+        <!-- 핫한글 -->
+        <div style="width: 280px; flex-shrink: 0; margin-top: 170px;">
+            <div id="hot-board-box"
+                 style="background:white; padding:20px; border-radius:10px;
+                    box-shadow:0 2px 10px rgba(0,0,0,0.07); display:none;">
+                <div id="hot-recommend" style="margin-bottom:15px;"></div>
+                <div id="hot-comment"></div>
+            </div>
+        </div>
 
     </div>
 </div>
@@ -670,7 +683,80 @@
         } catch (err) {
             console.error("게시판 로드 실패:", err);
         }
+
+
+        await loadHotBoard();
+
     }
+
+
+
+    async function loadHotBoard() {
+        if (!currentTicker) return;
+
+        try {
+            const res = await fetch(`/stock/board/${currentTicker}/hot`);
+            if (!res.ok) return;
+
+            const data = await res.json();
+
+            const topRecommend = data.topRecommend;   // 추천 많은 글 3개
+            const topComment = data.topComment;       // 댓글 많은 글 3개
+
+            const hotBox = document.getElementById("hot-board-box");
+            hotBox.style.display = "block";
+
+            //추천 많은 글
+            const recEl = document.getElementById("hot-recommend");
+
+            if (topRecommend.length === 0) {
+                recEl.innerHTML = "<b>👍 추천 많은 글 없음</b>";
+            } else {
+                recEl.innerHTML = `
+                <b style="display:block; margin-bottom:5px;">👍 추천 많은 글</b>
+                ${topRecommend.map(post => `
+                    <div style="padding:5px 0;">
+                        <a href="/stock/board/${post.ticker}/read/${post.id}"
+                           style="text-decoration:none; color:#2b6cb0;">
+                            ${post.title}
+                        </a>
+                        <span style="color:#e53e3e; font-size:0.9rem;">
+                            (+${post.recommend})
+                        </span>
+                    </div>
+                `).join("")}
+            `;
+            }
+
+            //핫한 글
+            const comEl = document.getElementById("hot-comment");
+
+            if (topComment.length === 0) {
+                comEl.innerHTML = "<b>🧯 핫한 글 없음</b>";
+            } else {
+                comEl.innerHTML = `
+                <b style="display:block; margin-bottom:5px;">🔥 지금 핫한 글</b>
+                ${topComment.map(post => `
+                    <div style="padding:5px 0;">
+                        <a href="/stock/board/${post.ticker}/read/${post.id}"
+                           style="text-decoration:none; color:#2b6cb0;">
+                            ${post.title}
+                        </a>
+                        <span style="color:#e53e3e; font-size:0.9rem;">
+                            [${post.commentCount}]
+                        </span>
+                    </div>
+                `).join("")}
+            `;
+            }
+
+        } catch (e) {
+            console.error("핫한 글 불러오기 실패:", e);
+        }
+    }
+
+
+
 
     // 📌 게시판 페이지 변경
     function changeBoardPage(page) {

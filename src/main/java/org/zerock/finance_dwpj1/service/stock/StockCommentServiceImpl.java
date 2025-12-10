@@ -83,5 +83,8 @@ public class StockCommentServiceImpl implements StockCommentService {
     @Override
     public int getCountByBoard(Long boardId) {
         return stockCommentRepository.countByBoard_Id(boardId);
+
     }
+
+
 }

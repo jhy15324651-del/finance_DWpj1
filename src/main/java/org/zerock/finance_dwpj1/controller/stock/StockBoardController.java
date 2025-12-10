@@ -16,6 +16,7 @@ import org.zerock.finance_dwpj1.service.stock.StockBoardService;
 import org.zerock.finance_dwpj1.service.stock.YahooFinanceStockService;
 import org.zerock.finance_dwpj1.service.user.CustomUserDetails;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
@@ -246,6 +247,20 @@ public class StockBoardController {
         }
 
         return ResponseEntity.ok("OK");
+    }
+
+
+    @GetMapping("/{ticker}/hot")
+    @ResponseBody
+    public Map<String, Object> getHotBoard(@PathVariable String ticker) {
+
+        Map<String, Object> hotResult = new HashMap<>();
+
+        hotResult.put("topRecommend", stockBoardService.getTopRecommend(ticker));
+
+        hotResult.put("topComment", stockBoardService.getTopComment(ticker));
+
+        return hotResult;
     }
 
 
