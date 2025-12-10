@@ -12,8 +12,12 @@ import org.zerock.finance_dwpj1.entity.content.ContentComment;
 import org.zerock.finance_dwpj1.entity.content.ContentReview;
 import org.zerock.finance_dwpj1.entity.stock.StockBoard;
 import org.zerock.finance_dwpj1.entity.stock.StockComment;
+import org.zerock.finance_dwpj1.entity.insights.InsightsComment;
+import org.zerock.finance_dwpj1.entity.insights.InsightsNews;
 import org.zerock.finance_dwpj1.repository.content.ContentCommentRepository;
 import org.zerock.finance_dwpj1.repository.content.ContentReviewRepository;
+import org.zerock.finance_dwpj1.repository.insights.InsightsCommentRepository;
+import org.zerock.finance_dwpj1.repository.insights.InsightsNewsRepository;
 import org.zerock.finance_dwpj1.repository.stock.StockBoardRepository;
 import org.zerock.finance_dwpj1.repository.stock.StockCommentRepository;
 import org.zerock.finance_dwpj1.service.insights.DailyNewsService;
@@ -30,6 +34,8 @@ public class PageController {
     private final ContentCommentRepository contentCommentRepository;
     private final StockBoardRepository stockBoardRepository;
     private final StockCommentRepository stockCommentRepository;
+    private final InsightsCommentRepository insightsCommentRepository;
+    private final InsightsNewsRepository insightsNewsRepository;
 
 
     @GetMapping("/")
@@ -206,7 +212,41 @@ public class PageController {
 
 
     /* --------------------------------------------
-       3) 날짜 기준 최신순 정렬
+       3) 뉴스 인사이트 댓글 가져오기
+    --------------------------------------------- */
+        List<InsightsComment> newsComments =
+                insightsCommentRepository.findByUserName(nickname);
+
+        for (InsightsComment nc : newsComments) {
+
+            InsightsNews news = nc.getNews();  // ManyToOne 관계라 자동 로딩됨
+
+            if (news != null && !news.getIsDeleted()) {
+                results.add(UserCommentDTO.builder()
+                        .id(nc.getId())
+                        .content(nc.getContent())
+                        .date(nc.getCreatedAt())
+                        .category("뉴스 인사이트")
+                        .postTitle(news.getTitle())
+                        .postLink("/news")  // 뉴스 인사이트 페이지로 이동
+                        .build());
+
+            } else {
+                // 뉴스가 삭제된 경우
+                results.add(UserCommentDTO.builder()
+                        .id(nc.getId())
+                        .content(nc.getContent())
+                        .date(nc.getCreatedAt())
+                        .category("[삭제된 게시글]")
+                        .postTitle("(삭제된 게시글)")
+                        .postLink(null)
+                        .build());
+            }
+        }
+
+
+    /* --------------------------------------------
+       4) 날짜 기준 최신순 정렬
     --------------------------------------------- */
         results.sort(Comparator.comparing(UserCommentDTO::getDate).reversed());
 

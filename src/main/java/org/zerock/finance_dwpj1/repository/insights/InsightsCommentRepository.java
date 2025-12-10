@@ -31,4 +31,8 @@ public interface InsightsCommentRepository extends JpaRepository<InsightsComment
      */
     @Query("SELECT COUNT(c) FROM InsightsComment c WHERE c.news.id = :newsId AND c.isDeleted = false")
     Long countByNewsId(@Param("newsId") Long newsId);
+
+  //마이페이지
+    @Query("SELECT c FROM InsightsComment c WHERE c.userName = :userName AND c.isDeleted = false ORDER BY c.createdAt DESC")
+    List<InsightsComment> findByUserName(@Param("userName") String userName);
 }
