@@ -34,37 +34,37 @@ public class ContentPostController {
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
 
-        ContentReview post = contentReviewService.getContentDetail(id);
+        // 🔥 삭제 여부 무시하고 조회
+        ContentReview post = contentReviewService.getContentById(id);
+
+        // 🔥 삭제된 글이면 post-detail 접속 불가 → 리포스트 화면으로 보냄
+        if (post.getIsDeleted()) {
+            return "redirect:/content/restore-page/" + id;
+        }
+
+        // 🔥 조회수 증가 포함된 상세조회는 삭제된 글만 피하고 호출
+        post = contentReviewService.getContentDetail(id);  // isDeleted = false인 경우만 정상 호출됨
         model.addAttribute("post", post);
 
-        // 기존 댓글 목록 제거
         model.addAttribute("comments", contentCommentService.getComments(id));
 
-        // 🔥 트리댓글로 변경
-        //model.addAttribute("commentTree", contentCommentNodeService.getCommentTree(id));
-
-
-        // 평점 모델에 담아 뷰로 전달하기
         double avgRating = contentCommentService.getAverageRating(id);
         int ratingCount = contentCommentService.getRatingCount(id);
-
         model.addAttribute("avgRating", avgRating);
         model.addAttribute("ratingCount", ratingCount);
 
-
-        // 로그인 사용자 정보 전달
         if (userDetails != null) {
             model.addAttribute("nickname", userDetails.getNickname());
             model.addAttribute("userId", userDetails.getId());
         }
 
-        // 목록 복귀 정보
         model.addAttribute("page", page);
         model.addAttribute("keyword", keyword);
         model.addAttribute("searchType", searchType);
 
         return "content/post-detail";
     }
+
 
     @PostMapping("/comment")
     @ResponseBody

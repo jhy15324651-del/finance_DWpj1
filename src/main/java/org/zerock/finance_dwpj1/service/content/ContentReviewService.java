@@ -218,6 +218,26 @@ public class ContentReviewService {
     }
 
     // ---------------------------------------------------------
+    // 🔥 삭제된 컨텐츠 복구 및 리포스팅
+    // ---------------------------------------------------------
+    @Transactional
+    public void restoreContent(Long id) {
+        // 🔥 삭제된 글도 찾아야 하므로 "findByIdAndIsDeletedFalse"가 아니라 "findById" 사용!
+        ContentReview content = repo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글입니다."));
+
+        content.restore();  // isDeleted = false, deletedAt = null
+        repo.save(content);
+    }
+
+    @Transactional(readOnly = true)
+    public ContentReview getContentById(Long id) {
+        return repo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글입니다."));
+    }
+
+
+    // ---------------------------------------------------------
 // ⭐ 평점 시스템 구축
 // ---------------------------------------------------------
     public double getAverageRating(Long postId) {

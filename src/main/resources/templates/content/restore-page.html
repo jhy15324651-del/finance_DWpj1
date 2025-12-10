@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>게시글 복구</title>
+</head>
+<body>
+
+<th:block th:replace="content/layout/header :: header"></th:block>
+<th:block th:replace="content/layout/header :: bodyheader"></th:block>
+
+<div class="write-container">
+    <h2>삭제된 게시글 복구</h2>
+
+    <!-- 🔥 이 페이지에서는 내용은 그냥 보여주기용이고
+         submit 시에는 /content/restore/{id} 로만 POST 됩니다 -->
+    <form class="write-form"
+          th:action="@{/content/restore/{id}(id=${post.id})}"
+          method="post">
+
+        <!-- 제목 -->
+        <label>제목</label>
+        <input type="text" name="title" th:value="${post.title}" readonly>
+
+        <!-- Quill CSS -->
+        <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+
+        <!-- 본문 (Quill Editor) -->
+        <label>본문</label>
+        <div id="editor-container" style="height: 400px;"></div>
+
+        <!-- 서버로 보낼 본문(사실 restore 에서 쓰지는 않음) -->
+        <input type="hidden" id="content-hidden" name="content">
+
+        <!-- 해시태그 -->
+        <label>해시태그</label>
+        <input type="text" name="hashtags"
+               th:value="${post.hashtags}"
+               placeholder="#원유 #엔비디아 #경제"
+               readonly>
+
+        <!-- 🔹 버튼: 복구 / 돌아가기 ONLY -->
+        <div style="text-align:center; margin-top:20px;">
+            <!-- 게시글 복구하기: /content/restore/{id} 로 POST -->
+            <button type="submit" class="btn-submit">게시글 복구하기</button>
+
+            <!-- 돌아가기: 내 게시글 목록 -->
+            <a th:href="@{/user/mypage/posts}" class="btn-cancel">돌아가기</a>
+        </div>
+
+    </form>
+</div>
+
+<!-- Quill JS -->
+<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+
+<script th:inline="javascript">
+    // 기존 본문 HTML
+    var originalHtml = /*[[${post.content}]]*/ "";
+
+    var toolbarOptions = [
+        ['bold', 'italic', 'underline'],
+        [{ 'header': 1 }, { 'header': 2 }],
+        ['image']
+    ];
+
+    var quill = new Quill('#editor-container', {
+        theme: 'snow',
+        placeholder: '내용을 확인하세요...',
+        modules: {
+            toolbar: toolbarOptions
+        },
+        readOnly: true   // 🔥 복구 페이지이므로 읽기 전용
+    });
+
+    // 기존 내용 채우기
+    var delta = quill.clipboard.convert(originalHtml);
+    quill.setContents(delta, 'silent');
+
+    // (restore 에서는 사실 필요 없지만, 폼 구조 재사용을 위해 남겨둠)
+    document.querySelector(".write-form").addEventListener("submit", function () {
+        document.querySelector("#content-hidden").value = quill.root.innerHTML;
+    });
+</script>
+
+<style>
+    .btn-submit {
+        display: inline-block;
+        padding: 8px 18px;
+        background-color: #4caf50;
+        color: white;
+        border-radius: 6px;
+        font-size: 14px;
+        border: none;
+        cursor: pointer;
+    }
+    .btn-submit:hover {
+        background-color: #3e8e41;
+    }
+
+    .btn-cancel {
+        display: inline-block;
+        padding: 8px 18px;
+        background-color: #888;
+        color: white;
+        border-radius: 6px;
+        font-size: 14px;
+        text-decoration: none;
+        margin-left: 10px;
+    }
+</style>
+
+<th:block th:replace="content/layout/footer :: footer"></th:block>
+
+</body>
+</html>

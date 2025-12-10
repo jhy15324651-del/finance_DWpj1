@@ -84,7 +84,7 @@ public class PageController {
 
         // 1) 콘텐츠 리뷰 게시글 조회
         List<ContentReview> reviewPosts =
-                contentReviewRepository.findByWriterAndIsDeletedFalse(nickname);
+                contentReviewRepository.findByWriter(nickname);
 
         // 2) 종목 토론방 게시글 조회
         List<StockBoard> stockPosts =
@@ -102,6 +102,7 @@ public class PageController {
                     .viewCount(r.getViewCount())
                     .category("콘텐츠 리뷰")
                     .link("/content/post/" + r.getId())
+                    .isDeleted(r.getIsDeleted())   // ⭐ 추가!
                     .build());
         }
 
@@ -114,6 +115,7 @@ public class PageController {
                     .viewCount(s.getView())
                     .category("종목 토론방")
                     .link("/stock/board/" + s.getTicker() + "/read/" + s.getId())
+                    .isDeleted(false)   // ⭐ 추가!
                     .build());
         }
 

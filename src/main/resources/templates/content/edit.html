@@ -35,6 +35,12 @@
             <a th:href="@{/content/post/{id}(id=${post.id})}" class="btn-cancel">돌아가기</a>
         </div>
 
+        <!-- 삭제된 글일 때만 리포스트 버튼 표시 -->
+        <div th:if="${post.isDeleted}" style="text-align:center; margin-top:10px;">
+            <a th:href="@{/content/restore/{id}(id=${post.id})}"
+               class="btn-restore">게시글 복구하기</a>
+        </div>
+
     </form>
 </div>
 
@@ -111,5 +117,23 @@
     });
 
 </script>
+
+<style>
+    /* 리포스트 버튼 */
+    .btn-restore {
+        display: inline-block;
+        padding: 8px 18px;
+        background-color: #4caf50;
+        color: white;
+        border-radius: 6px;
+        font-size: 14px;
+        text-decoration: none;
+        margin-top: 10px;
+    }
+    .btn-restore:hover {
+        background-color: #3e8e41;
+    }
+</style>
+
 
 <th:block th:replace="content/layout/footer :: footer"></th:block>

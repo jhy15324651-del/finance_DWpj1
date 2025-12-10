@@ -30,4 +30,6 @@ public class StockBoardDTO {
     private Integer unrecommend;
 
     private Integer commentCount;
+
+
 }
