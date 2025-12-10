@@ -13,7 +13,6 @@ import okhttp3.Response;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.zerock.finance_dwpj1.dto.stock.StockCandleDTO;
-import org.zerock.finance_dwpj1.dto.stock.StockDetailDTO;
 import org.zerock.finance_dwpj1.dto.stock.StockInfoDTO;
 import org.zerock.finance_dwpj1.entity.stock.StockCandleCache;
 import org.zerock.finance_dwpj1.entity.stock.StockQuoteCache;
@@ -501,59 +500,6 @@ public class YahooFinanceStockService implements StockService {
 
         return "USD";
     }
-
-
-    public StockDetailDTO fetchCompanyDetail(String ticker) {
-
-        String yahooTicker = convertToYahooTicker(ticker);
-        String url = "https://query1.finance.yahoo.com/v7/finance/quote?symbols=" + yahooTicker;
-
-        log.info("Yahoo 기업 상세 API 요청: {}", url);
-
-        try {
-            Request request = new Request.Builder()
-                    .url(url)
-                    .header("User-Agent", USER_AGENT)
-                    .build();
-
-            try (Response response = httpClient.newCall(request).execute()) {
-
-                if (!response.isSuccessful() || response.body() == null) {
-                    log.error("기업 상세 API 호출 실패: {} - {}", ticker, response.code());
-                    return null;
-                }
-
-                String json = response.body().string();
-                JsonObject root = JsonParser.parseString(json).getAsJsonObject();
-                JsonObject quoteResponse = root.getAsJsonObject("quoteResponse");
-                JsonArray results = quoteResponse.getAsJsonArray("result");
-
-                if (results == null || results.isEmpty()) {
-                    return null;
-                }
-
-                JsonObject obj = results.get(0).getAsJsonObject();
-
-                return StockDetailDTO.builder()
-                        .ticker(ticker)
-                        .name(getStringOrDefault(obj, "longName", ticker))
-                        .sector(getStringOrDefault(obj, "sector", "N/A"))
-                        .industry(getStringOrDefault(obj, "industry", "N/A"))
-                        .exchange(getStringOrDefault(obj, "exchange", "N/A"))
-                        .country(getStringOrDefault(obj, "country", "N/A"))
-                        .marketCap(getLongOrDefault(obj, "marketCap", 0L))
-                        .volume(getLongOrDefault(obj, "regularMarketVolume", 0L))
-                        .build();
-
-            }
-
-        } catch (Exception e) {
-            log.error("기업 상세 API 예외 발생: {}", ticker, e);
-            return null;
-        }
-    }
-
-
 
 
 

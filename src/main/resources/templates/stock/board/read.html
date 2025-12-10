@@ -409,6 +409,7 @@
     let sma60Series = null;
     let sma120Series = null;
     let currentTimeframe = 'D';
+    let currentStockName = null;
 
 
 
@@ -483,6 +484,8 @@
     }
     // 종목 정보 표시
     function displayStockInfo(info) {
+        currentStockName = info.name;
+
         document.getElementById('stock-info-container').style.display = 'block';
 
         const priceClass = info.changeRate >= 0 ? 'price-up' : 'price-down';
@@ -634,7 +637,7 @@
         if (!currentTicker) return;
 
         document.getElementById("board-stock-title").innerText =
-            ` ${currentTicker} 토론방`;
+            ` ${currentStockName} 토론방`;
 
 
         // 게시글 목록 API 요청
