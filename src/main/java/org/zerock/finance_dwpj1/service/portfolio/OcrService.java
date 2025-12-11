@@ -1,8 +1,10 @@
 package org.zerock.finance_dwpj1.service.portfolio;
 
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
+import org.opencv.core.Core;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -54,6 +56,13 @@ public class OcrService {
     private final String language;
     private final int ocrEngineMode;
     private final int pageSegMode;
+
+    @PostConstruct
+    public void loadOpenCV() {
+        nu.pattern.OpenCV.loadLocally(); // OpenCV 네이티브 라이브러리 로드
+        System.out.println("OpenCV Loaded: " + Core.VERSION);
+    }
+    // OpenCV ON
 
     public OcrService(
             @Value("${tesseract.datapath}") String datapath,
@@ -290,11 +299,25 @@ public class OcrService {
      */
     public static class PortfolioStock {
         private String ticker;
+
+        // 기존: weight = 비중(%) 용도로 쓰던 값 (기존 코드 호환용)
         private Double weight; // 비중 (%)
 
+        // 🔥 새로 추가: 보유 주식 수 & 평가금액 (원)
+        private Double shares;   // 보유 주식 수 (정수/소수 둘 다 가능)
+        private Long amount;     // 평가금액 (원 단위)
+
+        // === 기존 코드와 호환용 생성자 (건들지 말기) ===
         public PortfolioStock(String ticker, Double weight) {
             this.ticker = ticker;
             this.weight = weight;
+        }
+
+        // === 🔥 TOSS 전용: 주식 수 + 평가금액용 생성자 ===
+        public PortfolioStock(String ticker, Double shares, Long amount) {
+            this.ticker = ticker;
+            this.shares = shares;
+            this.amount = amount;
         }
 
         public String getTicker() {
@@ -305,9 +328,27 @@ public class OcrService {
             return weight;
         }
 
+        public Double getShares() {
+            return shares;
+        }
+
+        public Long getAmount() {
+            return amount;
+        }
+
         @Override
         public String toString() {
-            return ticker + ": " + weight + "%";
+            StringBuilder sb = new StringBuilder(ticker);
+            if (shares != null) {
+                sb.append(" / ").append(shares).append("주");
+            }
+            if (amount != null) {
+                sb.append(" / ").append(amount).append("원");
+            }
+            if (weight != null) {
+                sb.append(" / ").append(weight).append("%");
+            }
+            return sb.toString();
         }
     }
 }
