@@ -29,7 +29,6 @@ public class StockBoardController {
     private final YahooFinanceStockService yahooFinanceStockService;
 
 
-
     //로그인 체크
     @GetMapping("/api/login-check")
     @ResponseBody

@@ -80,7 +80,10 @@
 
                 <!-- 댓글 header -->
                 <div class="comment-header">
-                    <b class="comment-writer" th:text="${c.writer}"></b>
+                    <b class="comment-writer">
+                        <span th:if="${c.writer == post.writer}" class="post-writer-badge">글쓴이</span>
+                        <span th:text="${c.writer}"></span>
+                    </b>
                     <span class="comment-date"
                           th:text="${#temporals.format(c.createdDate,'yyyy-MM-dd HH:mm')}"></span>
                 </div>
@@ -103,7 +106,9 @@
 
                 <!-- 액션 버튼 -->
                 <div class="comment-actions">
-                    <button th:if="${nickname == c.writer}"
+
+                    <!-- 수정 버튼: 원댓글 + 작성자 동일할 때만 표시 -->
+                    <button th:if="${c.parentCommentId == null and nickname == c.writer}"
                             class="comment-edit-btn"
                             th:attr="data-id=${c.id}, data-rating=${c.rating}">
                         수정
@@ -114,6 +119,45 @@
                             th:attr="data-id=${c.id}">
                         삭제
                     </button>
+
+                    <!-- 답글 버튼: 원댓글일 때만 표시 -->
+                    <button th:if="${c.parentCommentId == null}"
+                            class="reply-write-btn"
+                            th:attr="data-parent-id=${c.id}">
+                        답글
+                    </button>
+
+                </div>
+
+                <!-- ⭐ 대댓글 출력 영역 -->
+                <div class="reply-list" th:each="r : ${c.replies}">
+
+                    <div class="reply-item-box">
+
+                        <!-- 대댓글 header -->
+                        <div class="reply-header">
+                            <b class="reply-writer">
+                                <span th:if="${r.writer == post.writer}" class="post-writer-badge">글쓴이</span>
+                                <span th:text="${r.writer}"></span>
+                            </b>
+                            <span class="reply-date"
+                                  th:text="${#temporals.format(r.createdDate,'yyyy-MM-dd HH:mm')}"></span>
+                        </div>
+
+                        <!-- 대댓글 내용 -->
+                        <div class="reply-text" th:text="${r.content}"></div>
+
+                        <!-- ⭐ 대댓글 삭제 버튼 -->
+                        <div class="reply-actions">
+                            <button th:if="${nickname == r.writer || nickname == post.writer}"
+                                    class="reply-delete-btn"
+                                    th:attr="data-id=${r.id}">
+                                삭제
+                            </button>
+                        </div>
+
+                    </div>
+
                 </div>
 
             </div>
@@ -149,140 +193,195 @@
 
                     <button id="comment-submit" class="comment-submit-btn">등록</button>
                 </div>
-
             </div>
         </div>
 
-    </div> <!-- 댓글 섹션 END -->
+        <!-- ============================
+     ⭐ 대댓글 작성 폼 (숨김)
+============================= -->
+        <div id="reply-form-template" style="display:none;">
 
+            <!-- 작성자 표시 -->
+            <div class="reply-writer">
+                <b>작성자:</b> <span class="reply-nickname"></span>
+            </div>
+
+
+            <!-- 대댓글 텍스트 입력 -->
+            <div class="reply-write-box">
+
+                <div class="reply-left">
+                <textarea class="reply-textarea"
+                          placeholder="답글을 입력하세요"></textarea>
+                </div>
+
+                <!-- 버튼 세로 정렬 -->
+                <div class="reply-btn-column">
+                    <button class="reply-submit-btn">등록</button>
+                    <button class="reply-cancel-btn">취소</button>
+                </div>
+
+            </div>
+
+
+        </div> <!-- 댓글 섹션 END -->
+
+
+        <!-- =======================
+             목록 / 홈 버튼
+        ======================== -->
+        <div class="detail-btn-container">
+            <a th:href="@{/content/category(page=${page},keyword=${keyword},searchType=${searchType})}"
+               class="btn btn-outline-secondary detail-btn">목록으로</a>
+
+            <a th:href="@{/content/}" class="btn btn-outline-secondary detail-btn">홈으로</a>
+        </div>
+
+    </div> <!-- container END -->
 
 
     <!-- =======================
-         목록 / 홈 버튼
-    ======================== -->
-    <div class="detail-btn-container">
-        <a th:href="@{/content/category(page=${page},keyword=${keyword},searchType=${searchType})}"
-           class="btn btn-outline-secondary detail-btn">목록으로</a>
+         ⭐ SCRIPT (별점 + 댓글)
+    ======================= -->
+    <script th:inline="javascript">
+        document.addEventListener("DOMContentLoaded", function () {
 
-        <a th:href="@{/content/}" class="btn btn-outline-secondary detail-btn">홈으로</a>
-    </div>
+            /* ---------------------------------------------------------
+                ⭐ 댓글 작성 별점 입력 (0.5 단위)
+            --------------------------------------------------------- */
+            let selectedRating = 0;
+            const inputStars = document.querySelectorAll("#rating-stars span");
 
-</div> <!-- container END -->
-
-
-<!-- =======================
-     ⭐ SCRIPT (별점 + 댓글)
-======================= -->
-<script th:inline="javascript">
-    document.addEventListener("DOMContentLoaded", function () {
-
-        /* ---------------------------------------------------------
-            ⭐ 댓글 작성 별점 입력 (0.5 단위)
-        --------------------------------------------------------- */
-        let selectedRating = 0;
-        const inputStars = document.querySelectorAll("#rating-stars span");
-
-        function renderInputStars(rating) {
-            inputStars.forEach((star, index) => {
-                star.classList.remove("full", "half");
-                const val = index + 1;
-                if (rating >= val) star.classList.add("full");
-                else if (rating >= val - 0.5) star.classList.add("half");
-            });
-        }
-
-        inputStars.forEach((star, index) => {
-            star.addEventListener("click", e => {
-                const rect = star.getBoundingClientRect();
-                const half = (e.clientX - rect.left) <= rect.width / 2;
-                selectedRating = index + (half ? 0.5 : 1.0);
-                renderInputStars(selectedRating);
-            });
-        });
-
-        /* ---------------------------------------------------------
-            댓글 작성 요청
-        --------------------------------------------------------- */
-        const submitBtn = document.getElementById("comment-submit");
-
-        if (submitBtn) {
-            submitBtn.addEventListener("click", async () => {
-
-                const content = document.getElementById("comment-content").value;
-                const postId = [[${post.id}]];
-
-                if (!content.trim()) {
-                    alert("댓글 내용을 입력해주세요.");
-                    return;
-                }
-
-                // ⭐ 추가: 평점 미선택 시 등록 불가
-                if (selectedRating === 0) {
-                    alert("평점을 선택해주세요.");
-                    return;
-                }
-
-                const res = await fetch("/content/comment", {
-                    method: "POST",
-                    headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({
-                        postId: postId,
-                        content: content,
-                        rating: selectedRating || 0
-                    })
+            function renderInputStars(rating) {
+                inputStars.forEach((star, index) => {
+                    star.classList.remove("full", "half");
+                    const val = index + 1;
+                    if (rating >= val) star.classList.add("full");
+                    else if (rating >= val - 0.5) star.classList.add("half");
                 });
+            }
 
-                const result = await res.text();
-
-                if (result === "SUCCESS") location.reload();
-                else if (result === "NOT_LOGIN") alert("로그인이 필요합니다.");
-                else alert("댓글 등록 실패");
+            inputStars.forEach((star, index) => {
+                star.addEventListener("click", e => {
+                    const rect = star.getBoundingClientRect();
+                    const half = (e.clientX - rect.left) <= rect.width / 2;
+                    selectedRating = index + (half ? 0.5 : 1.0);
+                    renderInputStars(selectedRating);
+                });
             });
-        }
+
+            /* ---------------------------------------------------------
+                댓글 작성 요청
+            --------------------------------------------------------- */
+            const submitBtn = document.getElementById("comment-submit");
+
+            if (submitBtn) {
+                submitBtn.addEventListener("click", async () => {
+
+                    const content = document.getElementById("comment-content").value;
+                    const postId = [[${post.id}]];
+
+                    if (!content.trim()) {
+                        alert("댓글 내용을 입력해주세요.");
+                        return;
+                    }
+
+                    // ⭐ 추가: 평점 미선택 시 등록 불가
+                    if (selectedRating === 0) {
+                        alert("평점을 선택해주세요.");
+                        return;
+                    }
+
+                    const res = await fetch("/content/comment", {
+                        method: "POST",
+                        headers: {"Content-Type": "application/json"},
+                        body: JSON.stringify({
+                            postId: postId,
+                            content: content,
+                            rating: selectedRating || 0
+                        })
+                    });
+
+                    const result = await res.text();
+
+                    if (result === "SUCCESS") location.reload();
+                    else if (result === "NOT_LOGIN") alert("로그인이 필요합니다.");
+                    else alert("댓글 등록 실패");
+                });
+            }
 
 
-        /* ---------------------------------------------------------
-            댓글 삭제
-        --------------------------------------------------------- */
-        document.querySelectorAll(".comment-delete-btn").forEach(btn => {
-            btn.addEventListener("click", async () => {
-                const id = btn.dataset.id;
-                if (!confirm("정말 삭제하시겠습니까?")) return;
+            /* ---------------------------------------------------------
+                댓글 삭제
+            --------------------------------------------------------- */
+            document.querySelectorAll(".comment-delete-btn").forEach(btn => {
+                btn.addEventListener("click", async () => {
+                    const id = btn.dataset.id;
+                    if (!confirm("정말 삭제하시겠습니까?")) return;
 
-                const res = await fetch(`/content/comment/${id}`, {method:"DELETE"});
-                const result = await res.text();
+                    const res = await fetch(`/content/comment/${id}`, {method: "DELETE"});
+                    const result = await res.text();
 
-                if (result === "SUCCESS") location.reload();
-                else if (result === "NO_PERMISSION") alert("삭제 권한이 없습니다.");
-                else alert("삭제 실패");
+                    if (result === "SUCCESS") location.reload();
+                    else if (result === "NO_PERMISSION") alert("삭제 권한이 없습니다.");
+                    else alert("삭제 실패");
+                });
             });
-        });
 
-        /* ---------------------------------------------------------
-            ⭐ 댓글 수정 + 기존 평점 변경 기능 (핵심)
-        --------------------------------------------------------- */
-        document.querySelectorAll(".comment-edit-btn").forEach(btn => {
+            /* ---------------------------------------------------------
+                ⭐ 대댓글 삭제
+            --------------------------------------------------------- */
+            document.addEventListener("click", async function (e) {
 
-            btn.addEventListener("click", () => {
+                if (e.target.classList.contains("reply-delete-btn")) {
 
-                const id = btn.dataset.id;
-                let editRating = parseFloat(btn.dataset.rating || 0);
+                    const id = e.target.getAttribute("data-id");
 
-                const box = btn.closest(".comment-item-box");
-                const contentDiv = box.querySelector(".comment-text");
+                    if (!confirm("이 답글을 삭제하시겠습니까?")) return;
 
-                const oldText = contentDiv.innerText;
+                    const res = await fetch(`/content/comment/${id}`, {
+                        method: "DELETE"
+                    });
 
-                /* 액션 버튼 숨기기 */
-                box.querySelectorAll(".comment-actions button")
-                    .forEach(b => b.style.display = "none");
+                    const result = await res.text();
 
-                /* 기존 별 UI */
-                const ratingBox = box.querySelector(".rating-stars-display.small");
-                const editStars = ratingBox.querySelectorAll("span");
+                    if (result === "SUCCESS") {
+                        location.reload();
+                    } else if (result === "NO_PERMISSION") {
+                        alert("삭제 권한이 없습니다.");
+                    } else {
+                        alert("삭제 실패");
+                    }
+                }
 
-                /* 댓글 내용 → textarea로 변경 */
-                contentDiv.innerHTML = `
+            });
+
+
+            /* ---------------------------------------------------------
+                ⭐ 댓글 수정 + 기존 평점 변경 기능 (핵심)
+            --------------------------------------------------------- */
+            document.querySelectorAll(".comment-edit-btn").forEach(btn => {
+
+                btn.addEventListener("click", () => {
+
+                    const id = btn.dataset.id;
+                    let editRating = parseFloat(btn.dataset.rating || 0);
+
+                    const box = btn.closest(".comment-item-box");
+                    const contentDiv = box.querySelector(".comment-text");
+
+                    const oldText = contentDiv.innerText;
+
+                    /* 액션 버튼 숨기기 */
+                    box.querySelectorAll(".comment-actions button")
+                        .forEach(b => b.style.display = "none");
+
+                    /* 기존 별 UI */
+                    const ratingBox = box.querySelector(".rating-stars-display.small");
+                    const editStars = ratingBox.querySelectorAll("span");
+
+                    /* 댓글 내용 → textarea로 변경 */
+                    contentDiv.innerHTML = `
                 <textarea class="edit-area">${oldText}</textarea>
 
                 <div class="edit-action-wrapper">
@@ -291,368 +390,588 @@
                 </div>
             `;
 
-                /* 기존 표시용 별을 클릭 가능하도록 변경 */
-                ratingBox.style.cursor = "pointer";
+                    /* 기존 표시용 별을 클릭 가능하도록 변경 */
+                    ratingBox.style.cursor = "pointer";
 
-                function renderEditStars(rating) {
+                    function renderEditStars(rating) {
+                        editStars.forEach((star, index) => {
+                            star.classList.remove("full", "half");
+
+                            const val = index + 1;
+                            if (rating >= val) star.classList.add("full");
+                            else if (rating >= val - 0.5) star.classList.add("half");
+                        });
+                    }
+
+                    /* 초기 별 반영 */
+                    renderEditStars(editRating);
+
+                    /* ⭐ 클릭하면 평점 변경 */
                     editStars.forEach((star, index) => {
-                        star.classList.remove("full", "half");
+                        star.addEventListener("click", e => {
+                            const rect = star.getBoundingClientRect();
+                            const half = (e.clientX - rect.left) <= rect.width / 2;
 
-                        const val = index + 1;
-                        if (rating >= val) star.classList.add("full");
-                        else if (rating >= val - 0.5) star.classList.add("half");
+                            editRating = index + (half ? 0.5 : 1.0);
+                            renderEditStars(editRating);
+                        });
                     });
-                }
 
-                /* 초기 별 반영 */
-                renderEditStars(editRating);
+                    /* 저장 */
+                    contentDiv.querySelector(".save-edit-btn")
+                        .addEventListener("click", async () => {
 
-                /* ⭐ 클릭하면 평점 변경 */
-                editStars.forEach((star, index) => {
-                    star.addEventListener("click", e => {
-                        const rect = star.getBoundingClientRect();
-                        const half = (e.clientX - rect.left) <= rect.width / 2;
+                            const newText = contentDiv.querySelector(".edit-area").value;
 
-                        editRating = index + (half ? 0.5 : 1.0);
-                        renderEditStars(editRating);
-                    });
-                });
+                            const res = await fetch(`/content/comment/${id}`, {
+                                method: "PUT",
+                                headers: {"Content-Type": "application/json"},
+                                body: JSON.stringify({
+                                    content: newText,
+                                    rating: editRating
+                                })
+                            });
 
-                /* 저장 */
-                contentDiv.querySelector(".save-edit-btn")
-                    .addEventListener("click", async () => {
-
-                        const newText = contentDiv.querySelector(".edit-area").value;
-
-                        const res = await fetch(`/content/comment/${id}`, {
-                            method: "PUT",
-                            headers: {"Content-Type":"application/json"},
-                            body: JSON.stringify({
-                                content: newText,
-                                rating: editRating
-                            })
+                            const result = await res.text();
+                            if (result === "SUCCESS") location.reload();
+                            else alert("수정 실패");
                         });
 
-                        const result = await res.text();
-                        if (result === "SUCCESS") location.reload();
-                        else alert("수정 실패");
+                    /* 취소 */
+                    contentDiv.querySelector(".cancel-edit-btn")
+                        .addEventListener("click", () => location.reload());
+                });
+            });
+
+        });
+        // 전역: 현재 열려 있는 reply form을 추적하기 위함
+        let currentReplyForm = null;
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+            // 모든 '답글 달기' 버튼에 클릭 이벤트 등록
+            document.querySelectorAll(".reply-write-btn").forEach(function (btn) {
+
+                btn.addEventListener("click", function () {
+
+                    const parentId = this.getAttribute("data-parent-id");
+                    const nickname = document.querySelector(".writer-box span")?.textContent
+                        || document.querySelector(".comment-write-top span")?.textContent;
+
+                    // reply form 템플릿 가져오기
+                    const template = document.querySelector("#reply-form-template");
+
+                    // 기존 form이 열려있다면 숨김
+                    if (currentReplyForm) currentReplyForm.style.display = "none";
+
+                    // reply form을 여기에 삽입
+                    this.insertAdjacentElement("afterend", template);
+
+                    // reply form 표시
+                    template.style.display = "block";
+
+                    // 작성자 이름 채우기
+                    template.querySelector(".reply-nickname").textContent = nickname;
+
+                    // parentCommentId 저장용
+                    template.setAttribute("data-parent-id", parentId);
+
+                    // 현재 열린 reply form 저장
+                    currentReplyForm = template;
+                });
+            });
+
+            /* ---------------------------------------------------------
+                ⭐ 대댓글 등록
+             --------------------------------------------------------- */
+            document.addEventListener("click", async function (e) {
+
+                if (e.target.classList.contains("reply-submit-btn")) {
+
+                    const form = document.querySelector("#reply-form-template");
+
+                    const content = form.querySelector(".reply-textarea").value;
+                    const parentId = form.getAttribute("data-parent-id");
+                    const postId = [[${post.id}]];   // 페이지에 있는 글 ID
+
+                    if (!content.trim()) {
+                        alert("답글 내용을 입력해주세요.");
+                        return;
+                    }
+
+                    const res = await fetch("/content/comment/reply", {
+                        method: "POST",
+                        headers: {"Content-Type": "application/json"},
+                        body: JSON.stringify({
+                            postId: postId,
+                            parentCommentId: parentId,
+                            content: content,
+                            rating: null   // ⭐ 대댓글은 평점 없음
+                        })
                     });
 
-                /* 취소 */
-                contentDiv.querySelector(".cancel-edit-btn")
-                    .addEventListener("click", () => location.reload());
+                    const result = await res.text();
+
+                    if (result === "SUCCESS") location.reload();
+                    else if (result === "NOT_LOGIN") alert("로그인이 필요합니다.");
+                    else alert("답글 등록 실패");
+                }
             });
+
         });
 
-    });
-</script>
+        /* ---------------------------------------------------------
+            ⭐ 대댓글 작성 취소 버튼
+    --------------------------------------------------------- */
+        document.addEventListener("click", function (e) {
 
-<style>
+            if (e.target.classList.contains("reply-cancel-btn")) {
 
-    /* =====================
-     본문 정보
-====================== */
-    .post-detail-meta {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-top: 8px;
-        margin-bottom: 20px;
-        color: #555;
-        font-size: 14px;
-    }
+                const form = document.querySelector("#reply-form-template");
 
-    .post-detail-title {
-        font-size: 28px;
-        font-weight: 700;
-        margin-bottom: 8px;
-    }
+                // textarea 내용 비우기
+                form.querySelector(".reply-textarea").value = "";
 
-    .post-image {
-        max-width: 100%;
-        border-radius: 6px;
-        margin: 20px 0;
-    }
+                // 폼 닫기
+                form.style.display = "none";
 
-    .post-detail-content {
-        font-size: 16px;
-        line-height: 1.7;
-        margin-bottom: 40px;
-        white-space: pre-line;
-    }
+                // 현재 열린 폼 초기화
+                currentReplyForm = null;
+            }
 
-    .post-hashtags {
-        padding-bottom: 20px;
-        border-bottom: 1px solid #e5e5e5;
-        margin-bottom: 40px;
-    }
+        });
 
+    </script>
 
-    /* =====================
-       ⭐ 평균 평점 표시
+    <style>
+
+        /* =====================
+         본문 정보
     ====================== */
-    .post-rating-box {
-        margin: 10px 0 15px 0;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
+        .post-detail-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 8px;
+            margin-bottom: 20px;
+            color: #555;
+            font-size: 14px;
+        }
 
-    .rating-stars-display {
-        display: flex;
-        gap: 2px;
-    }
-
-    .rating-stars-display span {
-        width: 22px;
-        height: 22px;
-        background: url('/img/star-empty.svg') center/cover no-repeat;
-    }
-
-    .rating-stars-display span.full {
-        background-image: url('/img/star-full.svg');
-    }
-
-    .rating-stars-display span.half {
-        background-image: url('/img/star-half.svg');
-    }
-
-    /* small 버전 (댓글용) */
-    .rating-stars-display.small span {
-        width: 18px;
-        height: 18px;
-    }
-
-    /* ⭐ 댓글 수정 시 클릭 가능하게 (필수) */
-    .rating-stars-display.small.editable span {
-        cursor: pointer !important;
-    }
-
-
-    .rating-average-text {
-        color: #555;
-        font-size: 15px;
-    }
-
-
-    /* =====================
-       댓글 목록
-    ====================== */
-    .comment-section {
-        margin-top: 50px;
-    }
-
-    .comment-title {
-        font-size: 20px;
-        font-weight: 700;
-        margin-bottom: 20px;
-    }
-
-    .comment-item-box {
-        background: #fafafa;
-        border-radius: 8px;
-        padding: 18px;
-        margin-bottom: 15px;
-        border: 1px solid #eee;
-        transition: border 0.2s, background 0.2s;
-    }
-
-    .comment-item-box:hover {
-        border-color: #ddd;
-    }
-
-    .comment-header {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 8px;
-        font-size: 14px;
-        color: #555;
-    }
-
-    .comment-text {
-        margin: 10px 0;
-        font-size: 15px;
-        color: #333;
-    }
-
-    .comment-actions button {
-        margin-right: 6px;
-    }
-
-
-    /* =====================
-       수정/삭제 버튼
-    ====================== */
-    .comment-edit-btn,
-    .comment-delete-btn {
-        padding: 6px 12px;
-        border-radius: 6px;
-        font-size: 13px;
-        cursor: pointer;
-        border: none;
-    }
-
-    .comment-edit-btn {
-        background: #4e73df;
-        color: #fff;
-    }
-
-    .comment-edit-btn:hover {
-        background: #3b5cc4;
-    }
-
-    .comment-delete-btn:hover {
-        background: #d0d0d0;
-    }
-
-
-    /* =====================
-         댓글 수정 UI
-    ====================== */
-
-    /* textarea */
-    .edit-area {
-        width: 100%;
-        min-height: 70px;
-        padding: 12px;
-        margin-top: 10px;
-        border-radius: 8px;
-        border: 1px solid #ccc;
-        font-size: 14px;
-        resize: vertical;
-    }
-
-    /* action 버튼들 */
-    .edit-action-wrapper {
-        display: flex;
-        gap: 10px;
-        margin-top: 12px;
-    }
-
-    .save-edit-btn {
-        background: #4e73df;
-        color: #fff;
-        padding: 8px 14px;
-        border-radius: 6px;
-        border: none;
-        cursor: pointer;
-    }
-
-    .save-edit-btn:hover {
-        background: #3b5cc4;
-    }
-
-    .cancel-edit-btn {
-        background: #e5e5e5;
-        padding: 8px 14px;
-        border-radius: 6px;
-        border: none;
-        cursor: pointer;
-    }
-
-    .cancel-edit-btn:hover {
-        background: #d0d0d0;
-    }
-
-
-    /* =====================
-       댓글 작성 UI
-    ====================== */
-    .comment-write-box {
-        margin-top: 30px;
-        border-top: 1px solid #e5e5e5;
-        padding-top: 25px;
-    }
-
-    .comment-write-top {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 12px;
-    }
-
-    .writer-box {
-        font-size: 15px;
-        color: #444;
-    }
-
-    /* ⭐ 신규 댓글 평점 입력 */
-    .rating-stars {
-        display: flex;
-        gap: 4px;
-        cursor: pointer;
-    }
-
-    .rating-stars span {
-        width: 28px;
-        height: 28px;
-        background: url('/img/star-empty.svg') center/cover no-repeat;
-    }
-
-    .rating-stars span.full {
-        background-image: url('/img/star-full.svg');
-    }
-
-    .rating-stars span.half {
-        background-image: url('/img/star-half.svg');
-    }
-
-    .comment-write-bottom {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-
-    .comment-textarea {
-        width: 100%;
-        height: 70px;
-        padding: 12px;
-        border-radius: 8px;
-        border: 1px solid #ccc;
-        font-size: 14px;
-    }
-
-    /* 작성자 + 별점 정렬 */
-    .comment-write-top {
-        width: 90%;
-    }
-
-    .comment-submit-btn {
-        padding: 12px 18px;
-        background: #4e73df;
-        color: #fff;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        flex-shrink: 0;
-        font-size: 14px;
-    }
-
-
-    /* =====================
-       목록/홈 버튼
-    ====================== */
-    .detail-btn-container {
-        margin-top: 40px;
-        display: flex;
-        gap: 10px;
-    }
-
-    /* 모바일 대응 */
-    @media (max-width: 600px) {
         .post-detail-title {
-            font-size: 22px;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
         }
-        .comment-textarea {
-            height: 60px;
+
+        .post-image {
+            max-width: 100%;
+            border-radius: 6px;
+            margin: 20px 0;
         }
+
+        .post-detail-content {
+            font-size: 16px;
+            line-height: 1.7;
+            margin-bottom: 40px;
+            white-space: pre-line;
+        }
+
+        .post-hashtags {
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e5e5e5;
+            margin-bottom: 40px;
+        }
+
+
+        /* =====================
+           ⭐ 평균 평점 표시
+        ====================== */
+        .post-rating-box {
+            margin: 10px 0 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .rating-stars-display {
+            display: flex;
+            gap: 2px;
+        }
+
+        .rating-stars-display span {
+            width: 22px;
+            height: 22px;
+            background: url('/img/star-empty.svg') center/cover no-repeat;
+        }
+
+        .rating-stars-display span.full {
+            background-image: url('/img/star-full.svg');
+        }
+
+        .rating-stars-display span.half {
+            background-image: url('/img/star-half.svg');
+        }
+
+        /* small 버전 (댓글용) */
+        .rating-stars-display.small span {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* ⭐ 댓글 수정 시 클릭 가능하게 (필수) */
+        .rating-stars-display.small.editable span {
+            cursor: pointer !important;
+        }
+
+
+        .rating-average-text {
+            color: #555;
+            font-size: 15px;
+        }
+
+
+        /* =====================
+           댓글 목록
+        ====================== */
+        .comment-section {
+            margin-top: 50px;
+        }
+
+        .comment-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .comment-item-box {
+            background: #fafafa;
+            border-radius: 8px;
+            padding: 18px;
+            margin-bottom: 15px;
+            border: 1px solid #eee;
+            transition: border 0.2s, background 0.2s;
+        }
+
+        .comment-item-box:hover {
+            border-color: #ddd;
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .comment-text {
+            margin: 10px 0;
+            font-size: 15px;
+            color: #333;
+        }
+
+        .comment-actions button {
+            margin-right: 6px;
+        }
+
+
+        /* =====================
+           수정/삭제 버튼
+        ====================== */
+        .comment-edit-btn,
+        .comment-delete-btn {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            border: none;
+        }
+
+        .comment-edit-btn {
+            background: #4e73df;
+            color: #fff;
+        }
+
+        .comment-edit-btn:hover {
+            background: #3b5cc4;
+        }
+
+        .comment-delete-btn:hover {
+            background: #d0d0d0;
+        }
+
+
+        /* =====================
+             댓글 수정 UI
+        ====================== */
+
+        /* textarea */
+        .edit-area {
+            width: 100%;
+            min-height: 70px;
+            padding: 12px;
+            margin-top: 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+            resize: vertical;
+        }
+
+        /* action 버튼들 */
+        .edit-action-wrapper {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .save-edit-btn {
+            background: #4e73df;
+            color: #fff;
+            padding: 8px 14px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .save-edit-btn:hover {
+            background: #3b5cc4;
+        }
+
+        .cancel-edit-btn {
+            background: #e5e5e5;
+            padding: 8px 14px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .cancel-edit-btn:hover {
+            background: #d0d0d0;
+        }
+
+
+        /* =====================
+           댓글 작성 UI
+        ====================== */
+        .comment-write-box {
+            margin-top: 30px;
+            border-top: 1px solid #e5e5e5;
+            padding-top: 25px;
+        }
+
+        .comment-write-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .writer-box {
+            font-size: 15px;
+            color: #444;
+        }
+
+        /* ⭐ 신규 댓글 평점 입력 */
+        .rating-stars {
+            display: flex;
+            gap: 4px;
+            cursor: pointer;
+        }
+
         .rating-stars span {
-            width: 24px;
-            height: 24px;
+            width: 28px;
+            height: 28px;
+            background: url('/img/star-empty.svg') center/cover no-repeat;
         }
-    }
 
-</style>
+        .rating-stars span.full {
+            background-image: url('/img/star-full.svg');
+        }
 
-<!-- FOOTER -->
-<th:block th:replace="content/layout/footer :: footer"></th:block>
+        .rating-stars span.half {
+            background-image: url('/img/star-half.svg');
+        }
+
+        .comment-write-bottom {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .comment-textarea {
+            width: 100%;
+            height: 70px;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+        }
+
+        /* 작성자 + 별점 정렬 */
+        .comment-write-top {
+            width: 90%;
+        }
+
+        .comment-submit-btn {
+            padding: 12px 18px;
+            background: #4e73df;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            flex-shrink: 0;
+            font-size: 14px;
+        }
+
+
+        /* =====================
+           목록/홈 버튼
+        ====================== */
+        .detail-btn-container {
+            margin-top: 40px;
+            display: flex;
+            gap: 10px;
+        }
+
+        /* 모바일 대응 */
+        @media (max-width: 600px) {
+            .post-detail-title {
+                font-size: 22px;
+            }
+
+            .comment-textarea {
+                height: 60px;
+            }
+
+            .rating-stars span {
+                width: 24px;
+                height: 24px;
+            }
+        }
+
+        /* ============================
+        ⭐ 대댓글 스타일
+    ============================ */
+
+        /* 들여쓰기 */
+        .reply-item-box {
+            margin-left: 20px; /* 들여쓰기 */
+            padding-left: 15px; /* 내부 여백 */
+            border-left: 2px solid #e0e0e0; /* 경계선으로 부모와 시각적 구분 */
+            margin-top: 10px; /* 위쪽 간격 */
+        }
+
+        /* 답글달기 버튼 */
+        .reply-write-btn {
+            padding: 6px 12px;
+            background: #e8eaf6; /* 연한 파랑톤 */
+            color: #3b5cc4; /* 진한 파랑 텍스트 */
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            margin-top: 6px;
+        }
+
+        .reply-write-btn:hover {
+            background: #d0d7f5;
+        }
+
+        /* 답글 textarea 디자인 */
+
+        .reply-write-box {
+            margin-left: 20px; /* 들여쓰기 */
+            padding: 10px;
+            border-left: 2px solid #e0e0e0;
+            display: flex;
+            gap: 16px;
+            width: 95%; /* 전체 폭 확보 */
+            align-items: flex-start; /* ⭐ 버튼과 textarea 상단선 정렬 */
+            background: #f9f9ff; /* 연한 보라빛 배경 */
+            border-radius: 8px;
+        }
+
+        /* 좌측 텍스트 영역을 더 넓게 */
+        .reply-left {
+            flex: 1; /* 가능한 공간을 모두 차지하게 설정 */
+        }
+
+        /* 좌측: textarea 영역을 크게 */
+        .reply-textarea {
+            width: 100%;
+            min-height: 80px;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 14px;
+            resize: vertical;
+        }
+
+        /* 우측: 버튼을 위아래로 세로 배치 */
+        .reply-btn-column {
+            width: 75px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 0px !important; /* 좌우 첫 줄 정확히 맞춤 */
+        }
+
+        /* 버튼 스타일 통일 */
+        .reply-submit-btn,
+        .reply-cancel-btn {
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            width: 70px;
+        }
+
+        .reply-submit-btn {
+            background: #4e73df;
+            color: white;
+        }
+
+        .reply-submit-btn:hover {
+            background: #3a5acb;
+        }
+
+        .reply-cancel-btn {
+            background: #e5e5e5;
+        }
+
+        .reply-cancel-btn:hover {
+            background: #d0d0d0;
+        }
+
+        /* 대댓글 삭제 버튼 */
+        .reply-delete-btn {
+            padding: 6px 12px;
+            background: #e5e5e5;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            border: none;
+        }
+
+        .reply-delete-btn:hover {
+            background: #d0d0d0;
+        }
+
+        /* 글쓴이 배지 스타일 */
+        .post-writer-badge {
+            background: #4e73df;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            margin-right: 6px;
+        }
+
+
+
+    </style>
+
+    <!-- FOOTER -->
+    <th:block th:replace="content/layout/footer :: footer"></th:block>

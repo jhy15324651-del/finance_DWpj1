@@ -54,6 +54,8 @@ public class ContentCommentService {
     @Transactional
     public String deleteComment(Long id, CustomUserDetails user) {
 
+        if (user == null) return "NOT_LOGIN";
+
         ContentComment comment = commentRepo.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("댓글 없음"));
 
@@ -63,10 +65,11 @@ public class ContentCommentService {
         boolean isCommentWriter = comment.getUserId().equals(user.getId());
         boolean isPostWriter = post.getUserId().equals(user.getId());
 
+        //권한 체크
         if (!isCommentWriter && !isPostWriter) {
             return "NO_PERMISSION";
         }
-
+        // 삭제(원댓글/대댓글 동일 로직)
         commentRepo.delete(comment);
         return "SUCCESS";
     }
@@ -80,6 +83,11 @@ public class ContentCommentService {
 
         ContentComment comment = commentRepo.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("댓글 없음"));
+
+        // ⭐ 답글이면 수정 금지
+        if (comment.getParentCommentId() != null) {
+            return "REPLY_CANNOT_EDIT";
+        }
 
         boolean isCommentWriter = comment.getUserId().equals(user.getId());
         if (!isCommentWriter) return "NO_PERMISSION";
@@ -118,6 +126,42 @@ public class ContentCommentService {
 
     public int getRatingCount(Long postId) {
         return (int) commentRepo.countByPostIdAndRatingIsNotNull(postId);
+    }
+
+    public List<ContentComment> getCommentsWithReplies(Long postId) {
+
+        // 1) 원댓글 조회
+        List<ContentComment> parentComments =
+                commentRepo.findByPostIdAndParentCommentIdIsNullOrderByCreatedDateAsc(postId);
+
+        // 2) 각 원댓글에 대해 대댓글 조회 & 셋팅
+        for (ContentComment parent : parentComments) {
+            List<ContentComment> replies =
+                    commentRepo.findByParentCommentIdOrderByCreatedDateAsc(parent.getId());
+
+            parent.setReplies(replies); // ⭐ 대댓글 붙이기
+        }
+
+        return parentComments;
+    }
+
+    @Transactional
+    public void writeReply(Long userId, String nickname, ContentCommentWriteDTO dto) {
+
+        if (dto.getParentCommentId() == null) {
+            throw new IllegalArgumentException("부모 댓글 ID가 필요합니다.");
+        }
+
+        ContentComment reply = ContentComment.builder()
+                .postId(dto.getPostId())                 // 어느 게시글인지
+                .userId(userId)                          // 작성자 ID
+                .writer(nickname)                        // 작성자 닉네임
+                .content(dto.getContent())               // 대댓글 내용
+                .rating(null)                            // ⭐ 대댓글은 rating 없음
+                .parentCommentId(dto.getParentCommentId())  // 부모 댓글 ID 설정
+                .build();
+
+        commentRepo.save(reply);
     }
 
 

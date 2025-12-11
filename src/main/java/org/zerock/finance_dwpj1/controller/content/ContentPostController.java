@@ -43,7 +43,8 @@ public class ContentPostController {
         post = contentReviewService.getContentDetail(id);  // isDeleted = false인 경우만 정상 호출됨
         model.addAttribute("post", post);
 
-        model.addAttribute("comments", contentCommentService.getComments(id));
+        // 🔥 원댓글 + 대댓글 구조로 조립된 목록 전달
+        model.addAttribute("comments", contentCommentService.getCommentsWithReplies(id));
 
         double avgRating = contentCommentService.getAverageRating(id);
         int ratingCount = contentCommentService.getRatingCount(id);
@@ -81,4 +82,26 @@ public class ContentPostController {
             return "NO_RATING";  // 평점 없음
         }
     }
+
+    @PostMapping("/comment/reply")
+    @ResponseBody
+    public String writeReply(
+            @AuthenticationPrincipal CustomUserDetails user,
+            @RequestBody ContentCommentWriteDTO dto
+    ) {
+
+        if (user == null) {
+            return "NOT_LOGIN";
+        }
+
+        try {
+            contentCommentService.writeReply(user.getId(), user.getNickname(), dto);
+            return "SUCCESS";
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "FAIL";
+        }
+    }
+
 }
