@@ -35,7 +35,6 @@ public class ContentCommentService {
                 .writer(nickname)
                 .content(dto.getContent())
                 .rating(dto.getRating())   // ⭐ 신규 추가
-                .parentId(null)            // 대댓글은 추후 구현
                 .build();
 
         commentRepo.save(comment);

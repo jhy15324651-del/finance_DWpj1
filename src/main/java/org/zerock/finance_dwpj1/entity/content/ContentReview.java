@@ -70,6 +70,7 @@ public class ContentReview {
     @Builder.Default
     private Boolean isDeleted = false;
 
+    //하드삭제를 위한 시간 계산
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 

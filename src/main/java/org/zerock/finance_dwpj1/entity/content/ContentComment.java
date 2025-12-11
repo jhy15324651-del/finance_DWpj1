@@ -3,6 +3,8 @@ package org.zerock.finance_dwpj1.entity.content;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -25,9 +27,20 @@ public class ContentComment {
     @Column
     private Double rating;
 
-    // 대댓글 기능 툴
-    @Column(name = "parent_id")
-    private Long parentId;    // 부모 댓글 ID (null이면 루트 댓글)
+    // 부모 댓글 ID (원댓글이면 null, 대댓글이면 부모의 id)
+    @Column(name = "parent_comment_id")
+    private Long parentCommentId;
+
+    @Transient
+    private List<ContentComment> replies = new ArrayList<>();
+
+    public List<ContentComment> getReplies() {
+        return replies;
+    }
+
+    public void setReplies(List<ContentComment> replies) {
+        this.replies = replies;
+    }
 
     private LocalDateTime createdDate;
 
