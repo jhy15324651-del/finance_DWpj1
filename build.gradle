@@ -43,6 +43,8 @@ dependencies {
 
     // Tesseract OCR
     implementation 'net.sourceforge.tess4j:tess4j:5.9.0'
+    // OpenCV- imageProcessing
+    implementation 'org.openpnp:opencv:4.9.0-0'
 
     runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
     compileOnly 'org.projectlombok:lombok'

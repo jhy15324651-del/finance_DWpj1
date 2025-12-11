@@ -266,8 +266,8 @@ async function processImagesInBatches(imageFiles, batchSize = 2) {
 }
 
 /**
- * 중복 종목 병합 (같은 티커의 비중 합산)
- * @param {Array} stocks - 종목 배열
+ * 중복 종목 병합 (같은 티커의 평가금액 + 보유갯수 합산)
+ * @param {Array} stocks - 종목 배열 (amount, shares 포함)
  * @returns {Array} 병합된 종목 배열
  */
 function mergeStocks(stocks) {
@@ -277,27 +277,23 @@ function mergeStocks(stocks) {
         const ticker = stock.ticker.toUpperCase();
 
         if (stockMap.has(ticker)) {
-            // 이미 존재하면 비중 합산
+            // 이미 존재하면 평가금액과 보유수 합산
             const existing = stockMap.get(ticker);
-            existing.weight += stock.weight;
+            existing.amount = (existing.amount || 0) + (stock.amount || 0);
+            existing.shares = (existing.shares || 0) + (stock.shares || 0);
         } else {
             // 새로운 종목 추가
-            stockMap.set(ticker, { ticker, weight: stock.weight });
+            stockMap.set(ticker, {
+                ticker,
+                amount: stock.amount || 0,
+                shares: stock.shares || 0
+            });
         }
     });
 
     const merged = Array.from(stockMap.values());
 
-    // 비중 재조정 (합계를 100%로 맞춤)
-    const totalWeight = merged.reduce((sum, s) => sum + s.weight, 0);
-
-    if (totalWeight > 0) {
-        merged.forEach(stock => {
-            stock.weight = (stock.weight / totalWeight) * 100;
-        });
-    }
-
-    console.log(`종목 병합: ${stocks.length}개 → ${merged.length}개 (비중 재조정 완료)`);
+    console.log(`종목 병합: ${stocks.length}개 → ${merged.length}개 (평가금액/보유수 합산 완료)`);
 
     return merged;
 }
@@ -341,10 +337,10 @@ function populateStocksFromOCR(stocks) {
     stockList.innerHTML = ''; // 기존 행 제거
 
     stocks.forEach(stock => {
-        addStockRow(stock.ticker, stock.weight);
+        addStockRow(stock.ticker, stock.amount, stock.shares);
     });
 
-    updateTotalWeight();
+    updateTotalAmount();
 }
 
 /**
@@ -365,7 +361,7 @@ function skipToManualInput() {
 /**
  * 종목 행 추가
  */
-function addStockRow(ticker = '', weight = 0) {
+function addStockRow(ticker = '', amount = 0, shares = 0) {
     const stockList = document.getElementById('stock-list');
     const row = document.createElement('div');
     row.className = 'stock-row';
@@ -378,12 +374,17 @@ function addStockRow(ticker = '', weight = 0) {
                value="${ticker}"
                maxlength="10">
         <input type="number"
-               class="stock-weight"
-               placeholder="비중 (%)"
-               value="${weight || ''}"
+               class="stock-amount"
+               placeholder="평가금액 (원)"
+               value="${amount || ''}"
                min="0"
-               max="100"
-               step="0.1">
+               step="1">
+        <input type="number"
+               class="stock-shares"
+               placeholder="보유갯수"
+               value="${shares || ''}"
+               min="0"
+               step="0.01">
         <button class="btn-remove" onclick="removeStockRow(this)">
             <i class="fas fa-times"></i>
         </button>
@@ -391,11 +392,13 @@ function addStockRow(ticker = '', weight = 0) {
 
     stockList.appendChild(row);
 
-    // 비중 변경 시 자동 계산
-    const weightInput = row.querySelector('.stock-weight');
-    weightInput.addEventListener('input', updateTotalWeight);
+    // 평가금액/보유갯수 변경 시 자동 계산
+    const amountInput = row.querySelector('.stock-amount');
+    const sharesInput = row.querySelector('.stock-shares');
+    amountInput.addEventListener('input', updateTotalAmount);
+    sharesInput.addEventListener('input', updateTotalAmount);
 
-    updateTotalWeight();
+    updateTotalAmount();
 }
 
 /**
@@ -404,17 +407,17 @@ function addStockRow(ticker = '', weight = 0) {
 function removeStockRow(button) {
     const row = button.closest('.stock-row');
     row.remove();
-    updateTotalWeight();
+    updateTotalAmount();
 }
 
 /**
- * 총 비중 계산 및 업데이트
+ * 총 평가금액 계산 및 업데이트
  */
-function updateTotalWeight() {
-    const weightInputs = document.querySelectorAll('.stock-weight');
+function updateTotalAmount() {
+    const amountInputs = document.querySelectorAll('.stock-amount');
     let total = 0;
 
-    weightInputs.forEach(input => {
+    amountInputs.forEach(input => {
         const value = parseFloat(input.value) || 0;
         total += value;
     });
@@ -422,18 +425,13 @@ function updateTotalWeight() {
     const totalElement = document.getElementById('total-weight');
     const statusElement = document.getElementById('weight-status');
 
-    totalElement.textContent = total.toFixed(1);
+    // 천단위 콤마 포맷팅
+    totalElement.textContent = total.toLocaleString('ko-KR');
 
     // 상태 표시
-    if (Math.abs(total - 100) < 0.1) {
-        statusElement.textContent = '✓ 완벽합니다!';
+    if (total > 0) {
+        statusElement.textContent = '원';
         statusElement.className = 'weight-status valid';
-    } else if (total > 100) {
-        statusElement.textContent = '⚠ 100%를 초과했습니다';
-        statusElement.className = 'weight-status invalid';
-    } else if (total > 0) {
-        statusElement.textContent = `⚠ ${(100 - total).toFixed(1)}% 부족합니다`;
-        statusElement.className = 'weight-status warning';
     } else {
         statusElement.textContent = '';
         statusElement.className = 'weight-status';
@@ -452,41 +450,44 @@ async function analyzePortfolio() {
         return;
     }
 
-    // 포트폴리오 데이터 수집
-    const portfolio = {};
+    // 포트폴리오 데이터 수집 (평가금액 기준)
+    const stockData = [];
     let hasError = false;
+    let totalAmount = 0;
 
     stockRows.forEach(row => {
         const ticker = row.querySelector('.stock-ticker').value.trim().toUpperCase();
-        const weight = parseFloat(row.querySelector('.stock-weight').value);
+        const amount = parseFloat(row.querySelector('.stock-amount').value);
+        const shares = parseFloat(row.querySelector('.stock-shares').value);
 
-        if (!ticker || isNaN(weight) || weight <= 0) {
+        if (!ticker || isNaN(amount) || amount <= 0) {
             hasError = true;
             return;
         }
 
-        portfolio[ticker] = weight;
+        stockData.push({ ticker, amount, shares });
+        totalAmount += amount;
     });
 
     if (hasError) {
-        alert('모든 종목의 티커와 비중을 올바르게 입력해주세요.');
+        alert('모든 종목의 티커와 평가금액을 올바르게 입력해주세요.');
         return;
     }
 
-    if (Object.keys(portfolio).length === 0) {
+    if (stockData.length === 0) {
         alert('최소 1개 이상의 종목을 입력해주세요.');
         return;
     }
 
-    // 비중 합계 검증 (95~105% 허용)
-    const totalWeight = Object.values(portfolio).reduce((sum, w) => sum + w, 0);
-    if (totalWeight < 95 || totalWeight > 105) {
-        const confirm = window.confirm(
-            `총 비중이 ${totalWeight.toFixed(1)}%입니다.\n` +
-            `계속 진행하시겠습니까?`
-        );
-        if (!confirm) return;
-    }
+    // 평가금액 기준으로 비중(%) 계산
+    const portfolio = {};
+    stockData.forEach(stock => {
+        const weight = (stock.amount / totalAmount) * 100;
+        portfolio[stock.ticker] = weight;
+    });
+
+    console.log('총 평가금액:', totalAmount.toLocaleString('ko-KR'), '원');
+    console.log('비중 계산 결과:', portfolio);
 
     // 로딩 표시
     showSection('loading-section');
