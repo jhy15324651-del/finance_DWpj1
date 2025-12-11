@@ -21,5 +21,15 @@ public interface ContentCommentRepository extends JpaRepository<ContentComment, 
      */
     List<ContentComment> findByWriter(String writer);
 
+    /**
+     * 원댓글(부모 없는 댓글) 조회
+     */
+    List<ContentComment> findByPostIdAndParentCommentIdIsNullOrderByCreatedDateAsc(Long postId);
+
+    /**
+     * 특정 댓글의 대댓글(답글) 조회
+     */
+    List<ContentComment> findByParentCommentIdOrderByCreatedDateAsc(Long parentCommentId);
+
 
 }

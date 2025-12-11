@@ -6,9 +6,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.zerock.finance_dwpj1.dto.content.ContentCommentNodeDTO;
 import org.zerock.finance_dwpj1.entity.content.ContentReview;
-import org.zerock.finance_dwpj1.service.content.ContentCommentNodeService;
 import org.zerock.finance_dwpj1.service.content.ContentReviewService;
 import org.zerock.finance_dwpj1.service.content.ContentCommentService;
 import org.zerock.finance_dwpj1.dto.content.ContentCommentWriteDTO;
@@ -22,7 +20,6 @@ public class ContentPostController {
 
     private final ContentReviewService contentReviewService;
     private final ContentCommentService contentCommentService;
-    private final ContentCommentNodeService contentCommentNodeService;
 
     @GetMapping("/post/{id}")
     public String detail(

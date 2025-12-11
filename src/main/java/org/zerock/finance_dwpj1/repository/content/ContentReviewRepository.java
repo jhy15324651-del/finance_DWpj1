@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 import org.zerock.finance_dwpj1.entity.content.ContentReview;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -94,6 +95,12 @@ public interface ContentReviewRepository
     // ---------------------------------------------------------
     List<ContentReview> findByWriter(String writer);
     List<ContentReview> findByWriterAndIsDeletedFalse(String writer);
+
+    // ---------------------------------------------------------
+    // 🔥 10) 7일 지난 soft-delete 글 찾는 쿼리
+    // ---------------------------------------------------------
+    List<ContentReview> findByIsDeletedTrueAndDeletedAtBefore(LocalDateTime time);
+
 
 
 }
