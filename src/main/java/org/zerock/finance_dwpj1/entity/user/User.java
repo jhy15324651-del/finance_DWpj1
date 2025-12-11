@@ -67,4 +67,8 @@ public class User {
     @Column(nullable = false, length = 20)
     @Builder.Default
     private Role role = Role.USER;
+
+
+    @Column()
+    private String grade;
 }
