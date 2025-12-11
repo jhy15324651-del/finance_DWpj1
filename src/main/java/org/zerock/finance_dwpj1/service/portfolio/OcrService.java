@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+
 /**
  * Tesseract OCR 서비스
  * 이미지에서 텍스트를 추출하여 포트폴리오 데이터를 파싱합니다
@@ -50,7 +51,7 @@ public class OcrService {
     private final boolean isAvailable;
     private final Map<BrokerType, OcrPreprocessor> preprocessors;
     private final Map<BrokerType, OcrParser> parsers;
-
+    private final TickerMappingService tickerMappingService;
     // Tesseract 설정 정보를 저장 (ThreadLocal 생성 시 사용)
     private final String datapath;
     private final String language;
@@ -70,13 +71,14 @@ public class OcrService {
             @Value("${tesseract.ocr-engine-mode:3}") int ocrEngineMode,
             @Value("${tesseract.page-seg-mode:6}") int pageSegMode,
             List<OcrPreprocessor> preprocessorList,
-            List<OcrParser> parserList
+            List<OcrParser> parserList, TickerMappingService tickerMappingService
     ) {
         // 설정 정보 저장
         this.datapath = datapath;
         this.language = language;
         this.ocrEngineMode = ocrEngineMode;
         this.pageSegMode = pageSegMode;
+        this.tickerMappingService = tickerMappingService;
 
         // ThreadLocal 초기화: 각 스레드가 처음 접근할 때 새 Tesseract 인스턴스 생성
         this.tesseractThreadLocal = ThreadLocal.withInitial(() -> {
@@ -217,15 +219,19 @@ public class OcrService {
             String extractedText = tesseractThreadLocal.get().doOCR(preprocessedImage);
             log.info("OCR 추출 완료:\n{}", extractedText);
 
+            // 2.5. 🔥 한국어 종목명 → 영어 티커로 치환 (Parser 호출 전)
+            String mappedText = tickerMappingService.applyMappingToText(extractedText);
+            log.info("티커 매핑 완료:\n{}", mappedText);
+
             // 3. 증권사별 텍스트 파싱
             OcrParser parser = parsers.get(brokerType);
 
             if (parser != null) {
                 log.info("증권사별 파싱 시작 - {}", brokerType);
-                stocks = parser.parse(extractedText);
+                stocks = parser.parse(mappedText); // 🔥 치환된 텍스트 사용
             } else {
                 log.warn("{}에 대한 파서를 찾을 수 없습니다. 기본 파싱 사용", brokerType);
-                stocks = parsePortfolioText(extractedText);
+                stocks = parsePortfolioText(mappedText); // 🔥 치환된 텍스트 사용
             }
 
             log.info("✅ 총 {}개 종목 추출 완료", stocks.size());

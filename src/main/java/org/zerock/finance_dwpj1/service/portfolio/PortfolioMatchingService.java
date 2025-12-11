@@ -22,13 +22,53 @@ public class PortfolioMatchingService {
 
     private final InvestorProfileRepository profileRepository;
     private final Investor13FHoldingRepository holdingRepository;
-
     /**
-     * 사용자 포트폴리오와 가장 유사한 투자대가 TOP 3 추출
-     *
-     * @param userPortfolio 사용자 포트폴리오 (티커 → 비중 맵)
-     * @return TOP 3 매칭 결과 (유사도 내림차순)
+     * 사용자의 상위 N개 종목이 투자대가와 얼마나 겹치는지 점수화 (0~100)
      */
+    private double calculateTopOverlapScore(Map<String, Double> userPortfolio,
+                                            Map<String, Double> investorPortfolio,
+                                            int topN) {
+
+        // 1) 사용자의 상위 N개 종목 추출
+        List<String> topUserTickers = userPortfolio.entrySet().stream()
+                .sorted((e1, e2) -> Double.compare(e2.getValue(), e1.getValue())) // 비중 내림차순
+                .limit(topN)
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+
+        // 2) 상위 종목이 얼마나 겹치는지 계산 (1개당 동일한 점수)
+        double perStockScore = 100.0 / topN;
+        double score = 0.0;
+
+        for (String ticker : topUserTickers) {
+            if (investorPortfolio.containsKey(ticker)) {
+                score += perStockScore;
+            }
+        }
+
+        return score; // 0 ~ 100
+    }
+    /**
+     * 최종 매칭 점수 계산
+     * - similarity: 가중치 코사인 유사도 (0~100)
+     * - overlapPercentage: 종목 겹침 비율 (0~100)
+     * - topOverlapScore: 상위 종목 겹침 점수 (0~100)
+     */
+    private double calculateMatchScore(double similarity,
+                                       double overlapPercentage,
+                                       Map<String, Double> userPortfolio,
+                                       Map<String, Double> investorPortfolio) {
+
+        // 사용자의 상위 5개 종목 기준
+        double topOverlapScore = calculateTopOverlapScore(userPortfolio, investorPortfolio, 5);
+
+        // 가중치 조합 (사람이 보는 감각에 가깝게)
+        return similarity * 0.4
+                + overlapPercentage * 0.4
+                + topOverlapScore * 0.2;
+    }
+
+
     public List<MatchResult> findTopMatches(Map<String, Double> userPortfolio) {
         log.info("=== 포트폴리오 매칭 시작 ===");
         log.info("사용자 포트폴리오: {}", userPortfolio);
@@ -50,27 +90,37 @@ public class PortfolioMatchingService {
                     continue;
                 }
 
-                // 투자대가 포트폴리오를 Map으로 변환 (티커 → 비중)
+                // 투자대가 포트폴리오를 Map으로 변환 (티커 → 비중, 중복 티커 합산)
                 Map<String, Double> investorPortfolio = holdings.stream()
                         .collect(Collectors.toMap(
                                 Investor13FHolding::getTicker,
-                                Investor13FHolding::getPortfolioWeight
+                                Investor13FHolding::getPortfolioWeight,
+                                Double::sum
                         ));
 
-                // 가중치 코사인 유사도 계산
+                // 1) 가중치 코사인 유사도
                 double similarity = calculateWeightedSimilarity(userPortfolio, investorPortfolio);
 
-                // 겹치는 종목 분석
+                // 2) 종목 겹침 분석
                 List<String> matchedStocks = findMatchedStocks(userPortfolio, investorPortfolio);
                 double overlapPercentage = calculateOverlapPercentage(userPortfolio, investorPortfolio);
 
-                // 개선 제안 생성
+                // 3) 최종 매칭 점수 (사람 느낌)
+                double matchScore = calculateMatchScore(
+                        similarity,
+                        overlapPercentage,
+                        userPortfolio,
+                        investorPortfolio
+                );
+
+                // 4) 개선 제안 생성
                 String suggestions = generateSuggestions(userPortfolio, investorPortfolio, profile);
 
                 MatchResult result = MatchResult.builder()
                         .investorId(profile.getInvestorId())
                         .investorName(profile.getName())
-                        .similarity(Math.round(similarity)) // 소수점 반올림
+                        // similarity 필드에는 "최종 점수"를 저장 (퍼센트)
+                        .similarity(Math.round(matchScore))
                         .matchedStocks(matchedStocks)
                         .overlapPercentage(Math.round(overlapPercentage))
                         .philosophy(profile.getPhilosophy())
@@ -82,9 +132,14 @@ public class PortfolioMatchingService {
 
                 results.add(result);
 
-                log.info("{}: 유사도 {}%, 겹침 {}개 종목 ({}%)",
-                        profile.getName(), result.getSimilarity(),
-                        matchedStocks.size(), result.getOverlapPercentage());
+                log.info("{}: 코사인={}%, 종목겹침={}%, 상위5겹침Score={}%, 최종매칭Score={}%, 겹치는종목 {}개",
+                        profile.getName(),
+                        Math.round(similarity),
+                        Math.round(overlapPercentage),
+                        Math.round(calculateTopOverlapScore(userPortfolio, investorPortfolio, 5)),
+                        result.getSimilarity(),
+                        matchedStocks.size()
+                );
 
             } catch (Exception e) {
                 log.error("{}와의 매칭 중 오류", profile.getName(), e);

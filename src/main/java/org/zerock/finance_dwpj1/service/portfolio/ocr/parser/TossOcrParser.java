@@ -15,7 +15,8 @@ import java.util.regex.Pattern;
 @Slf4j
 public class TossOcrParser implements OcrParser {
 
-    // 🔤 티커: 2~6자 대문자
+    // 🔤 티커: 영어(2-6자) 또는 한글 종목명(2-30자, 공백 포함)
+    // 한글은 TickerMappingService에서 영어로 치환됨
     private static final Pattern TICKER_PATTERN =
             Pattern.compile("\\b([A-Z]{2,6})\\b");
 
@@ -71,7 +72,8 @@ public class TossOcrParser implements OcrParser {
                 continue;
             }
 
-            String ticker = tickerMatcher.group(1);
+            // 영어 티커만 인식 (한국어는 OcrService에서 이미 치환됨)
+            String ticker = tickerMatcher.group(1).trim();
             log.debug("티커 후보 발견: {} (라인 {})", ticker, i + 1);
 
             Double shares = null;
