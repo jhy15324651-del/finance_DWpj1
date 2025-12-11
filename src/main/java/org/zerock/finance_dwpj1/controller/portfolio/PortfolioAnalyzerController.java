@@ -9,6 +9,7 @@ import org.zerock.finance_dwpj1.dto.portfolio.PortfolioAnalysisRequest;
 import org.zerock.finance_dwpj1.dto.portfolio.PortfolioAnalysisResponse;
 import org.zerock.finance_dwpj1.service.portfolio.OcrService;
 import org.zerock.finance_dwpj1.service.portfolio.PortfolioMatchingService;
+import org.zerock.finance_dwpj1.service.portfolio.TickerMappingService;
 import org.zerock.finance_dwpj1.service.portfolio.ocr.BrokerType;
 
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ public class PortfolioAnalyzerController {
 
     private final OcrService ocrService;
     private final PortfolioMatchingService matchingService;
+    private final TickerMappingService tickerMappingService;
 
     /**
      * OCR로 이미지에서 포트폴리오 추출
@@ -52,13 +54,39 @@ public class PortfolioAnalyzerController {
             // OCR 실행 (증권사별 전처리 및 파싱 적용)
             List<OcrService.PortfolioStock> stocks = ocrService.extractPortfolioFromImage(image, brokerType);
 
+            log.info("=== OCR 원본 결과 ({} 종목) ===", stocks.size());
+            stocks.forEach(stock -> log.info("  - {}", stock));
+
+            // 🔥 후처리: 한국어 종목명 → 영어 티커로 치환
+            List<Map<String, Object>> processedStocks = stocks.stream()
+                    .map(stock -> {
+                        String originalTicker = stock.getTicker();
+                        String mappedTicker = tickerMappingService.mapToTicker(originalTicker);
+
+                        Map<String, Object> stockData = new HashMap<>();
+                        stockData.put("ticker", mappedTicker);
+                        stockData.put("originalTicker", originalTicker); // 원본도 함께 반환
+                        stockData.put("amount", stock.getAmount());
+                        stockData.put("shares", stock.getShares());
+                        stockData.put("isMapped", !originalTicker.equals(mappedTicker));
+
+                        if (!originalTicker.equals(mappedTicker)) {
+                            log.info("  ✓ 티커 치환: '{}' → '{}'", originalTicker, mappedTicker);
+                        }
+
+                        return stockData;
+                    })
+                    .collect(Collectors.toList());
+
+            log.info("=== 티커 치환 완료 ({} 종목) ===", processedStocks.size());
+
             // 응답 구성
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("broker", brokerType.name());
             response.put("brokerName", brokerType.getKoreanName());
-            response.put("stocks", stocks);
-            response.put("count", stocks.size());
+            response.put("stocks", processedStocks); // 치환된 데이터 반환
+            response.put("count", processedStocks.size());
 
             return ResponseEntity.ok(response);
 
