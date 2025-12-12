@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>마이페이지 - Finance DW</title>
+    <link rel="stylesheet" th:href="@{/css/common.css}">
     <style>
         * {
             margin: 0;
@@ -12,8 +13,7 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--primary-purple) 0%, var(--secondary-purple) 100%);
             min-height: 100vh;
             padding: 20px;
         }
@@ -24,15 +24,15 @@
         }
 
         .header {
-            background: white;
-            padding: 30px;
+            background: var(--bg-white);
+            padding: var(--spacing-xl);
             border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            margin-bottom: 20px;
+            box-shadow: var(--shadow-lg);
+            margin-bottom: var(--spacing-lg);
         }
 
         .header h1 {
-            color: #333;
+            color: var(--text-primary);
             font-size: 28px;
             margin-bottom: 10px;
         }
@@ -48,7 +48,7 @@
             width: 60px;
             height: 60px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--primary-purple) 0%, var(--secondary-purple) 100%);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -63,110 +63,82 @@
 
         .user-email {
             font-size: 18px;
-            color: #333;
+            color: var(--text-primary);
             font-weight: 600;
             margin-bottom: 5px;
         }
 
         .user-nickname {
             font-size: 14px;
-            color: #666;
+            color: var(--text-secondary);
         }
 
         .content-section {
-            background: white;
-            padding: 30px;
+            background: var(--bg-white);
+            padding: var(--spacing-xl);
             border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            margin-bottom: 20px;
+            box-shadow: var(--shadow-lg);
+            margin-bottom: var(--spacing-lg);
         }
 
         .section-title {
-            font-size: 20px;
-            color: #333;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #f0f0f0;
+            font-size: 24px;
+            color: var(--text-primary);
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid var(--primary-purple);
+            font-weight: 700;
         }
 
         .menu-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 15px;
-            margin-top: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: var(--spacing-lg);
+            margin-top: 25px;
         }
 
         .menu-item {
-            padding: 20px;
-            border: 2px solid #e1e1e1;
-            border-radius: 12px;
+            padding: 25px;
+            border: 2px solid var(--border-light);
+            border-radius: var(--radius-lg);
             cursor: pointer;
             transition: all 0.3s;
             text-decoration: none;
-            color: #333;
+            color: var(--text-primary);
             display: block;
         }
 
         .menu-item:hover {
-            border-color: #667eea;
-            background: #f8f9ff;
-            transform: translateY(-2px);
+            border-color: var(--primary-purple);
+            background: var(--bg-gray-100);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
         }
 
         .menu-item-title {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: #667eea;
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--primary-purple);
         }
 
         .menu-item-desc {
-            font-size: 13px;
-            color: #666;
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.5;
         }
 
         .placeholder-message {
             text-align: center;
             padding: 40px;
-            color: #999;
+            color: var(--text-tertiary);
             font-size: 14px;
         }
 
         .button-group {
             display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
-        }
-
-        .btn-secondary {
-            background: #f0f0f0;
-            color: #333;
-        }
-
-        .btn-secondary:hover {
-            background: #e0e0e0;
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-lg);
         }
 
         .home-link {
@@ -188,13 +160,64 @@
 
         .info-badge {
             display: inline-block;
-            padding: 4px 12px;
+            padding: var(--spacing-xs) var(--spacing-md);
             background: #e8f5e9;
             color: #27ae60;
-            border-radius: 12px;
+            border-radius: var(--radius-lg);
             font-size: 12px;
             font-weight: 600;
             margin-left: 10px;
+        }
+
+        /* 반응형 스타일 */
+        @media (max-width: 768px) {
+            body {
+                padding: var(--spacing-md);
+            }
+
+            .container {
+                max-width: 100%;
+            }
+
+            .header, .content-section {
+                padding: var(--spacing-lg);
+                border-radius: var(--radius-md);
+            }
+
+            .header h1 {
+                font-size: 22px;
+            }
+
+            .user-avatar {
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+            }
+
+            .user-email {
+                font-size: 16px;
+            }
+
+            .section-title {
+                font-size: 20px;
+            }
+
+            .menu-grid {
+                grid-template-columns: 1fr;
+                gap: var(--spacing-md);
+            }
+
+            .menu-item {
+                padding: var(--spacing-lg);
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .button-group .btn-common {
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -236,30 +259,9 @@
                 <div class="menu-item-title">내 포트폴리오</div>
                 <div class="menu-item-desc">내 투자 포트폴리오를 관리합니다</div>
             </div>
-        </div>
-        <div class="placeholder-message">
-            해당 기능들은 추후 구현 예정입니다
-        </div>
-    </div>
-
-    <div class="content-section">
-        <h2 class="section-title">계정 설정</h2>
-        <div class="menu-grid">
-            <div class="menu-item">
-                <div class="menu-item-title">프로필 수정</div>
-                <div class="menu-item-desc">닉네임, 전화번호 등을 수정합니다</div>
-            </div>
-            <div class="menu-item">
-                <div class="menu-item-title">비밀번호 변경</div>
-                <div class="menu-item-desc">보안을 위해 주기적으로 변경하세요</div>
-            </div>
             <div class="menu-item">
                 <div class="menu-item-title">알림 설정</div>
                 <div class="menu-item-desc">받고 싶은 알림을 설정합니다</div>
-            </div>
-            <div class="menu-item">
-                <div class="menu-item-title">계정 관리</div>
-                <div class="menu-item-desc">계정 탈퇴 등의 설정을 관리합니다</div>
             </div>
         </div>
         <div class="placeholder-message">
@@ -269,8 +271,8 @@
 
     <div class="content-section">
         <div class="button-group">
-            <button class="btn btn-primary" onclick="location.href='/'">홈으로 돌아가기</button>
-            <button class="btn btn-secondary" onclick="location.href='/user/logout'">로그아웃</button>
+            <button class="btn-common btn-primary" onclick="location.href='/'">홈으로 돌아가기</button>
+            <button class="btn-common btn-secondary" onclick="location.href='/user/logout'">로그아웃</button>
         </div>
     </div>
 

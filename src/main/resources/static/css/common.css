@@ -1,0 +1,194 @@
+/* =======================================
+   Finance DW - 공통 스타일 (UI 통일)
+======================================== */
+
+/* ============================
+   컬러 시스템 (CSS Variables)
+============================= */
+:root {
+    /* Primary Colors */
+    --primary-purple: #667eea;
+    --primary-purple-dark: #5568d3;
+    --primary-purple-light: #7a8cef;
+    --secondary-purple: #764ba2;
+
+    /* Text Colors */
+    --text-primary: #1f2a37;
+    --text-secondary: #4a5568;
+    --text-tertiary: #718096;
+
+    /* Background Colors */
+    --bg-white: #ffffff;
+    --bg-gray-50: #f8f9fa;
+    --bg-gray-100: #f7fafc;
+    --bg-gray-200: #edf2f7;
+
+    /* Border Colors */
+    --border-light: #e2e8f0;
+    --border-medium: #cbd5e0;
+
+    /* Spacing */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 12px;
+    --spacing-lg: 20px;
+    --spacing-xl: 30px;
+
+    /* Border Radius */
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+
+    /* Shadow */
+    --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+    --shadow-md: 0 2px 10px rgba(0,0,0,0.1);
+    --shadow-lg: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+/* ============================
+   공통 헤더/네비게이션
+============================= */
+.common-navbar {
+    background: var(--bg-white);
+    box-shadow: var(--shadow-md);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.common-navbar-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* 로고 통일 */
+.common-logo {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.common-logo img {
+    height: 48px;
+    width: auto;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+}
+
+.common-logo img:hover {
+    transform: scale(1.05);
+}
+
+/* 메뉴 (중앙 또는 좌측) */
+.common-nav-menu {
+    display: flex;
+    gap: var(--spacing-lg);
+    align-items: center;
+}
+
+.common-nav-menu a {
+    text-decoration: none;
+    color: var(--text-secondary);
+    font-size: 16px;
+    font-weight: 500;
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    transition: all 0.2s;
+}
+
+.common-nav-menu a:hover {
+    color: var(--primary-purple);
+    background: var(--bg-gray-100);
+}
+
+/* 우측 버튼 그룹 */
+.common-nav-buttons {
+    display: flex;
+    gap: var(--spacing-md);
+    align-items: center;
+}
+
+/* ============================
+   공통 버튼 스타일
+============================= */
+.btn-common {
+    padding: 10px 24px;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: none;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-purple) 0%, var(--secondary-purple) 100%);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.btn-outline {
+    background: white;
+    color: var(--primary-purple);
+    border: 2px solid var(--primary-purple);
+}
+
+.btn-outline:hover {
+    background: var(--primary-purple);
+    color: white;
+}
+
+.btn-secondary {
+    background: var(--bg-gray-200);
+    color: var(--text-primary);
+}
+
+.btn-secondary:hover {
+    background: var(--border-medium);
+}
+
+/* ============================
+   공통 폰트
+============================= */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothic', 'Noto Sans KR', sans-serif;
+    color: var(--text-primary);
+}
+
+/* ============================
+   반응형 (헤더)
+============================= */
+@media (max-width: 768px) {
+    .common-navbar-content {
+        padding: 12px 15px;
+    }
+
+    .common-logo img {
+        height: 36px;
+    }
+
+    .common-nav-menu {
+        gap: var(--spacing-sm);
+    }
+
+    .common-nav-menu a {
+        font-size: 14px;
+        padding: 6px 10px;
+    }
+
+    .btn-common {
+        padding: 8px 18px;
+        font-size: 14px;
+    }
+}
