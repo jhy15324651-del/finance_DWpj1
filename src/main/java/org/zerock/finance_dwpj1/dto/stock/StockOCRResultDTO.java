@@ -6,6 +6,6 @@ import lombok.Data;
 public class StockOCRResultDTO {
 
     private String Type;
-    private String amount;
-    private String percent;
+    private Long amount;
+    private Double percent;
 }

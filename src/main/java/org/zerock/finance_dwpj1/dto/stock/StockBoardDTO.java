@@ -31,5 +31,9 @@ public class StockBoardDTO {
 
     private Integer commentCount;
 
+    private String grade;
 
-}
+    private String medal;
+
+
+ }

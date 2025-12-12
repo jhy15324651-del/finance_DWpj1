@@ -30,6 +30,12 @@ public class StockOCRServiceImpl implements StockOCRService {
         // 1) 저장 없이 바로 OCR
         String text = doOCR(file);
 
+
+        //1.5) 음수 정렬
+        text = text.replace("−", "-")
+                .replace("–", "-")
+                .replace("—", "-");
+
         // 2) 화면 타입 자동 판별
         String type = detectType(text);
 
@@ -57,7 +63,7 @@ public class StockOCRServiceImpl implements StockOCRService {
         return "B";
     }
 
-    // ======= A 파일 (판매수익 화면) 추출 =======
+    // 판매수익 추출
     private StockOCRResultDTO parseA(String text) {
         StockOCRResultDTO r = new StockOCRResultDTO();
         r.setType("A");
@@ -71,13 +77,13 @@ public class StockOCRServiceImpl implements StockOCRService {
         Matcher m1 = amountPattern.matcher(text);
         Matcher m2 = percentPattern.matcher(text);
 
-        if (m1.find()) r.setAmount(clean(m1.group(1)));
-        if (m2.find()) r.setPercent(m2.group(1));
+        if (m1.find()) r.setAmount(Long.parseLong(clean(m1.group(1))));
+        if (m2.find()) r.setPercent(Double.parseDouble(m2.group(1)));
 
         return r;
     }
 
-    // ======= B 파일 (내 종목보기 화면) 추출 =======
+    // 주식 등락 추출
     private StockOCRResultDTO parseB(String text) {
         StockOCRResultDTO r = new StockOCRResultDTO();
         r.setType("B");
@@ -94,13 +100,14 @@ public class StockOCRServiceImpl implements StockOCRService {
         int count = 0;
         while (m1.find()) {
             count++;
-            if (count == 2) { // 두 번째 원 단위 금액 = 수익
-                r.setAmount(clean(m1.group(1)));
+            if (count == 2) { // 두 번째 원 단위 금액 사용
+                r.setAmount(Long.parseLong(clean(m1.group(1))));
                 break;
             }
         }
 
-        if (m2.find()) r.setPercent(m2.group(1));
+        if (m2.find()) r.setPercent(Double.parseDouble(m2.group(1)));
+
 
         return r;
     }
