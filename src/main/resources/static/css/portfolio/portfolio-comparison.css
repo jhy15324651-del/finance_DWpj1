@@ -29,10 +29,20 @@ body {
 }
 
 .navbar-logo {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #667eea;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.navbar-logo img {
+    height: 60px;
+    width: auto;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+}
+
+.navbar-logo img:hover {
+    transform: scale(1.05);
 }
 
 .navbar-buttons {
