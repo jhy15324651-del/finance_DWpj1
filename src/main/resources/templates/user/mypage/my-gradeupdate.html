@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>내 등급 업데이트 - Finance DW</title>
+
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* 공통 카드 스타일 (기존 마이페이지 기반) */
+        .card {
+            text-align: center;
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+            overflow:hidden;
+        }
+
+        .section-title {
+            font-size: 22px;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+            font-weight: 700;
+        }
+
+        .grade-box {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            padding: 20px;
+            background: #f8f9ff;
+            border: 2px solid #ececff;
+            border-radius: 16px;
+        }
+
+        .grade-text {
+            text-align: center;
+            font-size: 28px;
+            font-weight: 600;
+            color: #444;
+        }
+
+        .grade-emoji {
+            font-size: 70px;
+        }
+
+
+        .upload-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .upload-box {
+            width: 70%;
+            max-width: 600px;
+            background: #fafaff;
+            border: 2px dashed #c6c6ff;
+            border-radius: 12px;
+            padding: 30px 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .upload-placeholder {
+            color: #555;
+        }
+
+        .preview-image {
+            width: 100%;
+            max-height: 300px;
+            object-fit: contain;
+            border-radius: 8px;
+            display: block;
+            margin: 0 auto 10px auto;
+        }
+
+        .upload-label {
+            display: inline-block;
+            margin-top: 15px;
+            background: #667eea;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .upload-box:hover {
+            border-color: #7c3aed;
+            background: #eef1ff;
+        }
+
+        .upload-box input {
+            display: none;
+        }
+
+
+        .btn-update {
+            padding: 14px 30px;
+            margin-top: 10px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+        }
+
+
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .tier-item {
+            text-align: center;
+            padding: 25px;
+            border-radius: 22px;
+            background: #f8f9ff;
+            border: 1px solid #e4e6ff;
+            font-size: 18px;
+        }
+
+        .home-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .home-link a {
+            color: white;
+            font-size: 15px;
+            opacity: 0.9;
+            text-decoration: none;
+        }
+
+        .home-link a:hover {
+        opacity: 1;
+        }
+
+
+
+
+
+    </style>
+</head>
+
+<body>
+<div class="container">
+
+    <!-- 등급 표시 카드 -->
+    <div class="card">
+        <div class="section-title">나의 현재 등급</div>
+
+        <div class="grade-box">
+            <div class="grade-emoji" id="gradeEmoji" th:text="${medal}">🔥</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="section-title">등급 업데이트</div>
+
+        <div class="upload-wrapper">  <!-- 가운데 정렬되는 박스 -->
+
+            <div class="upload-box" id="uploadBox">
+
+                <div class="upload-placeholder" id="placeholder">
+                    <span>이미지 파일 업로드</span>
+                    <p>판매 수익 / 수익률 캡처 이미지를 업로드하면 등급이 갱신됩니다</p>
+                </div>
+
+                <img id="previewImage" class="preview-image" style="display:none;"/>
+
+                <label for="fileInput" class="upload-label">파일 선택</label>
+                <input type="file" id="fileInput" accept="image/*">
+            </div>
+
+
+            <button class="btn-update" onclick="uploadGrade()">등급 갱신하기</button>
+        </div>
+    </div>
+
+    <!-- 등급 기준 안내 -->
+    <div class="card">
+        <div class="section-title">등급 기준 안내</div>
+
+        <div class="menu-grid">
+            <div class="tier-item">💰 - 판매수익 20,000,000원 이상</div>
+            <div class="tier-item">💸 - 판매수익 10,000,000원 이상</div>
+            <div class="tier-item">💵 - 판매수익 본전 이상</div>
+            <div class="tier-item">💀 - 마이너스</div>
+            <div class="tier-item">💎 - 주식 수익률 30% 이상</div>
+            <div class="tier-item">🏅 - 주식 수익률 15% 이상</div>
+            <div class="tier-item">🥈 - 주식 수익률 본전 이상</div>
+            <div class="tier-item">🐄 - 마이너스</div>
+        </div>
+    </div>
+
+    <div class="home-link">
+        <a href="/user/mypage">← 마이페이지로 돌아가기</a>
+    </div>
+
+</div>
+
+<script>
+    async function uploadGrade() {
+
+        const file = document.getElementById("fileInput").files[0];
+        if (!file) {
+            alert("이미지 파일을 선택하세요.");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        try {
+            const res = await fetch("/user/mypage/grade/update", {
+                method: "POST",
+                body: formData
+            });
+
+            if (!res.ok) {
+                alert("업로드 실패");
+                return;
+            }
+
+            const result = await res.json();
+
+            // 화면에 반영
+            document.getElementById("gradeEmoji").innerText = result.medal;
+
+            alert("등급이 갱신되었습니다!");
+
+        } catch (e) {
+            console.error(e);
+            alert("오류 발생");
+        }
+    }
+
+    document.getElementById("fileInput").addEventListener("change", function(event) {
+        const file = event.target.files[0];
+        const preview = document.getElementById("previewImage");
+        const placeholder = document.getElementById("placeholder");
+
+        if (!file) {
+            preview.style.display = "none";
+            placeholder.style.display = "block";
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            preview.src = e.target.result;
+
+            // 🔥 박스 안의 문구 숨기고 미리보기만 표시
+            placeholder.style.display = "none";
+            preview.style.display = "block";
+        }
+        reader.readAsDataURL(file);
+    });
+
+
+</script>
+
+</body>
+</html>

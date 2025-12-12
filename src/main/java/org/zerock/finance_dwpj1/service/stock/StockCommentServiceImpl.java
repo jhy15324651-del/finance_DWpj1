@@ -8,6 +8,7 @@ import org.zerock.finance_dwpj1.dto.stock.StockCommentDTO;
 import org.zerock.finance_dwpj1.entity.stock.StockBoard;
 import org.zerock.finance_dwpj1.entity.stock.StockComment;
 import org.zerock.finance_dwpj1.repository.stock.StockCommentRepository;
+import org.zerock.finance_dwpj1.service.user.UserService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,6 +20,11 @@ import java.util.stream.Collectors;
 public class StockCommentServiceImpl implements StockCommentService {
 
     private final StockCommentRepository stockCommentRepository;
+    private final UserService userService;
+    private final StockGradeCalculatorService stockGradeCalculatorService;
+
+
+
 
     private StockComment dtoToEntity(StockCommentDTO dto) {
 
@@ -36,6 +42,14 @@ public class StockCommentServiceImpl implements StockCommentService {
 
     private StockCommentDTO entityToDto(StockComment comment) {
 
+        Long writerId = userService.getUserIdByNickname(comment.getWriter());
+
+        String grade = userService.getUserGrade(writerId);
+
+        String medal = stockGradeCalculatorService.gradeToEmoji(grade);
+
+
+
         return StockCommentDTO.builder()
                 .id(comment.getId())
                 .boardId(comment.getBoard().getId())
@@ -43,6 +57,8 @@ public class StockCommentServiceImpl implements StockCommentService {
                 .content(comment.getContent())
                 .regDate(comment.getRegDate())
                 .modDate(comment.getModDate())
+                .grade(grade)
+                .medal(medal)
                 .build();
     }
 

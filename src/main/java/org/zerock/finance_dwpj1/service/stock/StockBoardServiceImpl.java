@@ -14,6 +14,7 @@ import org.zerock.finance_dwpj1.repository.stock.StockBichuRepository;
 import org.zerock.finance_dwpj1.repository.stock.StockBoardRepository;
 import org.zerock.finance_dwpj1.repository.stock.StockGechuRepository;
 import org.zerock.finance_dwpj1.service.stock.StockCommentService;
+import org.zerock.finance_dwpj1.service.user.UserService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,6 +28,8 @@ public class StockBoardServiceImpl implements StockBoardService {
     private final StockGechuRepository stockGechuRepository;
     private final StockBichuRepository stockBichuRepository;
     private final StockCommentService stockCommentService;
+    private final UserService userService;
+    private final StockGradeCalculatorService stockGradeCalculatorService;
 
 
     @Override
@@ -173,13 +176,24 @@ public class StockBoardServiceImpl implements StockBoardService {
 
 
 
+
+
     private StockBoardDTO entityToDTO(StockBoard board) {
+
+        Long writerId = userService.getUserIdByNickname(board.getWriter());
+
+        String grade = userService.getUserGrade(writerId);
+
+        String medal = stockGradeCalculatorService.gradeToEmoji(grade);
+
         return StockBoardDTO.builder()
                 .id(board.getId())
                 .ticker(board.getTicker())
                 .title(board.getTitle())
                 .content(board.getContent())
                 .writer(board.getWriter())
+                .grade(grade)
+                .medal(medal)
                 .regDate(board.getRegDate())
                 .modDate(board.getModDate())
                 .view(board.getView())
