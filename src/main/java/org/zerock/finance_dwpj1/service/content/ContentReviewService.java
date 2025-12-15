@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +18,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -86,9 +89,55 @@ public class ContentReviewService {
     public ContentReview getContentDetail(Long id) {
         ContentReview content = repo.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글입니다."));
-        content.incrementViewCount();
-        return repo.save(content);
+
+        // 1. 누적 조회수 증가
+        content.setViewCount(content.getViewCount() + 1);
+
+        // 2. 현재 월 (yyyy-MM)
+        String currentMonth = LocalDate.now()
+                .format(DateTimeFormatter.ofPattern("yyyy-MM"));
+
+        // 3. 월 변경 감지
+        if (content.getViewMonth() == null || !currentMonth.equals(content.getViewMonth())) {
+            content.setViewMonth(currentMonth);
+            content.setViewCountMonth(1);
+        } else {
+            content.setViewCountMonth(content.getViewCountMonth() + 1);
+        }
+
+        return content; // @Transactional → save() 생략 가능
     }
+
+
+    // 이 달의 콘텐츠 관련 코드
+    // home 전용 래퍼 메서드로만 사용
+    public List<ContentReview> getMonthlyPopularContents() {
+        return getMonthlyTopContents("review", 5);
+    }
+
+
+    // 메인 페이지 이 달의 자료 관련
+    public List<ContentReview> getMonthlyTopContents(String type, int limit) {
+
+        String currentMonth = LocalDate.now()
+                .format(DateTimeFormatter.ofPattern("yyyy-MM"));
+
+        List<ContentReview> list =
+                repo.findMonthlyTopByType(
+                        currentMonth,
+                        type,
+                        PageRequest.of(0, limit)   // ⭐ 핵심 수정
+                );
+
+        list.forEach(post -> {
+            post.setPreview(makePreview(post.getContent()));
+            post.setRatingAvg(getAverageRating(post.getId()));
+        });
+
+        return list;
+    }
+
+
 
 
     // ---------------------------------------------------------

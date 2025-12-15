@@ -34,7 +34,12 @@ public class ContentHomeController {
         List<ContentReview> popularContents = contentReviewService.getPopularContents();
 
         model.addAttribute("latestPosts", latestContents);
-        model.addAttribute("popularPosts", popularContents);
+        //model.addAttribute("popularPosts", popularContents);
+
+        //이 달의 콘텐츠
+        model.addAttribute("popularPosts",
+                contentReviewService.getMonthlyPopularContents());
+
 
         return "content/home";
     }

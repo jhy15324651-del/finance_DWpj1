@@ -26,7 +26,7 @@
         /* 네비게이션 바 */
         .navbar {
             background: white;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             position: sticky;
             top: 0;
             z-index: 1000;
@@ -139,17 +139,17 @@
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
         }
 
         .btn-secondary {
-            background: rgba(255,255,255,0.2);
+            background: rgba(255, 255, 255, 0.2);
             color: white;
             border: 2px solid white;
         }
 
         .btn-secondary:hover {
-            background: rgba(255,255,255,0.3);
+            background: rgba(255, 255, 255, 0.3);
             transform: translateY(-2px);
         }
 
@@ -209,14 +209,14 @@
             background: white;
             padding: 40px 30px;
             border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             transition: all 0.3s;
             cursor: pointer;
         }
 
         .feature-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
         }
 
         .feature-icon {
@@ -308,8 +308,17 @@
         }
 
         .ranking-item:hover {
-            transform: translateX(5px);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            background-color: #f5f7ff;
+            cursor: pointer;
+        }
+
+        .ranking-link {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            text-decoration: none;
+            color: inherit;
+            width: 100%;
         }
 
         .rank-number {
@@ -353,12 +362,12 @@
             border: 1px solid #e2e8f0;
             border-radius: 12px;
             padding: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
             transition: all 0.3s;
         }
 
         .content-card:hover {
-            box-shadow: 0 8px 16px rgba(0,0,0,0.12);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
             transform: translateY(-3px);
         }
 
@@ -515,7 +524,7 @@
 <nav class="navbar">
     <div class="navbar-content">
         <div class="navbar-logo" onclick="location.href='/'">
-            <img src="/img/snn_logo.png" alt="SNN - Signal Not Noise" />
+            <img src="/img/snn_logo.png" alt="SNN - Signal Not Noise"/>
         </div>
         <div class="navbar-buttons">
             <!-- 로그인 전 -->
@@ -562,44 +571,32 @@
     <div class="container">
         <h2>핵심 기능</h2>
         <div class="features-layout">
+
             <!-- 왼쪽 이달의 자료 사이드바 -->
             <aside class="monthly-sidebar">
                 <h3>📚 이달의 자료</h3>
+
                 <ul class="ranking-list">
-                    <li class="ranking-item">
-                        <span class="rank-number top">1</span>
-                        <div>
-                            <div class="rank-title">2024년 미국 경제 전망 완벽 분석</div>
-                            <div class="rank-views">👁 12,453</div>
-                        </div>
-                    </li>
-                    <li class="ranking-item">
-                        <span class="rank-number top">2</span>
-                        <div>
-                            <div class="rank-title">반도체 산업 트렌드 리포트</div>
-                            <div class="rank-views">👁 9,821</div>
-                        </div>
-                    </li>
-                    <li class="ranking-item">
-                        <span class="rank-number top">3</span>
-                        <div>
-                            <div class="rank-title">ETF 투자 실전 가이드북</div>
-                            <div class="rank-views">👁 8,654</div>
-                        </div>
-                    </li>
-                    <li class="ranking-item">
-                        <span class="rank-number">4</span>
-                        <div>
-                            <div class="rank-title">글로벌 인플레이션 대응 전략</div>
-                            <div class="rank-views">👁 7,332</div>
-                        </div>
-                    </li>
-                    <li class="ranking-item">
-                        <span class="rank-number">5</span>
-                        <div>
-                            <div class="rank-title">AI 관련주 투자 분석</div>
-                            <div class="rank-views">👁 6,987</div>
-                        </div>
+                    <li class="ranking-item"
+                        th:each="post, stat : ${monthlyDataList}">
+
+                        <a th:href="@{/content/post/{id}(id=${post.id})}"
+                           class="ranking-link">
+
+                            <span class="rank-number"
+                                  th:classappend="${stat.index < 3} ? ' top'"
+                                  th:text="${stat.index + 1}"></span>
+
+                            <div>
+                                <div class="rank-title"
+                                     th:text="${post.title}"></div>
+
+                                <div class="rank-views">
+                                    👁 <span th:text="${post.viewCountMonth}"></span>
+                                </div>
+                            </div>
+
+                        </a>
                     </li>
                 </ul>
             </aside>
@@ -630,7 +627,7 @@
                         <h3>포트폴리오 & 투자자 비교</h3>
                         <p>내 포트폴리오를 유명 투자자들과 비교 분석하세요. 수익률, 자산 배분, 투자 스타일을 비교하며 인사이트를 얻을 수 있습니다.</p>
                     </div>
-    </div>
+                </div>
 </section>
 
 <!-- 콘텐츠 리뷰 섹션 -->
@@ -645,7 +642,8 @@
                     <ul class="ranking-list">
                         <li class="ranking-item" th:each="news, stat : ${popularNews}"
                             th:onclick="'location.href=\'/news?newsId=' + ${news.id} + '\''">
-                            <span class="rank-number" th:classappend="${stat.index < 3} ? 'top' : ''" th:text="${stat.index + 1}">1</span>
+                            <span class="rank-number" th:classappend="${stat.index < 3} ? 'top' : ''"
+                                  th:text="${stat.index + 1}">1</span>
                             <div>
                                 <div class="rank-title" th:text="${news.title}">뉴스 제목</div>
                                 <div class="rank-views" th:text="'👁 ' + ${news.viewCount}">👁 0</div>

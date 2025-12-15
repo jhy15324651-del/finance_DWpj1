@@ -859,7 +859,8 @@
             margin-left: 20px; /* 들여쓰기 */
             padding-left: 15px; /* 내부 여백 */
             border-left: 2px solid #e0e0e0; /* 경계선으로 부모와 시각적 구분 */
-            margin-top: 10px; /* 위쪽 간격 */
+            margin-top: 20px; /* 위쪽 간격 */
+            margin-bottom: 10px;
         }
 
         /* 답글달기 버튼 */
@@ -895,6 +896,19 @@
         /* 좌측 텍스트 영역을 더 넓게 */
         .reply-left {
             flex: 1; /* 가능한 공간을 모두 차지하게 설정 */
+        }
+
+        /* 대댓글 작성 시, 작성자 표시 위 적당히 마진두기 */
+        .reply-writer {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        /* 대댓글 작성일자 크기 */
+        .reply-date {
+            font-size: 11px;
+            color: #555;
         }
 
         /* 좌측: textarea 영역을 크게 */
