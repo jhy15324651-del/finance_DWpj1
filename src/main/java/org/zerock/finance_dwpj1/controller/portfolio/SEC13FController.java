@@ -90,6 +90,30 @@ public class SEC13FController {
     }
 
     /**
+     * 개별 투자자 13F 데이터 강제 재수집 (기존 데이터 삭제 후 재수집)
+     * 관리자 페이지에서 투자자 이름 클릭 시 호출
+     */
+    @PostMapping("/refetch/{investorId}")
+    public ResponseEntity<?> refetchInvestorData(@PathVariable String investorId) {
+        log.info("🔄 {} 투자자 13F 데이터 강제 재수집 요청", investorId);
+
+        try {
+            int count = sec13FService.refetchInvestorData(investorId);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", String.format("%s의 13F 데이터 재수집 완료", investorId));
+            response.put("count", count);
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("{} 투자자 데이터 재수집 실패", investorId, e);
+            return ResponseEntity.internalServerError()
+                    .body(createResponse(false, "재수집 실패: " + e.getMessage()));
+        }
+    }
+
+    /**
      * 응답 객체 생성 헬퍼 메서드
      */
     private Map<String, Object> createResponse(boolean success, String message) {

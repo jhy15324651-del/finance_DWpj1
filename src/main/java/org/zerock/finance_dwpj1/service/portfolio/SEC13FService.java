@@ -148,6 +148,27 @@ public class SEC13FService {
     }
 
     /**
+     * 특정 투자자의 모든 기존 데이터 삭제 후 재수집 (강제 재수집)
+     * 관리자 페이지에서 투자자 이름 클릭 시 호출
+     */
+    public int refetchInvestorData(String investorId) {
+        log.info("🔄 === {} 투자대가 13F 데이터 강제 재수집 시작 ===", investorId);
+
+        InvestorProfile profile = profileRepository.findById(investorId)
+                .orElseThrow(() -> new IllegalArgumentException("투자대가를 찾을 수 없습니다: " + investorId));
+
+        // 1. 기존 데이터 모두 삭제
+        int deletedCount = transactionalService.deleteAllInvestorData(investorId);
+        log.info("✅ {}의 기존 데이터 {}건 삭제 완료", profile.getName(), deletedCount);
+
+        // 2. 새로 수집
+        int newCount = fetch13FDataForInvestor(investorId);
+        log.info("✅ {}의 새 데이터 {}건 수집 완료", profile.getName(), newCount);
+
+        return newCount;
+    }
+
+    /**
      * 모든 투자자의 13F 데이터 수집 (Resume 기능 포함)
      */
     private void fetchAll13FData() {
