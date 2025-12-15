@@ -20,6 +20,7 @@ import org.zerock.finance_dwpj1.repository.insights.InsightsCommentRepository;
 import org.zerock.finance_dwpj1.repository.insights.InsightsNewsRepository;
 import org.zerock.finance_dwpj1.repository.stock.StockBoardRepository;
 import org.zerock.finance_dwpj1.repository.stock.StockCommentRepository;
+import org.zerock.finance_dwpj1.service.content.ContentReviewService;
 import org.zerock.finance_dwpj1.service.insights.DailyNewsService;
 import org.zerock.finance_dwpj1.service.user.CustomUserDetails;
 
@@ -30,6 +31,7 @@ import java.util.*;
 public class PageController {
 
     private final DailyNewsService dailyNewsService;
+    private final ContentReviewService contentReviewService;
     private final ContentReviewRepository contentReviewRepository;
     private final ContentCommentRepository contentCommentRepository;
     private final StockBoardRepository stockBoardRepository;
@@ -40,18 +42,21 @@ public class PageController {
 
     @GetMapping("/")
     public String index(Model model) {
-        // 금주의 인기 뉴스 5개 조회
-        List<InsightsDailyNewsDTO> topNews = dailyNewsService.getWeeklyTopNews();
 
-        // 상위 5개만 전달
-        List<InsightsDailyNewsDTO> top5News = topNews.size() > 5
-            ? topNews.subList(0, 5)
-            : topNews;
+        // 🔥 금주의 인기 뉴스
+        List<InsightsDailyNewsDTO> topNews = dailyNewsService.getWeeklyTopNews();
+        List<InsightsDailyNewsDTO> top5News =
+                topNews.size() > 5 ? topNews.subList(0, 5) : topNews;
 
         model.addAttribute("popularNews", top5News);
 
-        return "index";  // templates/index.html
+        // 🔥 이 달의 자료 (ContentReview, type = "data")
+        model.addAttribute("monthlyDataList",
+                contentReviewService.getMonthlyTopContents("review", 5));
+
+        return "index";
     }
+
 
     @GetMapping("/news")
     public String newsInsights() {

@@ -58,7 +58,7 @@
 
     <!-- 많이 본 콘텐츠 -->
     <aside class="sidebar">
-        <div class="section-title">많이 본 콘텐츠</div>
+        <div class="section-title">이 달의 콘텐츠</div>
 
         <div class="popular-box">
             <div class="popular-item" th:each="post, iter : ${popularPosts}">
@@ -72,7 +72,7 @@
                    th:text="${post.title}"></a>
 
                 <div class="popular-view">
-                    조회수: <span th:text="${post.viewCount}"></span>
+                    월간 조회수: <span th:text="${post.viewCountMonth}"></span>
                 </div>
             </div>
         </div>

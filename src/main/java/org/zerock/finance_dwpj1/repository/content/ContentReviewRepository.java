@@ -4,6 +4,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.zerock.finance_dwpj1.entity.content.ContentReview;
 
@@ -26,9 +28,17 @@ public interface ContentReviewRepository
     // 🔥 1) 홈 화면용 최신/인기 목록
     // ---------------------------------------------------------
 
+    // 최신콘텐츠
     List<ContentReview> findTop8ByIsDeletedFalseOrderByCreatedDateDesc();
 
+    // 누적 인기 콘텐츠(유지)
     List<ContentReview> findTop5ByIsDeletedFalseOrderByViewCountDesc();
+
+
+    // 이 달의 콘텐츠(신규)
+    List<ContentReview>
+    findTop5ByIsDeletedFalseAndViewMonthOrderByViewCountMonthDesc(String viewMonth);
+
 
 
     // ---------------------------------------------------------
@@ -101,6 +111,19 @@ public interface ContentReviewRepository
     // ---------------------------------------------------------
     List<ContentReview> findByIsDeletedTrueAndDeletedAtBefore(LocalDateTime time);
 
+    @Query("""
+    SELECT c
+    FROM ContentReview c
+    WHERE c.isDeleted = false
+      AND c.viewMonth = :viewMonth
+      AND c.type = :type
+    ORDER BY c.viewCountMonth DESC
+""")
+    List<ContentReview> findMonthlyTopByType(
+            @Param("viewMonth") String viewMonth,
+            @Param("type") String type,
+            Pageable pageable
+    );
 
 
 }

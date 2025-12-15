@@ -53,6 +53,14 @@ public class ContentReview {
     @Column(name = "view_count")
     private Integer viewCount = 0;
 
+    // 현재 조회수 집계 기준 월 (예: "2025-12")
+    @Column(length = 7)
+    private String viewMonth;
+
+    // 해당 월의 조회수
+    @Builder.Default
+    private int viewCountMonth = 0;
+
     @CreationTimestamp
     @Column(name = "created_date", nullable = false, updatable = false)
     private LocalDateTime createdDate;
