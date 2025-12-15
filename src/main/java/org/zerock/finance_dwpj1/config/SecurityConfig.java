@@ -8,6 +8,8 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.zerock.finance_dwpj1.handler.CustomLoginSuccessHandler;
+import org.zerock.finance_dwpj1.handler.CustomLogoutSuccessHandler;
 import org.zerock.finance_dwpj1.service.user.CustomUserDetailsService;
 
 /**
@@ -22,6 +24,8 @@ import org.zerock.finance_dwpj1.service.user.CustomUserDetailsService;
 public class SecurityConfig {
 
     private final CustomUserDetailsService customUserDetailsService;
+    private final CustomLoginSuccessHandler customLoginSuccessHandler;
+    private final CustomLogoutSuccessHandler customLogoutSuccessHandler;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -43,13 +47,13 @@ public class SecurityConfig {
                 .formLogin(form -> form
                         .loginPage("/user/login")
                         .loginProcessingUrl("/user/login")
-                        .defaultSuccessUrl("/")
+                        .successHandler(customLoginSuccessHandler)
                         .permitAll()
                 )
 
                 .logout(logout -> logout
                         .logoutUrl("/user/logout")
-                        .logoutSuccessUrl("/")
+                        .logoutSuccessHandler(customLogoutSuccessHandler)
                         .permitAll()
                 )
 

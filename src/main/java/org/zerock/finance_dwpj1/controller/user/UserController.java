@@ -1,5 +1,6 @@
 package org.zerock.finance_dwpj1.controller.user;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -105,8 +106,19 @@ public class UserController {
     /**
      * 로그인 페이지
      */
+
     @GetMapping("/login")
-    public String loginPage() {
+    public String login(HttpServletRequest request) {
+
+        String referer = request.getHeader("Referer");
+
+        if (referer != null &&
+                !referer.contains("/user/login") &&
+                !referer.contains("/user/logout")) {
+
+            request.getSession().setAttribute("prevPage", referer);
+        }
+
         return "user/login";
     }
 
