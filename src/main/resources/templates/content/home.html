@@ -26,7 +26,9 @@
                 <div class="post-main">
                     <!-- 왼쪽 텍스트 영역 -->
                     <div class="post-left">
-                        <div class="post-title" th:text="${post.title}"></div>
+                        <div class="post-title"
+                             th:text="${post.title}"
+                             th:title="${post.title}"></div>
 
                         <div class="post-preview" th:text="${post.preview}"></div>
                     </div>
@@ -69,7 +71,10 @@
 
                 <a th:href="@{'/content/post/' + ${post.id}}"
                    class="popular-title"
-                   th:text="${post.title}"></a>
+                   th:text="${post.title}"
+                   th:title="${post.title}">
+
+                </a>
 
                 <div class="popular-view">
                     월간 조회수: <span th:text="${post.viewCountMonth}"></span>
