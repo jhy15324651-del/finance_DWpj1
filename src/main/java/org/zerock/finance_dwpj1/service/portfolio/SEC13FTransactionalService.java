@@ -146,4 +146,34 @@ public class SEC13FTransactionalService {
     public boolean existsHoldings(String investorId, String quarter) {
         return holdingRepository.existsByInvestorIdAndFilingQuarter(investorId, quarter);
     }
+
+    /**
+     * 특정 투자자의 특정 분기 Holdings 데이터 삭제 (강제 재수집용)
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public int deleteHoldings(String investorId, String quarter) {
+        int deletedCount = holdingRepository.deleteByInvestorIdAndFilingQuarter(investorId, quarter);
+        log.info("{}의 {} 데이터 {}건 삭제 완료", investorId, quarter, deletedCount);
+        return deletedCount;
+    }
+
+    /**
+     * 특정 투자자의 특정 분기 Checkpoint 삭제 (강제 재수집용)
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void deleteCheckpoint(String investorId, String quarter) {
+        checkpointRepository.deleteByInvestorIdAndFilingQuarter(investorId, quarter);
+        log.info("{}의 {} Checkpoint 삭제 완료", investorId, quarter);
+    }
+
+    /**
+     * 특정 투자자의 모든 데이터 삭제 (전체 재수집용)
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public int deleteAllInvestorData(String investorId) {
+        int deletedHoldings = holdingRepository.deleteByInvestorId(investorId);
+        checkpointRepository.deleteByInvestorId(investorId);
+        log.info("{}의 모든 데이터 삭제 완료 (Holdings: {}건)", investorId, deletedHoldings);
+        return deletedHoldings;
+    }
 }

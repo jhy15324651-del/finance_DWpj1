@@ -16,4 +16,14 @@ public interface SecCollectorCheckpointRepository extends JpaRepository<SecColle
     List<SecCollectorCheckpoint> findByInvestorId(String investorId);
 
     boolean existsByInvestorIdAndFilingQuarterAndStatus(String investorId, String filingQuarter, CheckpointStatus status);
+
+    /**
+     * 특정 투자대가의 특정 분기 Checkpoint 삭제 (강제 재수집용)
+     */
+    void deleteByInvestorIdAndFilingQuarter(String investorId, String filingQuarter);
+
+    /**
+     * 특정 투자대가의 모든 Checkpoint 삭제 (전체 재수집용)
+     */
+    void deleteByInvestorId(String investorId);
 }

@@ -7,6 +7,7 @@ import org.zerock.finance_dwpj1.entity.portfolio.Investor13FHolding;
 import org.zerock.finance_dwpj1.entity.portfolio.InvestorProfile;
 import org.zerock.finance_dwpj1.repository.portfolio.Investor13FHoldingRepository;
 import org.zerock.finance_dwpj1.repository.portfolio.InvestorProfileRepository;
+import org.zerock.finance_dwpj1.service.portfolio.similarity.SimilarityCalculator;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -14,6 +15,13 @@ import java.util.stream.Collectors;
 /**
  * 포트폴리오 매칭 서비스
  * 사용자 포트폴리오와 투자대가 13F 포트폴리오 간의 유사도를 계산합니다
+ *
+ * <h2>주요 변경사항 (2025-12-15)</h2>
+ * <ul>
+ *   <li>레버리지/인버스 ETF를 기초자산 노출(exposure) 기준으로 환산</li>
+ *   <li>유사도 계산을 SimilarityCalculator로 위임 (전략 패턴)</li>
+ *   <li>정규화 모드 지원 (LONG_ONLY / LONG_SHORT)</li>
+ * </ul>
  */
 @Service
 @RequiredArgsConstructor
@@ -22,6 +30,8 @@ public class PortfolioMatchingService {
 
     private final InvestorProfileRepository profileRepository;
     private final Investor13FHoldingRepository holdingRepository;
+    private final PortfolioExposureNormalizer exposureNormalizer;
+    private final SimilarityCalculator similarityCalculator;
     /**
      * 사용자의 상위 N개 종목이 투자대가와 얼마나 겹치는지 점수화 (0~100)
      */
@@ -69,9 +79,41 @@ public class PortfolioMatchingService {
     }
 
 
+    /**
+     * 사용자 포트폴리오와 투자대가를 매칭하여 TOP 3를 반환합니다.
+     *
+     * <p><b>핵심 변경사항 (2025-12-15)</b>:</p>
+     * <ul>
+     *   <li>레버리지/인버스 ETF를 기초자산 노출 기준으로 환산</li>
+     *   <li>사용자 포트폴리오와 투자대가 포트폴리오 모두 노출 환산 적용</li>
+     *   <li>환산된 포트폴리오 기준으로 유사도 계산</li>
+     * </ul>
+     *
+     * <h3>처리 흐름</h3>
+     * <pre>
+     * 1. 사용자 포트폴리오 노출 환산
+     *    { "TSLL": 10% } → { "TSLA": 20% }
+     *
+     * 2. 투자대가별 반복:
+     *    a. 13F 데이터 조회
+     *    b. 투자대가 포트폴리오 노출 환산
+     *    c. 유사도 계산 (환산된 포트폴리오 기준)
+     *    d. 종목 겹침 분석 (환산된 티커 기준)
+     *    e. 최종 점수 계산
+     *
+     * 3. TOP 3 정렬 및 반환
+     * </pre>
+     *
+     * @param userPortfolio 사용자 포트폴리오 (원본, 레버리지 상품 포함 가능)
+     * @return TOP 3 매칭 결과 리스트
+     */
     public List<MatchResult> findTopMatches(Map<String, Double> userPortfolio) {
         log.info("=== 포트폴리오 매칭 시작 ===");
-        log.info("사용자 포트폴리오: {}", userPortfolio);
+        log.info("사용자 포트폴리오 (원본): {}", userPortfolio);
+
+        // ★ 핵심 변경: 사용자 포트폴리오를 노출 기준으로 환산 + 정규화
+        Map<String, Double> userExposure = exposureNormalizer.normalize(userPortfolio);
+        log.info("사용자 포트폴리오 (노출 환산 후): {}", userExposure);
 
         List<MatchResult> results = new ArrayList<>();
 
@@ -91,30 +133,35 @@ public class PortfolioMatchingService {
                 }
 
                 // 투자대가 포트폴리오를 Map으로 변환 (티커 → 비중, 중복 티커 합산)
-                Map<String, Double> investorPortfolio = holdings.stream()
+                Map<String, Double> investorPortfolioRaw = holdings.stream()
                         .collect(Collectors.toMap(
                                 Investor13FHolding::getTicker,
                                 Investor13FHolding::getPortfolioWeight,
                                 Double::sum
                         ));
 
-                // 1) 가중치 코사인 유사도
-                double similarity = calculateWeightedSimilarity(userPortfolio, investorPortfolio);
+                // ★ 핵심 변경: 투자대가 포트폴리오도 노출 기준으로 환산 + 정규화
+                Map<String, Double> investorExposure = exposureNormalizer.normalize(investorPortfolioRaw);
+                log.debug("{} 포트폴리오 (노출 환산 후): {}", profile.getName(), investorExposure);
 
-                // 2) 종목 겹침 분석
-                List<String> matchedStocks = findMatchedStocks(userPortfolio, investorPortfolio);
-                double overlapPercentage = calculateOverlapPercentage(userPortfolio, investorPortfolio);
+                // 1) 코사인 유사도 계산 (환산된 포트폴리오 기준)
+                // ★ 핵심 변경: SimilarityCalculator로 위임
+                double similarity = similarityCalculator.calculate(userExposure, investorExposure);
+
+                // 2) 종목 겹침 분석 (환산된 티커 기준)
+                List<String> matchedStocks = findMatchedStocks(userExposure, investorExposure);
+                double overlapPercentage = calculateOverlapPercentage(userExposure, investorExposure);
 
                 // 3) 최종 매칭 점수 (사람 느낌)
                 double matchScore = calculateMatchScore(
                         similarity,
                         overlapPercentage,
-                        userPortfolio,
-                        investorPortfolio
+                        userExposure,
+                        investorExposure
                 );
 
-                // 4) 개선 제안 생성
-                String suggestions = generateSuggestions(userPortfolio, investorPortfolio, profile);
+                // 4) 개선 제안 생성 (환산된 포트폴리오 기준)
+                String suggestions = generateSuggestions(userExposure, investorExposure, profile);
 
                 MatchResult result = MatchResult.builder()
                         .investorId(profile.getInvestorId())
@@ -136,7 +183,7 @@ public class PortfolioMatchingService {
                         profile.getName(),
                         Math.round(similarity),
                         Math.round(overlapPercentage),
-                        Math.round(calculateTopOverlapScore(userPortfolio, investorPortfolio, 5)),
+                        Math.round(calculateTopOverlapScore(userExposure, investorExposure, 5)),
                         result.getSimilarity(),
                         matchedStocks.size()
                 );

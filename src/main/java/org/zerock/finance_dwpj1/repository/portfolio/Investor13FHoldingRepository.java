@@ -44,4 +44,14 @@ public interface Investor13FHoldingRepository extends JpaRepository<Investor13FH
      * 특정 투자대가의 데이터 존재 여부 확인
      */
     boolean existsByInvestorIdAndFilingQuarter(String investorId, String filingQuarter);
+
+    /**
+     * 특정 투자대가의 특정 분기 데이터 삭제 (강제 재수집용)
+     */
+    int deleteByInvestorIdAndFilingQuarter(String investorId, String filingQuarter);
+
+    /**
+     * 특정 투자대가의 모든 데이터 삭제 (전체 재수집용)
+     */
+    int deleteByInvestorId(String investorId);
 }

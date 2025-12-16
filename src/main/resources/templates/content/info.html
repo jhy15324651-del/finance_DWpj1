@@ -1,28 +1,227 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<!-- 1) head -->
 <th:block th:replace="content/layout/header :: header"></th:block>
+
+<!-- 2) body 시작 -->
 <th:block th:replace="content/layout/header :: bodyheader"></th:block>
 
-<div class="info-container">
-    <h2>정보 페이지</h2>
-    <div class="info-content">
-        <h3>Finance DWpj1 프로젝트</h3>
-        <p>
-            본 프로젝트는 금융 분석 및 투자 인사이트를 제공하는 플랫폼입니다.
-        </p>
+<!-- ===============================
+     메인 레이아웃
+================================= -->
+<div class="home-wrapper">
 
-        <h3>주요 기능</h3>
-        <ul>
-            <li>주식 차트 분석</li>
-            <li>뉴스 인사이트</li>
-            <li>포트폴리오 비교</li>
-            <li>콘텐츠 리뷰 및 커뮤니티</li>
-        </ul>
+    <!-- 약력 소개 섹션 -->
+    <div class="left-area">
+        <div class="section-header">
+            <div class="section-title">약력 소개</div>
+            <a sec:authorize="isAuthenticated()"
+               href="/info/info-write"
+               class="btn-write">
+                ✏️ 글쓰기
+            </a>
+        </div>
 
-        <h3>개발팀 정보</h3>
-        <p>
-            Finance DWpj1 Team<br>
-            © 2025 All rights reserved.
-        </p>
+        <div class="content-grid">
+            <!-- ⭐ 핵심: posts를 순회 (sections가 아님!) -->
+            <!-- 글 1개당 카드 1개만 표시 -->
+            <div class="post-card"
+                 th:each="post : ${posts}"
+                 th:onclick="'location.href=\'/info/' + ${post.id} + '\';'"
+                 th:attr="data-id=${post.id}">
+
+                <!-- 🔹 상단: 제목 + 썸네일 -->
+                <div class="post-main">
+                    <!-- 왼쪽 텍스트 영역 -->
+                    <div class="post-left">
+                        <div class="post-title" th:text="${post.title}"></div>
+                    </div>
+
+                    <!-- 오른쪽 썸네일 (PROFILE 섹션 이미지) -->
+                    <div class="post-thumb">
+                        <img th:src="${post.thumbnailUrl} ?: '/images/default-thumbnail.png'" alt="thumbnail">
+                    </div>
+                </div>
+
+                <!-- 🔹 하단: 작성자 + 날짜 -->
+                <div class="post-bottom">
+                    <div class="post-extra">
+                        <span th:text="'작성자: ' + ${post.writer}"></span>
+                    </div>
+
+                    <div class="post-meta">
+                        <span th:text="${#temporals.format(post.createdDate, 'yyyy.MM.dd')}"></span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
     </div>
+
+    <!-- 사이드바 (빈 공간 또는 향후 확장용) -->
+    <aside class="sidebar">
+        <div class="section-title">안내</div>
+        <div class="popular-box" style="padding: 20px; text-align: center; color: #666;">
+            <p style="margin: 0; line-height: 1.6;">
+                약력 소개 페이지입니다.<br>
+                각 섹션을 클릭하면<br>
+                상세 내용을 확인할 수 있습니다.
+            </p>
+        </div>
+    </aside>
+
 </div>
 
+<!-- ===============================
+     Style
+================================= -->
+<style>
+    /* === 섹션 헤더 (제목 + 글쓰기 버튼) === */
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .btn-write {
+        padding: 10px 20px;
+        background: #4CAF50;
+        color: white;
+        text-decoration: none;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        transition: 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn-write:hover {
+        background: #45a049;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+    }
+
+    /* === 카드 전체 === */
+    .post-card {
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;   /* 위: main, 아래: bottom */
+        gap: 10px;
+
+        padding: 16px;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        margin-bottom: 20px;
+        transition: 0.2s ease;
+        position: relative;
+    }
+
+    .post-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    /* === 상단: 제목 + 썸네일 === */
+    .post-main {
+        display: flex;
+        justify-content: space-between;
+        gap: 18px;
+    }
+
+    .post-left {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .post-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 6px;
+        color: #222;
+    }
+
+    /* 썸네일 */
+    .post-thumb img {
+        width: 130px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 8px;
+        flex-shrink: 0;
+    }
+
+    /* === 하단: 작성자 + 날짜 + 삭제 버튼 === */
+    .post-bottom {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-top: 4px;
+    }
+
+    .post-extra {
+        font-size: 0.9rem;
+        color: #666;
+    }
+
+    .post-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.85rem;
+        color: #666;
+    }
+
+    /* === 관리자 버튼 영역 === */
+    .admin-buttons {
+        display: flex;
+        gap: 6px;
+    }
+
+    .btn-edit {
+        padding: 4px 12px;
+        background: #2196F3;
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: 0.2s;
+        display: inline-block;
+    }
+
+    .btn-edit:hover {
+        background: #0b7dda;
+    }
+
+    .btn-delete {
+        padding: 4px 12px;
+        background: #ff4444;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    .btn-delete:hover {
+        background: #cc0000;
+    }
+
+    /* === 사이드바 안내 박스 === */
+    .popular-box p {
+        font-size: 0.9rem;
+    }
+</style>
+
+<!-- 3) footer -->
 <th:block th:replace="content/layout/footer :: footer"></th:block>
+
+</html>

@@ -128,6 +128,28 @@
     display: inline-block;
 }
 
+/* ⚠️ 전용 Primary 버튼 (Bootstrap 충돌 방지용) */
+.btn-common-primary {
+    padding: 10px 24px !important;
+    border-radius: var(--radius-md) !important;
+    font-weight: 600 !important;
+    font-size: 15px !important;
+    cursor: pointer !important;
+    transition: all 0.3s !important;
+    border: none !important;
+    text-decoration: none !important;
+    display: inline-block !important;
+    background: linear-gradient(135deg, var(--primary-purple) 0%, var(--secondary-purple) 100%) !important;
+    color: white !important;
+}
+
+.btn-common-primary:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4) !important;
+    background: linear-gradient(135deg, var(--primary-purple-dark) 0%, var(--secondary-purple) 100%) !important;
+}
+
+/* 기존 btn-primary (호환성 유지) */
 .btn-primary {
     background: linear-gradient(135deg, var(--primary-purple) 0%, var(--secondary-purple) 100%);
     color: white;
