@@ -12,6 +12,9 @@ import org.zerock.finance_dwpj1.repository.content.InfoPostRepository;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -191,6 +194,11 @@ public class InfoPostService {
      * - 날짜별 폴더 자동 생성
      * - UUID 파일명으로 중복 방지
      *
+     * ⭐ transferTo() 대신 getBytes() 사용 이유:
+     * - MultipartFile의 임시 파일은 한 번만 transferTo() 가능
+     * - 여러 섹션에서 동시에 파일 업로드 시 임시 파일 삭제 문제 방지
+     * - getBytes()는 즉시 메모리에 읽어서 임시 파일 의존성 제거
+     *
      * @param file 업로드할 이미지 파일
      * @return 웹 접근 URL (/info_uploads/날짜/파일명)
      */
@@ -202,11 +210,11 @@ public class InfoPostService {
         try {
             // 1️⃣ 날짜별 폴더 생성 (콘텐츠리뷰와 동일 패턴)
             String dateFolder = LocalDate.now().toString(); // 예: 2025-12-16
-            File uploadDir = new File(infoUploadPath + "/" + dateFolder);
+            Path uploadDirPath = Paths.get(infoUploadPath, dateFolder);
 
-            if (!uploadDir.exists()) {
-                uploadDir.mkdirs();
-                log.info("📁 Info 업로드 디렉토리 생성: {}", uploadDir.getAbsolutePath());
+            if (!Files.exists(uploadDirPath)) {
+                Files.createDirectories(uploadDirPath);
+                log.info("📁 Info 업로드 디렉토리 생성: {}", uploadDirPath.toAbsolutePath());
             }
 
             // 2️⃣ 확장자 추출
@@ -220,15 +228,19 @@ public class InfoPostService {
             // 3️⃣ UUID 파일명 생성 (중복 방지)
             String savedFileName = UUID.randomUUID().toString() + ext;
 
-            // 4️⃣ 실제 디스크에 저장
-            File saveFile = new File(uploadDir, savedFileName);
-            file.transferTo(saveFile);
+            // 4️⃣ 파일을 바이트 배열로 읽기 (임시 파일 의존성 제거)
+            byte[] fileBytes = file.getBytes();
 
-            // 5️⃣ 웹 접근 URL 반환 (DB 저장용)
+            // 5️⃣ 실제 디스크에 저장 (Files.write 사용)
+            Path filePath = uploadDirPath.resolve(savedFileName);
+            Files.write(filePath, fileBytes);
+
+            // 6️⃣ 웹 접근 URL 반환 (DB 저장용)
             String imageUrl = "/info_uploads/" + dateFolder + "/" + savedFileName;
 
             log.info("📸 Info 이미지 업로드 완료: {} -> {}", originalName, imageUrl);
-            log.info("   실제 저장 위치: {}", saveFile.getAbsolutePath());
+            log.info("   실제 저장 위치: {}", filePath.toAbsolutePath());
+            log.info("   파일 크기: {} bytes", fileBytes.length);
 
             return imageUrl;
 
