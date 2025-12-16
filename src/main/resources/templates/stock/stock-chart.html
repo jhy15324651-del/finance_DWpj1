@@ -1146,37 +1146,51 @@
 
             if (!res.ok) {
                 panel.innerHTML = `
-                <div style="color:#e53e3e;">상세 정보를 가져올 수 없습니다.</div>
-            `;
+            <div style="color:#e53e3e;">지표 정보를 가져올 수 없습니다.</div>
+        `;
                 return;
             }
 
             const d = await res.json();
 
             panel.innerHTML = `
-            <div><b>종목명:</b> ${d.name ?? '-'}</div>
-            <div><b>영문명:</b> ${d.companyNameEng ?? '-'}</div>
-            <div><b>설명:</b><br>
-                <span style="white-space:pre-line;">${d.description ?? '-'}</span>
-            </div>
-            <div><b>대표이사:</b> ${d.ceo ?? '-'}</div>
-            <div><b>설립일:</b> ${d.established ?? '-'}</div>
-            <div><b>상장일:</b> ${d.listedDate ?? '-'}</div>
-            <div><b>상장주식수:</b> ${d.sharesOutstanding
-                ? d.sharesOutstanding.toLocaleString("ko-KR") + " 주"
-                : "-"
+        <div><b>PER:</b> ${d.per ?? '-'}</div>
+
+        <div><b>ROE:</b> ${
+                d.roe != null
+                    ? (d.roe).toFixed(1) + '%'
+                    : '-'
             }</div>
-            <div><b>시가총액:</b> ${
-                d.marketCap
-                    ? d.marketCap.toLocaleString("ko-KR") + " 원"
-                    : "-"
+
+        <div><b>주당 배당금:</b> ${
+                d.dividend != null
+                    ? d.dividend
+                    : '-'
             }</div>
-        `;
+
+        <div><b>배당 수익률:</b> ${
+                d.dividendYield != null
+                    ? (d.dividendYield * 100).toFixed(2) + '%'
+                    : '-'
+            }</div>
+
+        <div><b>시가총액:</b> ${
+                d.marketCap != null
+                    ? Number(d.marketCap).toLocaleString('ko-KR') + ' 원'
+                    : '-'
+            }</div>
+
+        <div><b>상장 주식수:</b> ${
+                d.sharesOutstanding != null
+                    ? Number(d.sharesOutstanding).toLocaleString('ko-KR') + ' 주'
+                    : '-'
+            }</div>
+    `;
         } catch (e) {
             console.error(e);
             panel.innerHTML = `
-            <div style="color:red;">상세 정보 로딩 실패</div>
-        `;
+        <div style="color:red;">지표 정보 로딩 실패</div>
+    `;
         }
     }
 
