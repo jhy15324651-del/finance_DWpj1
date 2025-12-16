@@ -16,5 +16,7 @@ public class StockCommentDTO {
     private String content;
     private LocalDateTime regDate;
     private LocalDateTime modDate;
+    private String grade;
+    private String medal;
 
 }

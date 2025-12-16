@@ -87,6 +87,41 @@ public class UserService {
     public boolean isNicknameAvailable(String nickname) {
         return !userRepository.existsByNickname(nickname);
     }
+
+
+    //유저 등급
+    @Transactional
+    public void updateGrade(Long userId, String grade) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
+
+        user.setGrade(grade);   // 등급 세팅
+        userRepository.save(user);
+
+        log.info("유저 등급 업데이트 완료: userId={}, grade={}", userId, grade);
+    }
+
+    //등급 꺼내오기
+    public String getUserGrade(Long userId) {
+
+        User user = userRepository.findById(userId)
+                .orElse(null);
+
+        if (user == null || user.getGrade() == null) {
+            return "NONE";
+        }
+
+        return user.getGrade();
+    }
+
+    //Id에서 닉네임 받아오기
+    public Long getUserIdByNickname(String nickname) {
+        return userRepository.findByNickname(nickname)
+                .map(User::getId)
+                .orElse(null);
+    }
+
 }
 
 // 이중 보안 프론트에서 쓰는 코드와 다르게 한번더 백에서 정말 중복및 문제가 없는지 체크

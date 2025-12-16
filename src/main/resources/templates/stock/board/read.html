@@ -288,7 +288,7 @@
 
                 <div>
                     <h1 style="font-size:1.8rem;">[[${dto.title}]]</h1>
-                    <div style="color:#555;">작성자: [[${dto.writer}]]</div>
+                    <div style="color:#555;">작성자: [[${dto.medal}]][[${dto.writer}]]</div>
                 </div>
 
                 <div style="text-align:right; color:#555;">
@@ -722,7 +722,7 @@
         </a>
     </td>
 
-            <td style="padding:10px; text-align:right;">${board.writer}</td>
+            <td style="padding:10px; text-align:right;">${board.medal}${board.writer}</td>
 
             <td style="padding:10px; text-align:center;">${board.view}</td>
 
@@ -811,7 +811,7 @@
                 const item = `
                 <div style="border-bottom:1px solid #eee; padding:10px 0;">
                     <div style="font-weight:600; margin-bottom:4px;">
-                        ${reply.writer ?? '익명'}
+                        ${reply.medal}${reply.writer ?? '익명'}
                     </div>
                     <div style="white-space:pre-line; margin-bottom:6px;">
                         ${reply.content}
