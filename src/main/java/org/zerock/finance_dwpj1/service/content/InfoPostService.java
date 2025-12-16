@@ -2,6 +2,7 @@ package org.zerock.finance_dwpj1.service.content;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -9,13 +10,9 @@ import org.zerock.finance_dwpj1.entity.content.ContentInfoSection;
 import org.zerock.finance_dwpj1.entity.content.InfoPost;
 import org.zerock.finance_dwpj1.repository.content.InfoPostRepository;
 
+import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -32,6 +29,10 @@ import java.util.UUID;
 public class InfoPostService {
 
     private final InfoPostRepository repository;
+
+    // application.properties에서 정보 탭 전용 업로드 경로 주입
+    @Value("${file.info-upload-path}")
+    private String infoUploadPath;
 
     /**
      * 활성 게시글 목록 조회 (일반 사용자용)
@@ -182,44 +183,57 @@ public class InfoPostService {
     }
 
     /**
-     * 이미지 파일 업로드
+     * 이미지 파일 업로드 (콘텐츠리뷰 패턴 적용)
+     *
+     * ⭐ 저장 방식:
+     * - 실제 저장: C:/info_uploads/2025-12-16/UUID.jpg
+     * - DB 저장: /info_uploads/2025-12-16/UUID.jpg (상대 URL)
+     * - 날짜별 폴더 자동 생성
+     * - UUID 파일명으로 중복 방지
      *
      * @param file 업로드할 이미지 파일
-     * @return 저장된 파일의 웹 접근 경로
+     * @return 웹 접근 URL (/info_uploads/날짜/파일명)
      */
     public String uploadImage(MultipartFile file) {
         if (file == null || file.isEmpty()) {
-            throw new IllegalArgumentException("파일이 비어있습니다");
+            throw new IllegalArgumentException("업로드된 파일이 없습니다.");
         }
 
         try {
-            String uploadDir = "uploads/info";
-            Path uploadPath = Paths.get(uploadDir);
+            // 1️⃣ 날짜별 폴더 생성 (콘텐츠리뷰와 동일 패턴)
+            String dateFolder = LocalDate.now().toString(); // 예: 2025-12-16
+            File uploadDir = new File(infoUploadPath + "/" + dateFolder);
 
-            if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath);
-                log.info("📁 업로드 디렉토리 생성: {}", uploadPath.toAbsolutePath());
+            if (!uploadDir.exists()) {
+                uploadDir.mkdirs();
+                log.info("📁 Info 업로드 디렉토리 생성: {}", uploadDir.getAbsolutePath());
             }
 
-            String originalFilename = file.getOriginalFilename();
-            String extension = "";
-            if (originalFilename != null && originalFilename.contains(".")) {
-                extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+            // 2️⃣ 확장자 추출
+            String originalName = file.getOriginalFilename();
+            String ext = "";
+
+            if (originalName != null && originalName.lastIndexOf(".") != -1) {
+                ext = originalName.substring(originalName.lastIndexOf("."));
             }
 
-            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
-            String uniqueFilename = UUID.randomUUID().toString() + "_" + timestamp + extension;
+            // 3️⃣ UUID 파일명 생성 (중복 방지)
+            String savedFileName = UUID.randomUUID().toString() + ext;
 
-            Path filePath = uploadPath.resolve(uniqueFilename);
-            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+            // 4️⃣ 실제 디스크에 저장
+            File saveFile = new File(uploadDir, savedFileName);
+            file.transferTo(saveFile);
 
-            String webPath = "/" + uploadDir + "/" + uniqueFilename;
-            log.info("📸 이미지 업로드 완료: {} -> {}", originalFilename, webPath);
+            // 5️⃣ 웹 접근 URL 반환 (DB 저장용)
+            String imageUrl = "/info_uploads/" + dateFolder + "/" + savedFileName;
 
-            return webPath;
+            log.info("📸 Info 이미지 업로드 완료: {} -> {}", originalName, imageUrl);
+            log.info("   실제 저장 위치: {}", saveFile.getAbsolutePath());
+
+            return imageUrl;
 
         } catch (IOException e) {
-            log.error("❌ 이미지 업로드 실패: {}", e.getMessage(), e);
+            log.error("❌ Info 이미지 업로드 실패: {}", e.getMessage(), e);
             throw new RuntimeException("이미지 업로드에 실패했습니다: " + e.getMessage());
         }
     }

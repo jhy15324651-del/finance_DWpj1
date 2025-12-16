@@ -11,11 +11,18 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Value("${file.upload-path}")
     private String uploadPath;
 
+    @Value("${file.info-upload-path}")
+    private String infoUploadPath;
+
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
 
-        // /uploads/** → 실제 파일 경로 매핑
+        // 콘텐츠리뷰: /uploads/** → C:/uploads/
         registry.addResourceHandler("/uploads/**")
                 .addResourceLocations("file:///" + uploadPath + "/");
+
+        // 정보 탭(Info): /info_uploads/** → C:/info_uploads/
+        registry.addResourceHandler("/info_uploads/**")
+                .addResourceLocations("file:///" + infoUploadPath + "/");
     }
 }
