@@ -107,6 +107,15 @@ body {
     font-weight: bold;
     color: #222;
     margin-bottom: 10px;
+
+    display: -webkit-box;
+    -webkit-line-clamp: 2;      /* ✅ 최대 2줄 */
+    -webkit-box-orient: vertical;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    word-break: break-word;
 }
 
 .post-title a {
@@ -187,6 +196,15 @@ body {
     color: #333;
     text-decoration: none;
     flex: 1;
+
+    display: -webkit-box;
+    -webkit-line-clamp: 2;      /* ✅ 최대 2줄 */
+    -webkit-box-orient: vertical;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    word-break: break-word;
 }
 
 .popular-title:hover {
@@ -450,7 +468,7 @@ body {
 
 /* 해시태그 버튼 */
 .category-tab {
-    padding: 10px 20px;
+    padding: 7px 12px;
     border-radius: 12px;
     background: #f5f5f5;
     color: #444;
@@ -509,6 +527,13 @@ body {
     table-layout: fixed;  /* 열 고정 */
 }
 
+.board-table td.table-title a {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .board-table th,
 .board-table td {
     text-align: center;
@@ -518,18 +543,6 @@ body {
 
 .board-table tr:hover {
     background: #fafafa;
-}
-
-/* ======================== */
-/* 새로운 추가 요소         */
-/* ======================== */
-
-/* 🔥 제목 말줄임 */
-.board-table td.title-cell {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    padding-left: 18px;
 }
 
 /* 링크 스타일 (category.html 내부에도 있지만 CSS로 분리 가능) */

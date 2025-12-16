@@ -47,6 +47,24 @@
                 #테슬라
             </button>
 
+            <button type="button" class="category-tab tag-select-btn"
+                    data-tag="#초보"
+                    th:classappend="${keyword != null and #strings.contains(keyword, '#초보')} ? ' active'">
+                #초보
+            </button>
+
+            <button type="button" class="category-tab tag-select-btn"
+                    data-tag="#실전전략"
+                    th:classappend="${keyword != null and #strings.contains(keyword, '#실전전략')} ? ' active'">
+                #실전전략
+            </button>
+
+            <button type="button" class="category-tab tag-select-btn"
+                    data-tag="#장기투자"
+                    th:classappend="${keyword != null and #strings.contains(keyword, '#장기투자')} ? ' active'">
+                #장기투자
+            </button>
+
         </div>
 
         <!-- ▣ 검색 폼 -->
@@ -92,14 +110,16 @@
             <td th:text="${posts.totalElements - (posts.number * posts.size) - iter.index}"></td>
 
             <!-- 제목 -->
-            <td>
+            <td class="table-title">
                 <a th:href="@{/content/post/{id}(
                         id=${post.id},
                         page=${currentPage},
                         keyword=${keyword},
                         searchType=${searchType}
                 )}"
-                   th:text="${post.title}"></a>
+                   th:text="${post.title}"
+                   th:title="${post.title}">
+                </a>
             </td>
 
             <!-- 🔥 작성자 출력 -->

@@ -308,8 +308,8 @@
         }
 
         .ranking-item:hover {
-            background-color: #f5f7ff;
-            cursor: pointer;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
         }
 
         .ranking-link {
@@ -337,6 +337,15 @@
             font-size: 0.9rem;
             color: #2d3748;
             line-height: 1.4;
+
+            display: -webkit-box;
+            -webkit-line-clamp: 2;      /* ✅ 최대 2줄 */
+            -webkit-box-orient: vertical;
+
+            overflow: hidden;
+            text-overflow: ellipsis;
+
+            word-break: break-word;
         }
 
         .rank-views {
@@ -589,7 +598,8 @@
 
                             <div>
                                 <div class="rank-title"
-                                     th:text="${post.title}"></div>
+                                     th:text="${post.title}"
+                                     th:title="${post.title}"></div>
 
                                 <div class="rank-views">
                                     👁 <span th:text="${post.viewCountMonth}"></span>
