@@ -575,6 +575,15 @@ body {
 /* ============================
    글쓰기 페이지
 ============================= */
+
+/* 게시글 본문 이미지 크기 제한 */
+.post-detail-content img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 24px auto;
+}
+
 .write-container {
     width: 60%;
     max-width: 800px;
