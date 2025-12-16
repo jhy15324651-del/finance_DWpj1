@@ -125,5 +125,29 @@ public interface ContentReviewRepository
             Pageable pageable
     );
 
+    // ---------------------------------------------------------
+    // 🔥 11) 게시물 가중치 옵션
+    // ---------------------------------------------------------
+    @Query("""
+    SELECT c
+    FROM ContentReview c
+    WHERE c.isDeleted = false
+      AND c.type = 'review'
+    ORDER BY
+      (
+        (c.viewCountMonth * 2)
+        + (c.viewCount * 0.1)
+        + CASE
+            WHEN c.createdDate >= CURRENT_TIMESTAMP - 7 DAY THEN 20
+            WHEN c.createdDate >= CURRENT_TIMESTAMP - 30 DAY THEN 10
+            ELSE 0
+          END
+      ) DESC
+    """)
+    Page<ContentReview> findRecommendationCandidates(Pageable pageable);
 
-}
+    }
+
+
+
+

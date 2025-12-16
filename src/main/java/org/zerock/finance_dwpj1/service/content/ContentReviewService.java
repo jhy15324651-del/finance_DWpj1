@@ -20,6 +20,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -79,6 +80,39 @@ public class ContentReviewService {
             post.setRatingAvg(getAverageRating(post.getId()));
         });
         return list;
+    }
+
+    // ---------------------------------------------------------
+    // 🔥 추천 콘텐츠 전용 메서드 (ratingAvg + 가중치 점수 계산해서 상위 N개 뽑는 메서드)
+    // ---------------------------------------------------------
+    public List<ContentReview> getRecommendedContents(int limit) {
+
+        // 1️⃣ DB에서 후보군 30개 가져오기
+        List<ContentReview> candidates =
+                new ArrayList<>(
+                        repo.findRecommendationCandidates(PageRequest.of(0, 30))
+                                .getContent()
+                );
+
+
+        // 2️⃣ preview + ratingAvg 세팅
+        candidates.forEach(post -> {
+            post.setPreview(makePreview(post.getContent()));
+            post.setRatingAvg(getAverageRating(post.getId()));
+        });
+
+        // 3️⃣ 최종 점수 기준 정렬
+        candidates.sort(
+                (a, b) -> Double.compare(
+                        calculateRecommendationScore(b),
+                        calculateRecommendationScore(a)
+                )
+        );
+
+        // 4️⃣ 상위 limit개 반환
+        return candidates.stream()
+                .limit(limit)
+                .toList();
     }
 
 
@@ -329,5 +363,35 @@ public class ContentReviewService {
         }
         return null; // 없다면 null
     }
+
+    // 점수 계산 메서드 (가중치)
+    private double calculateRecommendationScore(ContentReview c) {
+
+        double score = 0;
+
+        // ⭐ 평점 (가장 중요)
+        if (c.getRatingAvg() != null) {
+            score += c.getRatingAvg() * 10;
+        }
+
+        // 🔥 이번 달 조회수
+        score += c.getViewCountMonth() * 2;
+
+        // 👀 누적 조회수
+        score += c.getViewCount() * 0.1;
+
+        // 🕒 최신성 보너스
+        long days =
+                java.time.temporal.ChronoUnit.DAYS.between(
+                        c.getCreatedDate(),
+                        java.time.LocalDateTime.now()
+                );
+
+        if (days <= 7) score += 20;
+        else if (days <= 30) score += 10;
+
+        return score;
+    }
+
 
 }

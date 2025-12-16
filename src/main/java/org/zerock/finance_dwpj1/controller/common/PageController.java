@@ -54,6 +54,13 @@ public class PageController {
         model.addAttribute("monthlyDataList",
                 contentReviewService.getMonthlyTopContents("review", 5));
 
+        // 🔥 추천 콘텐츠
+        model.addAttribute(
+                "recommendedPosts",
+                contentReviewService.getRecommendedContents(4)
+        );
+
+
         return "index";
     }
 
