@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<!-- 1) head -->
+<th:block th:replace="content/layout/header :: header"></th:block>
+
+<!-- 2) body 시작 -->
+<th:block th:replace="content/layout/header :: bodyheader"></th:block>
+
+<!-- ===============================
+     약력 상세 페이지
+================================= -->
+<div class="detail-wrapper">
+
+    <div class="detail-container">
+
+        <!-- 뒤로 가기 버튼 -->
+        <div class="back-button">
+            <a href="/info" class="btn-back">← 목록으로</a>
+        </div>
+
+        <!-- 제목 영역 (게시글 전체 정보) -->
+        <div class="detail-header">
+            <h1 class="detail-title" th:text="${post.title}">제목</h1>
+            <div class="detail-meta">
+                <span th:text="'작성자: ' + ${post.writer}">작성자: 홍길동</span>
+                <span>|</span>
+                <span th:text="${#temporals.format(post.createdDate, 'yyyy.MM.dd HH:mm')}">2025.01.01 12:00</span>
+            </div>
+        </div>
+
+        <!-- ⭐ 핵심: 모든 섹션을 순서대로 출력 -->
+        <div th:each="section : ${post.sections}" class="section-block">
+
+            <!-- 섹션 타입 배지 -->
+            <div class="category-badge" th:classappend="${section.sectionType}">
+                <span th:text="${section.sectionType}">PROFILE</span>
+            </div>
+
+            <!-- 섹션 제목 -->
+            <h2 class="section-title" th:text="${section.title}">섹션 제목</h2>
+
+            <!-- 섹션 이미지 (있을 경우) -->
+            <div class="detail-thumbnail" th:if="${section.thumbnailUrl != null and !section.thumbnailUrl.isEmpty()}">
+                <img th:src="${section.thumbnailUrl}" alt="섹션 이미지" class="thumbnail-image">
+            </div>
+
+            <!-- 섹션 본문 -->
+            <div class="detail-content">
+                <div th:utext="${section.content}">
+                    본문 내용이 여기에 표시됩니다.
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ===============================
+     Style
+================================= -->
+<style>
+    .detail-wrapper {
+        max-width: 900px;
+        margin: 40px auto;
+        padding: 0 20px;
+    }
+
+    .detail-container {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        padding: 40px;
+    }
+
+    /* 뒤로 가기 */
+    .back-button {
+        margin-bottom: 20px;
+    }
+
+    .btn-back {
+        display: inline-block;
+        padding: 8px 16px;
+        background: #f5f5f5;
+        color: #333;
+        text-decoration: none;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        transition: 0.2s;
+    }
+
+    .btn-back:hover {
+        background: #e0e0e0;
+    }
+
+    /* 카테고리 배지 */
+    .category-badge {
+        display: inline-block;
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 16px;
+        text-transform: uppercase;
+    }
+
+    .category-badge.PROFILE {
+        background: #E3F2FD;
+        color: #1976D2;
+    }
+
+    .category-badge.CHANNEL {
+        background: #F3E5F5;
+        color: #7B1FA2;
+    }
+
+    .category-badge.ACTIVITY {
+        background: #E8F5E9;
+        color: #388E3C;
+    }
+
+    .category-badge.WHY {
+        background: #FFF3E0;
+        color: #F57C00;
+    }
+
+    .category-badge.SIGNATURE {
+        background: #FCE4EC;
+        color: #C2185B;
+    }
+
+    .category-badge.SOURCES {
+        background: #E0F2F1;
+        color: #00796B;
+    }
+
+    /* 섹션 블록 구분 */
+    .section-block {
+        padding: 30px 0;
+        border-bottom: 1px solid #eee;
+    }
+
+    .section-block:last-child {
+        border-bottom: none;
+    }
+
+    .section-title {
+        font-size: 1.6rem;
+        font-weight: 700;
+        margin-bottom: 20px;
+        color: #222;
+        border-left: 4px solid #4CAF50;
+        padding-left: 12px;
+    }
+
+    /* 제목 영역 */
+    .detail-header {
+        border-bottom: 2px solid #333;
+        padding-bottom: 20px;
+        margin-bottom: 30px;
+    }
+
+    .detail-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 12px;
+        color: #222;
+        line-height: 1.4;
+    }
+
+    .detail-meta {
+        display: flex;
+        gap: 12px;
+        font-size: 0.9rem;
+        color: #666;
+        align-items: center;
+    }
+
+    /* 썸네일 */
+    .detail-thumbnail {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .thumbnail-image {
+        max-width: 100%;
+        max-height: 500px;
+        object-fit: contain;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    /* 본문 내용 */
+    .detail-content {
+        line-height: 1.8;
+        color: #333;
+        font-size: 1rem;
+        margin-bottom: 40px;
+    }
+
+    .detail-content h2 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-top: 32px;
+        margin-bottom: 16px;
+        color: #222;
+        border-left: 4px solid #333;
+        padding-left: 12px;
+    }
+
+    .detail-content h3 {
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin-top: 24px;
+        margin-bottom: 12px;
+        color: #333;
+    }
+
+    .detail-content p {
+        margin-bottom: 16px;
+    }
+
+    .detail-content ul, .detail-content ol {
+        margin-bottom: 16px;
+        padding-left: 24px;
+    }
+
+    .detail-content li {
+        margin-bottom: 8px;
+    }
+
+    .detail-content img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+        margin: 20px 0;
+    }
+
+    .detail-content blockquote {
+        margin: 20px 0;
+        padding: 16px 20px;
+        background: #f9f9f9;
+        border-left: 4px solid #333;
+        color: #555;
+        font-style: italic;
+    }
+
+    .detail-content code {
+        background: #f5f5f5;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-family: 'Courier New', monospace;
+        font-size: 0.9em;
+    }
+
+    .detail-content pre {
+        background: #f5f5f5;
+        padding: 16px;
+        border-radius: 6px;
+        overflow-x: auto;
+        margin: 16px 0;
+    }
+
+    .detail-content pre code {
+        background: none;
+        padding: 0;
+    }
+
+    /* 관리자 액션 */
+    .admin-actions {
+        padding-top: 30px;
+        border-top: 1px solid #eee;
+        text-align: right;
+    }
+
+    .btn-admin-delete {
+        padding: 10px 24px;
+        background: #ff4444;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    .btn-admin-delete:hover {
+        background: #cc0000;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(255, 68, 68, 0.3);
+    }
+
+    /* 반응형 */
+    @media (max-width: 768px) {
+        .detail-wrapper {
+            padding: 0 15px;
+        }
+
+        .detail-container {
+            padding: 24px;
+        }
+
+        .detail-title {
+            font-size: 1.5rem;
+        }
+
+        .detail-meta {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 6px;
+        }
+    }
+</style>
+
+<!-- 3) footer -->
+<th:block th:replace="content/layout/footer :: footer"></th:block>
+
+</html>
