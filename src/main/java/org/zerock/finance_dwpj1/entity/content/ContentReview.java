@@ -82,6 +82,25 @@ public class ContentReview {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
+    @Column(name = "deleted_by", length = 100)
+    private String deletedBy; // 삭제한 관리자 이메일
+
+    @Column(name = "delete_reason", columnDefinition = "TEXT")
+    private String deleteReason; // 삭제 사유
+
+    /**
+     * 관리자용 소프트 삭제 (추가 정보 포함)
+     */
+    public void softDelete(String deletedBy, String deleteReason) {
+        this.isDeleted = true;
+        this.deletedAt = LocalDateTime.now();
+        this.deletedBy = deletedBy;
+        this.deleteReason = deleteReason;
+    }
+
+    /**
+     * 기존 소프트 삭제 (호환성 유지)
+     */
     public void softDelete() {
         this.isDeleted = true;
         this.deletedAt = LocalDateTime.now();
@@ -90,6 +109,8 @@ public class ContentReview {
     public void restore() {
         this.isDeleted = false;
         this.deletedAt = null;
+        this.deletedBy = null;
+        this.deleteReason = null;
     }
 
     @Transient

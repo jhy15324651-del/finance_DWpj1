@@ -65,6 +65,15 @@ public class InsightsNews {
     @Builder.Default
     private Boolean isDeleted = false; // 관리자가 삭제한 경우
 
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt; // 삭제된 시간
+
+    @Column(name = "deleted_by", length = 100)
+    private String deletedBy; // 삭제한 관리자 이메일
+
+    @Column(name = "delete_reason", columnDefinition = "TEXT")
+    private String deleteReason; // 삭제 사유
+
     /**
      * 조회수 증가
      */
@@ -87,10 +96,21 @@ public class InsightsNews {
     }
 
     /**
-     * 뉴스를 소프트 삭제
+     * 뉴스를 소프트 삭제 (관리자용 - 추가 정보 포함)
+     */
+    public void softDelete(String deletedBy, String deleteReason) {
+        this.isDeleted = true;
+        this.deletedAt = LocalDateTime.now();
+        this.deletedBy = deletedBy;
+        this.deleteReason = deleteReason;
+    }
+
+    /**
+     * 뉴스를 소프트 삭제 (기존 호환성 유지)
      */
     public void softDelete() {
         this.isDeleted = true;
+        this.deletedAt = LocalDateTime.now();
     }
 
     /**
