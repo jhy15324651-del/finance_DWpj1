@@ -24,6 +24,8 @@ import org.zerock.finance_dwpj1.service.content.ContentReviewService;
 import org.zerock.finance_dwpj1.service.insights.DailyNewsService;
 import org.zerock.finance_dwpj1.service.user.CustomUserDetails;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @Controller
@@ -92,6 +94,8 @@ public class PageController {
 
         if (user == null) return "redirect:/login";
 
+        model.addAttribute("page", "posts"); // ⭐ 추가
+
         String nickname = user.getNickname();
 
         // 1) 콘텐츠 리뷰 게시글 조회
@@ -107,6 +111,18 @@ public class PageController {
 
         // 콘텐츠 리뷰 → DTO
         for (ContentReview r : reviewPosts) {
+
+            Integer remainDays = null;
+
+            if (r.getIsDeleted() && r.getDeletedAt() != null) {
+                long daysPassed =
+                        ChronoUnit.DAYS.between(
+                                r.getDeletedAt().toLocalDate(),
+                                LocalDate.now()
+                        );
+                remainDays = Math.max(0, 7 - (int) daysPassed);
+            }
+
             results.add(UserPostDTO.builder()
                     .id(r.getId())
                     .title(r.getTitle())
@@ -114,7 +130,9 @@ public class PageController {
                     .viewCount(r.getViewCount())
                     .category("콘텐츠 리뷰")
                     .link("/content/post/" + r.getId())
-                    .isDeleted(r.getIsDeleted())   // ⭐ 추가!
+                    .isDeleted(r.getIsDeleted())
+                    .deletedAt(r.getDeletedAt())
+                    .deleteRemainDays(remainDays) // ⭐ 핵심
                     .build());
         }
 
@@ -134,8 +152,22 @@ public class PageController {
         // 4) 날짜 기준으로 최신순 정렬
         results.sort(Comparator.comparing(UserPostDTO::getDate).reversed());
 
-        // 5) 모델에 추가
-        model.addAttribute("posts", results);
+        // 5️⃣ 활성 / 삭제 게시글 분리
+        List<UserPostDTO> alivePosts = new ArrayList<>();
+        List<UserPostDTO> deletedPosts = new ArrayList<>();
+
+        for (UserPostDTO post : results) {
+            if (post.getIsDeleted()) {
+                deletedPosts.add(post);
+            } else {
+                alivePosts.add(post);
+            }
+        }
+
+        // 6️⃣ 모델에 각각 추가
+        model.addAttribute("alivePosts", alivePosts);
+        model.addAttribute("deletedPosts", deletedPosts);
+
 
         return "user/mypage/my-posts";
     }
@@ -147,6 +179,8 @@ public class PageController {
                                  @AuthenticationPrincipal CustomUserDetails user) {
 
         if (user == null) return "redirect:/login";
+
+        model.addAttribute("page", "comments"); // ⭐ 추가
 
         String nickname = user.getNickname();
 
@@ -185,7 +219,7 @@ public class PageController {
                     .content(c.getContent())
                     .date(c.getCreatedDate())
                     .category("[삭제된 게시글]")
-                    .postTitle("(삭제된 게시글)")
+                    .postTitle(review != null ? review.getTitle() : "(삭제된 게시글)")
                     .postLink(null)
                     .build());
         }
@@ -259,13 +293,26 @@ public class PageController {
         }
 
 
-    /* --------------------------------------------
-       4) 날짜 기준 최신순 정렬
-    --------------------------------------------- */
+        // 4️⃣ 날짜 기준 최신순 정렬
         results.sort(Comparator.comparing(UserCommentDTO::getDate).reversed());
 
+        // 5️⃣ 활성 / 삭제 댓글 분리
+        List<UserCommentDTO> aliveComments = new ArrayList<>();
+        List<UserCommentDTO> deletedComments = new ArrayList<>();
 
-        model.addAttribute("comments", results);
+        for (UserCommentDTO c : results) {
+            if (c.getPostLink() == null) {
+                // 게시글이 삭제된 댓글
+                deletedComments.add(c);
+            } else {
+                aliveComments.add(c);
+            }
+        }
+
+        // 6️⃣ 모델에 전달
+        model.addAttribute("aliveComments", aliveComments);
+        model.addAttribute("deletedComments", deletedComments);
+
         return "user/mypage/my-comments";
     }
 

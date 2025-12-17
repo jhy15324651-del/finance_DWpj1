@@ -81,12 +81,17 @@ public interface ContentReviewRepository
 
 
     // ---------------------------------------------------------
-    // 🔥 7) 제목 / 내용 검색
+    // 🔥 7) 제목 / 내용 / 작성자 검색기능
     // ---------------------------------------------------------
 
+    //제목
     Page<ContentReview> findByTitleContainingAndIsDeletedFalse(String keyword, Pageable pageable);
 
+    //내용
     Page<ContentReview> findByContentContainingAndIsDeletedFalse(String keyword, Pageable pageable);
+
+    //작성자
+    Page<ContentReview> findByWriterContainingAndIsDeletedFalse(String writer, Pageable pageable);
 
 
     // ---------------------------------------------------------

@@ -1,113 +1,237 @@
+<th:block th:replace="content/layout/header-mypage :: header"></th:block>
+<th:block th:replace="content/layout/header-mypage :: bodyheader"></th:block>
+
 <div class="mypage-section">
     <h2>📌 내가 작성한 게시글</h2>
 
-    <!-- 아무 글도 없을 때 -->
-    <div th:if="${#lists.isEmpty(posts)}" class="empty-message">
-        아직 작성한 게시글이 없습니다.
+    <div class="mypage-two-column">
+
+        <!-- =====================
+             🟢 활성 게시글
+        ====================== -->
+        <div class="mypage-column alive">
+            <h3>🟢 활성 게시글</h3>
+
+            <div th:if="${#lists.isEmpty(alivePosts)}" class="empty-message">
+                활성 게시글이 없습니다.
+            </div>
+
+            <div th:each="p : ${alivePosts}">
+                <a th:href="${p.link}" class="post-card-link">
+                    <div class="post-card">
+
+                        <span class="post-category" th:text="${p.category}"></span>
+
+                        <div class="post-title" th:text="${p.title}"></div>
+
+                        <div class="post-meta">
+                            <span th:text="${#temporals.format(p.date,'yyyy.MM.dd')}"></span>
+                            · 조회수 <span th:text="${p.viewCount}"></span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- =====================
+             🔴 삭제된 게시글
+        ====================== -->
+        <div class="mypage-column deleted">
+            <h3>🔴 삭제된 게시글</h3>
+
+            <div th:if="${#lists.isEmpty(deletedPosts)}" class="empty-message">
+                삭제된 게시글이 없습니다.
+            </div>
+
+            <div class="post-card deleted"
+                 th:each="p : ${deletedPosts}">
+
+                <!-- 🔴 삭제 카운트 (여기!) -->
+                <span class="delete-count"
+                      th:if="${p.deleteRemainDays}"
+                      th:text="${p.deleteRemainDays > 0
+                    ? '[' + p.deleteRemainDays + '일 후 완전삭제 예정]'
+                    : '[오늘 완전삭제 예정]'}">
+                </span>
+
+                <span class="post-category" th:text="${p.category}"></span>
+
+                <div class="post-title deleted-title"
+                     th:text="${p.title}">
+                </div>
+
+                <div class="post-meta">
+                    삭제일:
+                    <span th:text="${#temporals.format(p.deletedAt,'yyyy.MM.dd')}"></span>
+                </div>
+
+                <a th:href="@{/content/restore-page/{id}(id=${p.id})}"
+                   class="restore-btn">
+                    복구
+                </a>
+            </div>
+        </div>
+
     </div>
-
-    <!-- 글 있을 때 -->
-    <ul class="post-list" th:each="p : ${posts}">
-        <li class="post-item">
-
-            <!-- 카테고리 -->
-            <span class="post-category" th:text="${p.category}"></span>
-
-            <!-- [삭제됨] 라벨 -->
-            <span th:if="${p.isDeleted}" class="deleted-label">[삭제됨]</span>
-
-            <!-- 삭제되지 않은 글: 원래 링크로 이동 -->
-            <a th:if="${!p.isDeleted}"
-               class="post-title"
-               th:href="${p.link}"
-               th:text="${p.title}">
-            </a>
-
-            <!-- 삭제된 글: 리포스트 전용 페이지로 이동 -->
-            <a th:if="${p.isDeleted}"
-               class="post-title deleted-title"
-               th:href="@{/content/restore-page/{id}(id=${p.id})}"
-               th:text="${p.title}">
-            </a>
-
-            <!-- 작성일 -->
-            <span class="post-date"
-                  th:text="${#temporals.format(p.date, 'yyyy.MM.dd')}"></span>
-
-            <!-- 조회수 -->
-            <span class="post-views"
-                  th:text="'조회수 ' + ${p.viewCount}"></span>
-
-        </li>
-    </ul>
-
-
 </div>
 
 <style>
-    .mypage-section h2 {
-        margin-bottom: 20px;
-        font-size: 22px;
-        font-weight: bold;
+    /* =====================
+   레이아웃 (comment 기준)
+===================== */
+    .mypage-two-column {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 32px;
+        margin-top: 24px;
     }
 
-    .post-list {
-        list-style: none;
-        padding: 0;
-        margin: 0;
+    /* =====================
+       컬럼 (comment 기준)
+    ===================== */
+    .mypage-column {
+        border-radius: 16px;
+        padding: 20px;
     }
 
-    .post-item {
+    .mypage-column.alive {
+        background: #ffffff;
+        border: 1px solid #eaeaea;
+    }
+
+    .mypage-column.deleted {
+        background: #fafafa;
+        border: 1px dashed #e0e0e0;
+    }
+
+    .mypage-column h3 {
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 16px;
         display: flex;
         align-items: center;
-        gap: 15px;
-        padding: 12px 0;
-        border-bottom: 1px solid #e5e5e5;
+        gap: 8px;
     }
 
+    /* =====================
+       카드 (comment-card 매핑)
+    ===================== */
+    .post-card {
+        background: #ffffff;
+        border: 1px solid #eeeeee;
+        border-radius: 12px;
+        padding: 14px 16px;
+        margin-bottom: 14px;
+        transition: background 0.15s;
+    }
+
+    .post-card:hover {
+        background: #f9f9ff;
+    }
+
+    .post-card-link {
+        text-decoration: none;
+        color: inherit;
+        display: block;
+    }
+
+    /* 삭제 카드 */
+    .post-card.deleted {
+        background: #ffffff;
+        opacity: 0.8;
+        cursor: default;
+    }
+
+    /* =====================
+       카테고리 (comment-category 매핑)
+    ===================== */
     .post-category {
-        background: #eceaff;
-        color: #5a4eff;
-        padding: 3px 8px;
-        border-radius: 6px;
+        display: inline-block;
         font-size: 12px;
         font-weight: 600;
+        padding: 3px 8px;
+        border-radius: 6px;
+        background: #eef2ff;
+        color: #4f46e5;
+        margin-bottom: 6px;
     }
 
+    /* =====================
+       제목 (comment-post-title 매핑)
+    ===================== */
     .post-title {
-        flex: 1;
-        font-size: 16px;
-        color: #333;
+        font-weight: 600;
+        font-size: 15px;
+        color: #222;
+        margin: 6px 0;
+    }
+
+    .post-title.deleted-title {
+        color: #999;
+        font-style: italic;
+    }
+
+    /* =====================
+       메타 정보
+    ===================== */
+    .post-meta {
+        font-size: 12px;
+        color: #888;
+    }
+
+    /* =====================
+       삭제 카운트 (post 전용 유지)
+    ===================== */
+    .delete-count {
+        display: inline-block;
+        margin-bottom: 6px;
+        padding: 3px 8px;
+        font-size: 12px;
+        font-weight: 700;
+        color: #fff;
+        background-color: #ff4e4e;
+        border-radius: 6px;
+    }
+
+    /* =====================
+       복구 버튼
+    ===================== */
+    .restore-btn {
+        display: inline-block;
+        margin-top: 8px;
+        font-size: 13px;
+        color: #4f46e5;
         text-decoration: none;
     }
 
-    .post-title:hover {
+    .restore-btn:hover {
         text-decoration: underline;
     }
 
-    .post-date {
-        color: #888;
-        font-size: 13px;
-    }
-
-    .post-views {
-        color: #666;
-        font-size: 13px;
-    }
-
+    /* =====================
+       빈 상태
+    ===================== */
     .empty-message {
-        color: #555;
         padding: 20px 0;
+        text-align: center;
+        color: #777;
     }
 
-    /* 삭제된 게시글 UI */
-    .deleted-label {
-        color: #ff4e4e;
-        font-weight: 700;
-        margin-right: 6px;
+    /* =====================
+    MyPage 타이틀
+ ===================== */
+    .mypage-section > h2 {
+        text-align: center;
+        margin: 40px 0 32px;
+        font-size: 28px;
+        font-weight: 800;
+        letter-spacing: -0.5px;
     }
 
-    .deleted-title {
-        color: #888 !important;
+    .mypage-section {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 24px 60px;
     }
+
 </style>

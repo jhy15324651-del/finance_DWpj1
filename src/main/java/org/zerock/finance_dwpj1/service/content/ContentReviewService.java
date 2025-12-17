@@ -6,13 +6,17 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.zerock.finance_dwpj1.entity.content.ContentComment;
 import org.zerock.finance_dwpj1.entity.content.ContentReview;
+import org.zerock.finance_dwpj1.entity.user.Role;
 import org.zerock.finance_dwpj1.repository.content.ContentCommentRepository;
 import org.zerock.finance_dwpj1.repository.content.ContentReviewRepository;
+import org.zerock.finance_dwpj1.repository.user.UserRepository;
+
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -34,7 +38,7 @@ public class ContentReviewService {
 
     private final ContentReviewRepository repo;
     private final ContentCommentRepository commentRepo;
-
+    private final UserRepository userRepository;
 
 
     // ---------------------------------------------------------
@@ -177,6 +181,21 @@ public class ContentReviewService {
     // ---------------------------------------------------------
     // 🔥 해시태그 / 제목 / 내용 검색
     // ---------------------------------------------------------
+
+    public Page<ContentReview> searchByTitle(String keyword, Pageable pageable) {
+        return repo.findByTitleContainingAndIsDeletedFalse(keyword, pageable);
+    }
+
+    public Page<ContentReview> searchByContent(String keyword, Pageable pageable) {
+        return repo.findByContentContainingAndIsDeletedFalse(keyword, pageable);
+    }
+
+    public Page<ContentReview> searchByWriter(String writer, Pageable pageable) {
+        return repo.findByWriterContainingAndIsDeletedFalse(writer, pageable);
+    }
+
+    //더미코드---------------------------------------------------------------------------------------
+
     public List<ContentReview> getContentsByHashtag(String hashtag) {
         return repo.findByHashtagsContainingAndIsDeletedFalseOrderByCreatedDateDesc(hashtag);
     }
@@ -187,14 +206,6 @@ public class ContentReviewService {
 
     public int getCountByHashtag(String hashtag) {
         return repo.countByHashtagsContainingAndIsDeletedFalse(hashtag);
-    }
-
-    public Page<ContentReview> searchByTitle(String keyword, Pageable pageable) {
-        return repo.findByTitleContainingAndIsDeletedFalse(keyword, pageable);
-    }
-
-    public Page<ContentReview> searchByContent(String keyword, Pageable pageable) {
-        return repo.findByContentContainingAndIsDeletedFalse(keyword, pageable);
     }
 
     public Page<ContentReview> searchTitleInTag(String tag, String keyword, Pageable pageable) {
@@ -240,16 +251,30 @@ public class ContentReviewService {
     // 🔥 저장
     // ---------------------------------------------------------
     @Transactional
-    public ContentReview saveContent(ContentReview content) {
+    public ContentReview saveContent(ContentReview post) {
+
+        String hashtags = post.getHashtags();
+
+        // 🔐 [1단계] #공지 해시태그 권한 체크
+        if (hashtags != null && hashtags.contains("#공지")) {
+
+            org.zerock.finance_dwpj1.entity.user.User user =
+                    userRepository.findById(post.getUserId())
+                            .orElseThrow(() -> new IllegalStateException("사용자 정보 없음"));
+
+            if (user.getRole() != Role.ADMIN) {
+                throw new IllegalArgumentException("공지 태그는 관리자만 사용할 수 있습니다.");
+            }
+        }
 
         // 🔥 본문 첫 이미지 → thumbnail 자동 생성
-        String thumbnail = extractFirstImage(content.getContent());
-        content.setThumbnail(thumbnail);   // null이면 null 저장됨 (OK)
+        String thumbnail = extractFirstImage(post.getContent());
+        post.setThumbnail(thumbnail);  // null이면 null 저장됨 (OK)
 
         // 🔥 preview도 자동 생성하는 경우
-        content.setPreview(makePreview(content.getContent()));
+        post.setPreview(makePreview(post.getContent()));
 
-        return repo.save(content);
+        return repo.save(post);
     }
 
 
@@ -262,6 +287,18 @@ public class ContentReviewService {
 
         ContentReview post = repo.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글입니다."));
+
+        // 🔐 [2단계] 공지 태그 수정 권한 체크
+        if (hashtags != null && hashtags.contains("#공지")) {
+
+            org.zerock.finance_dwpj1.entity.user.User user =
+                    userRepository.findById(post.getUserId())
+                            .orElseThrow(() -> new IllegalStateException("사용자 정보 없음"));
+
+            if (user.getRole() != Role.ADMIN) {
+                throw new IllegalArgumentException("공지 태그는 관리자만 사용할 수 있습니다.");
+            }
+        }
 
         post.setTitle(title);
         post.setContent(content);
@@ -392,6 +429,5 @@ public class ContentReviewService {
 
         return score;
     }
-
 
 }
