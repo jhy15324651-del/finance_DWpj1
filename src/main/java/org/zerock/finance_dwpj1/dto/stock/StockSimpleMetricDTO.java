@@ -15,4 +15,5 @@ public class StockSimpleMetricDTO {
     private BigDecimal dividendYield;    // 배당수익률
     private BigDecimal marketCap;         // 시가총액
     private Long sharesOutstanding;      // 상장주식수
+    private String marketCapSource;     // 출처
 }

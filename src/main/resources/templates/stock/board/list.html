@@ -381,10 +381,10 @@
             return num.toLocaleString("ko-KR") + " ₩";
         }
         if (currency === "USD") {
-            return num.toLocaleString("en-US", {
+            return"$ " + num.toLocaleString("en-US", {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2
-            }) + " $";
+            });
         }
         if (currency === "JPY") {
             return num.toLocaleString("ja-JP") + " ¥";
@@ -419,6 +419,8 @@
             displayStockInfo(stockInfo);
 
             // 차트 데이터 로드
+
+            await loadStockDetail();
             await loadBoard();
 
 
@@ -460,7 +462,7 @@
             </div>
             <div class="info-item">
                 <span class="info-label">시가총액</span>
-                <span class="info-value">${formatMarketCap(info.marketCap)}</span>
+                <span class="info-value" id="market-cap-value">-</span>
             </div>
             <div class="info-item">
                 <span class="info-label">52주 최고/최저</span>
@@ -509,13 +511,6 @@
         });
     }
 
-    // 시가총액 포맷
-    function formatMarketCap(num) {
-        if (!num) return '0';
-        if (num >= 1e12) return (num / 1e12).toFixed(1) + '조';
-        if (num >= 1e8) return (num / 1e8).toFixed(0) + '억';
-        return formatNumber(num);
-    }
     // 날짜 범위 적용
     function applyDateRange() {
         if (!chart) return;
@@ -687,6 +682,52 @@
 
         await loadHotBoard();
 
+    }
+
+    async function loadStockDetail() {
+        if (!currentTicker) return;
+
+        try {
+            const res = await fetch(`/stock/api/detail/${currentTicker}`);
+            if (!res.ok) return;
+
+            const d = await res.json();
+
+            const el = document.getElementById("market-cap-value");
+            if (!el) return;
+
+            if (d.marketCap != null) {
+                el.textContent = formatMarketCap(
+                    d.marketCap,
+                    d.marketCapSource
+                );
+            } else {
+                el.textContent = "-";
+            }
+
+        } catch (e) {
+            console.error("시가총액 로딩 실패", e);
+        }
+    }
+
+
+    function formatMarketCap(value, source) {
+        if (value == null) return "-";
+
+        // 네이버 (억 원)
+        if (source === "naver") {
+            return Number(value).toLocaleString("ko-KR") + "억 원";
+        }
+
+        // Alpha Vantage (달러)
+        if (source === "alpha") {
+            if (value >= 1e12) return "$" + (value / 1e12).toFixed(2) + "T";
+            if (value >= 1e9)  return "$" + (value / 1e9).toFixed(2) + "B";
+            if (value >= 1e6)  return "$" + (value / 1e6).toFixed(2) + "M";
+            return "$" + Number(value).toLocaleString("en-US");
+        }
+
+        return "-";
     }
 
 
