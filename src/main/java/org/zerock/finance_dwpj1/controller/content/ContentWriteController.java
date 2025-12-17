@@ -7,6 +7,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.zerock.finance_dwpj1.entity.content.ContentReview;
 import org.zerock.finance_dwpj1.service.content.ContentReviewService;
 import org.zerock.finance_dwpj1.service.user.CustomUserDetails;
@@ -41,7 +42,8 @@ public class ContentWriteController {
             @RequestParam String content,
             @RequestParam(required = false) String hashtags,
             @RequestParam(required = false) MultipartFile image,
-            @AuthenticationPrincipal CustomUserDetails loginUser
+            @AuthenticationPrincipal CustomUserDetails loginUser,
+            RedirectAttributes redirectAttributes
     ) throws IOException {
 
         if (loginUser == null) {
@@ -70,9 +72,18 @@ public class ContentWriteController {
             post.setImgUrl("/upload/" + fileName);
         }
 
-        contentReviewService.saveContent(post);
+        try {
+            contentReviewService.saveContent(post);
+        } catch (IllegalArgumentException e) {
+            // ⭐ alert로 띄울 메시지 전달
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            // ⭐ 다시 글쓰기 페이지로
+            return "redirect:/content/write";
+        }
+
         return "redirect:/content/category";
     }
+
 
     /* ============================================================
        3) 수정 폼  (삭제 여부 상관없이 읽기)
