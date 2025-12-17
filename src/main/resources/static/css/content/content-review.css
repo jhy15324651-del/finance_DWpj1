@@ -275,6 +275,13 @@ body {
     border-bottom: 1px solid #eee;
 }
 
+/* 게시글 본문 이미지 크기 제한 */
+.post-detail-content img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 24px auto;
+}
 
 /* 태그 */
 .tag-item {

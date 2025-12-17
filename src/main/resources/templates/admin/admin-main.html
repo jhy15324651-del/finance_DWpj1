@@ -124,9 +124,45 @@
         <div class="tab-content" id="news-tab">
             <div class="tab-header">
                 <h2>뉴스 관리</h2>
+                <p style="font-size: 0.9em; color: #666; margin-top: 5px;">
+                    정책 위반 뉴스를 삭제할 수 있습니다. 삭제된 뉴스는 30일 후 자동으로 영구 삭제됩니다.
+                </p>
             </div>
+
+            <div class="stats-section">
+                <div class="stat-card">
+                    <div class="stat-label">전체 뉴스</div>
+                    <div class="stat-value" id="news-total-count">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">삭제된 뉴스</div>
+                    <div class="stat-value" id="news-deleted-count" style="color: #dc3545;">0</div>
+                </div>
+            </div>
+
             <div class="content-section">
-                <p class="empty-state">뉴스 관리 기능은 준비 중입니다.</p>
+                <h3>뉴스 목록</h3>
+                <div class="table-wrapper">
+                    <table class="data-table" id="news-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 60px;">ID</th>
+                                <th>제목</th>
+                                <th style="width: 120px;">출처</th>
+                                <th style="width: 150px;">작성일</th>
+                                <th style="width: 100px;">상태</th>
+                                <th style="width: 100px;">작업</th>
+                            </tr>
+                        </thead>
+                        <tbody id="news-list">
+                            <tr>
+                                <td colspan="6" style="text-align: center; padding: 40px;">
+                                    로딩 중...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
@@ -134,9 +170,45 @@
         <div class="tab-content" id="content-tab">
             <div class="tab-header">
                 <h2>콘텐츠리뷰 관리</h2>
+                <p style="font-size: 0.9em; color: #666; margin-top: 5px;">
+                    정책 위반 콘텐츠 리뷰를 삭제할 수 있습니다. 삭제된 콘텐츠는 30일 후 자동으로 영구 삭제됩니다.
+                </p>
             </div>
+
+            <div class="stats-section">
+                <div class="stat-card">
+                    <div class="stat-label">전체 콘텐츠</div>
+                    <div class="stat-value" id="content-total-count">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">삭제된 콘텐츠</div>
+                    <div class="stat-value" id="content-deleted-count" style="color: #dc3545;">0</div>
+                </div>
+            </div>
+
             <div class="content-section">
-                <p class="empty-state">콘텐츠리뷰 관리 기능은 준비 중입니다.</p>
+                <h3>콘텐츠 리뷰 목록</h3>
+                <div class="table-wrapper">
+                    <table class="data-table" id="content-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 60px;">ID</th>
+                                <th>제목</th>
+                                <th style="width: 120px;">작성자</th>
+                                <th style="width: 150px;">작성일</th>
+                                <th style="width: 100px;">상태</th>
+                                <th style="width: 100px;">작업</th>
+                            </tr>
+                        </thead>
+                        <tbody id="content-list">
+                            <tr>
+                                <td colspan="6" style="text-align: center; padding: 40px;">
+                                    로딩 중...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
@@ -202,6 +274,32 @@
     </div>
 </div>
 
+<!-- 삭제 확인 모달 (뉴스/콘텐츠 공통) -->
+<div id="deleteModal" class="modal">
+    <div class="modal-content" style="max-width: 500px;">
+        <span class="close" onclick="closeDeleteModal()">&times;</span>
+        <h2>정말 삭제하시겠습니까?</h2>
+
+        <div style="margin: 20px 0; padding: 15px; background: #fff3cd; border-radius: 5px; border-left: 4px solid #ffc107;">
+            <p style="margin: 0; color: #856404;">
+                삭제된 콘텐츠는 30일 후 자동으로 영구 삭제됩니다.
+            </p>
+        </div>
+
+        <div class="form-group">
+            <label for="delete-reason">삭제 사유 *</label>
+            <textarea id="delete-reason" rows="4" placeholder="삭제 사유를 입력해주세요 (필수)" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;"></textarea>
+        </div>
+
+        <div class="form-actions" style="margin-top: 20px;">
+            <button type="button" class="btn-secondary" onclick="closeDeleteModal()">취소</button>
+            <button type="button" class="btn-danger" onclick="confirmDelete()">삭제</button>
+        </div>
+    </div>
+</div>
+
 <script th:src="@{/js/admin/admin-main.js}"></script>
+<script th:src="@{/js/admin/admin-news.js}"></script>
+<script th:src="@{/js/admin/admin-content.js}"></script>
 </body>
 </html>
