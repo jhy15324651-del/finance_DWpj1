@@ -69,6 +69,10 @@ public class ContentCategoryController {
                 posts = contentReviewService.searchByContent(keyword, pageable);
                 break;
 
+            case "writer":   // 🔥 작성자 검색
+                posts = contentReviewService.searchByWriter(keyword, pageable);
+                break;
+
             default:
                 // 🔥 다중 해시태그 AND 검색 (핵심 기능)
                 posts = contentReviewService.searchByMultipleTags(tagSet, pageable);

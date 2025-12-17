@@ -4,7 +4,11 @@
 <div class="write-container">
     <h2>새 글 작성</h2>
 
-    <form class="write-form" th:action="@{/content/write}" method="post" enctype="multipart/form-data">
+    <form id="writeForm"
+          class="write-form"
+          th:action="@{/content/write}"
+          method="post"
+          enctype="multipart/form-data">
 
         <!-- 제목 -->
         <label>제목</label>
@@ -31,6 +35,7 @@
             <button type="submit" class="btn-submit">작성하기</button>
             <a th:href="@{/content/category}" class="btn-cancel">돌아가기</a>
         </div>
+
     </form>
 </div>
 
@@ -94,6 +99,24 @@
     document.querySelector(".write-form").addEventListener("submit", function () {
         document.querySelector("#content-hidden").value = quill.root.innerHTML;
     });
+
 </script>
+
+<script>
+    document.getElementById("writeForm").addEventListener("submit", function (e) {
+
+        const hashtagsInput = document.querySelector("input[name='hashtags']");
+        if (!hashtagsInput) return;
+
+        const hashtags = hashtagsInput.value || "";
+
+        // 🔐 일반 유저용 공지 태그 차단 (UX)
+        if (hashtags.includes("#공지")) {
+            alert("공지 태그는 관리자만 사용할 수 있습니다.");
+            e.preventDefault(); // ❌ 서버 전송 막기
+        }
+    });
+</script>
+
 
 <th:block th:replace="content/layout/footer :: footer"></th:block>

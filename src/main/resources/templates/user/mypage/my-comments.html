@@ -1,91 +1,150 @@
+<th:block th:replace="content/layout/header-mypage :: header"></th:block>
+<th:block th:replace="content/layout/header-mypage :: bodyheader"></th:block>
+
 <div class="mypage-section">
     <h2>💬 내가 작성한 댓글</h2>
 
-    <!-- 댓글이 하나도 없을 때 -->
-    <div th:if="${#lists.isEmpty(comments)}" class="empty-message">
-        아직 작성한 댓글이 없습니다.
-    </div>
+    <div class="mypage-wrapper">
 
-    <!-- 댓글 목록 -->
-    <ul class="comment-list" th:each="c : ${comments}">
-        <li class="comment-item">
+        <!-- =====================
+             🟢 활성 댓글
+        ====================== -->
+        <div class="mypage-column alive">
+            <h3>🟢 활성 댓글</h3>
 
-            <!-- 카테고리 -->
-            <span class="comment-category"
-                  th:classappend="${c.category == '[삭제된 게시글]'} ? 'deleted'"
-                  th:text="${c.category}">
-            </span>
+            <div th:if="${#lists.isEmpty(aliveComments)}"
+                 class="empty-message">
+                활성 댓글이 없습니다.
+            </div>
 
-            <!-- 게시글 제목 -->
-            <div class="comment-post-title">
+            <div class="comment-card"
+                 th:each="c : ${aliveComments}">
 
-                <!-- 링크가 존재하는 경우 -->
-                <a th:if="${c.postLink != null}"
-                   th:href="${c.postLink}"
-                   th:text="${c.postTitle}">
-                </a>
-
-                <!-- 삭제된 게시글 -->
-                <span th:if="${c.postLink == null}"
-                      class="deleted-title"
-                      th:text="${c.postTitle}">
+                <span class="comment-category"
+                      th:text="${c.category}">
                 </span>
+
+                <div class="comment-post-title">
+                    <a th:href="${c.postLink}"
+                       th:text="${c.postTitle}">
+                    </a>
+                </div>
+
+                <div class="comment-content"
+                     th:text="${#strings.abbreviate(c.content, 80)}">
+                </div>
+
+                <div class="comment-date"
+                     th:text="${#temporals.format(c.date, 'yyyy.MM.dd HH:mm')}">
+                </div>
+            </div>
+        </div>
+
+        <!-- =====================
+             🔴 삭제된 댓글
+        ====================== -->
+        <div class="mypage-column deleted">
+            <h3>🔴 삭제된 댓글</h3>
+
+            <div th:if="${#lists.isEmpty(deletedComments)}"
+                 class="empty-message">
+                삭제된 댓글이 없습니다.
             </div>
 
-            <!-- 댓글 내용 (요약 표시) -->
-            <div class="comment-content"
-                 th:text="${#strings.abbreviate(c.content, 60)}">
-            </div>
+            <div class="comment-card deleted"
+                 th:each="c : ${deletedComments}">
 
-            <!-- 작성일 -->
-            <div class="comment-date"
-                 th:text="${#temporals.format(c.date, 'yyyy.MM.dd HH:mm')}">
-            </div>
+                <span class="comment-category deleted"
+                      th:text="${c.category}">
+                </span>
 
-        </li>
-    </ul>
+                <div class="comment-post-title deleted-title"
+                     th:text="${c.postTitle}">
+                </div>
+
+                <div class="comment-content"
+                     th:text="${#strings.abbreviate(c.content, 80)}">
+                </div>
+
+                <div class="comment-date"
+                     th:text="${#temporals.format(c.date, 'yyyy.MM.dd HH:mm')}">
+                </div>
+            </div>
+        </div>
+
+    </div>
 </div>
 
+
 <style>
-    .mypage-section h2 {
-        margin-bottom: 20px;
-        font-size: 22px;
-        font-weight: bold;
+    .mypage-wrapper {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 32px;
+        margin-top: 24px;
     }
 
-    .comment-list {
-        list-style: none;
-        padding: 0;
-        margin: 0;
+    /* 컬럼 */
+    .mypage-column {
+        border-radius: 16px;
+        padding: 20px;
     }
 
-    .comment-item {
-        padding: 15px 0;
-        border-bottom: 1px solid #e5e5e5;
+    .mypage-column.alive {
+        background: #ffffff;
+        border: 1px solid #eaeaea;
     }
 
+    .mypage-column.deleted {
+        background: #fafafa;
+        border: 1px dashed #e0e0e0;
+    }
+
+    /* 컬럼 타이틀 */
+    .mypage-column h3 {
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* 댓글 카드 */
+    .comment-card {
+        background: #ffffff;
+        border: 1px solid #eeeeee;
+        border-radius: 12px;
+        padding: 14px 16px;
+        margin-bottom: 14px;
+    }
+
+    .comment-card.deleted {
+        opacity: 0.8;
+    }
+
+    /* 카테고리 */
     .comment-category {
         display: inline-block;
-        background: #eef2ff;
-        color: #4a57ff;
-        padding: 3px 8px;
-        border-radius: 6px;
         font-size: 12px;
         font-weight: 600;
-        margin-right: 8px;
+        padding: 3px 8px;
+        border-radius: 6px;
+        background: #eef2ff;
+        color: #4f46e5;
         margin-bottom: 6px;
     }
 
     .comment-category.deleted {
-        background: #f3f3f3;
+        background: #f0f0f0;
         color: #999;
-        font-style: italic;
     }
 
+    /* 게시글 제목 */
     .comment-post-title a {
-        font-weight: bold;
+        font-weight: 600;
         font-size: 15px;
-        color: #333;
+        color: #222;
         text-decoration: none;
     }
 
@@ -94,26 +153,54 @@
     }
 
     .deleted-title {
-        font-weight: bold;
+        font-weight: 600;
         font-size: 15px;
         color: #999;
-        font-style: italic;
+        font-style: italic; /* 선택 */
     }
 
+    /* 댓글 내용 */
     .comment-content {
         margin: 6px 0;
-        color: #555;
         font-size: 14px;
+        color: #555;
     }
 
+    /* 날짜 */
     .comment-date {
         font-size: 12px;
         color: #888;
     }
 
+    /* 비어있을 때 */
     .empty-message {
         padding: 20px 0;
-        color: #666;
         text-align: center;
+        color: #777;
     }
+
+    /* =====================
+        MyPage 타이틀
+     ===================== */
+    .mypage-section > h2 {
+        text-align: center;
+        margin: 40px 0 32px;
+        font-size: 28px;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+    }
+
+    .mypage-section {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 24px 60px;
+    }
+
+
 </style>
+
+<th:block th:replace="content/layout/footer :: footer"></th:block>
+
+
+
+
