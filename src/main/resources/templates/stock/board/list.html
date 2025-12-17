@@ -665,15 +665,7 @@
             });
 
             // 페이지네이션 표시
-            pagination.innerHTML = `
-            <button onclick="changeBoardPage(${list.number - 1})"
-                    class="quick-btn" ${list.first ? "disabled" : ""}>◀ 이전</button>
-            <span style="margin:0 10px;">
-                ${list.number + 1} / ${list.totalPages}
-            </span>
-            <button onclick="changeBoardPage(${list.number + 1})"
-                    class="quick-btn" ${list.last ? "disabled" : ""}>다음 ▶</button>
-        `;
+            renderPagination(list);
 
         } catch (err) {
             console.error("게시판 로드 실패:", err);
@@ -728,6 +720,63 @@
         }
 
         return "-";
+    }
+
+    function renderPagination(pageData) {
+        const pagination = document.getElementById("board-pagination");
+
+        const currentPage = pageData.number;       // 0-based
+        const totalPages = pageData.totalPages;
+        const blockSize = 10;
+
+        const currentBlock = Math.floor(currentPage / blockSize);
+        const startPage = currentBlock * blockSize;
+        const endPage = Math.min(startPage + blockSize - 1, totalPages - 1);
+
+        let html = "";
+
+        // ⏮ 처음
+        if (currentPage > 0) {
+            html += `<button class="quick-btn" onclick="changeBoardPage(0)">⏮</button>`;
+        }
+
+        // ◀ 이전 블록
+        if (startPage > 0) {
+            html += `<button class="quick-btn" onclick="changeBoardPage(${startPage - 1})">◀</button>`;
+        }
+
+        // 🔢 페이지 번호
+        for (let i = startPage; i <= endPage; i++) {
+            const active = i === currentPage
+                ? `style="background:#667eea;color:white;font-weight:600;"`
+                : "";
+
+            html += `
+            <button class="quick-btn"
+                    ${active}
+                    onclick="changeBoardPage(${i})">
+                ${i + 1}
+            </button>
+        `;
+        }
+
+        // ▶ 다음 블록
+        if (endPage < totalPages - 1) {
+            html += `<button class="quick-btn" onclick="changeBoardPage(${endPage + 1})">▶</button>`;
+        }
+
+        // ⏭ 마지막
+        if (currentPage < totalPages - 1) {
+            html += `<button class="quick-btn" onclick="changeBoardPage(${totalPages - 1})">⏭</button>`;
+        }
+
+        pagination.innerHTML = html;
+    }
+
+    function changeBoardPage(page) {
+        if (page < 0) return;
+        loadBoard(page);
+        window.scrollTo({ top: 600, behavior: "smooth" });
     }
 
 
@@ -799,29 +848,6 @@
 
 
 
-    // 📌 게시판 페이지 변경
-    function changeBoardPage(page) {
-        if (page < 0) return;
-        loadBoard(page);
-    }
-
-    function formatBoardDate(dateStr) {
-        if (!dateStr) return "";
-
-        const date = new Date(dateStr);
-        const now = new Date();
-
-        const isToday =
-            date.getFullYear() === now.getFullYear() &&
-            date.getMonth() === now.getMonth() &&
-            date.getDate() === now.getDate();
-
-        if (isToday) {
-            return dateStr.substring(11, 16);  // HH:mm
-        } else {
-            return dateStr.substring(0, 10);   // yyyy-MM-dd
-        }
-    }
 
 
 
