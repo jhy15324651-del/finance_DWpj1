@@ -409,6 +409,47 @@
         }
 
 
+        .metric-card {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-top: 6px;
+        }
+
+
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .metric-item {
+            background: #f7fafc;
+            border-radius: 10px;
+            padding: 12px;
+        }
+
+        .metric-label {
+            font-size: 0.8rem;
+            color: #718096;
+            margin-bottom: 4px;
+        }
+
+        .metric-value {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #2d3748;
+        }
+
+        .metric-value.roe {
+            color: #e53e3e;
+        }
+
+        .metric-value.dividend {
+            color: #2b6cb0;
+        }
+
     </style>
 </head>
 <body>
@@ -658,10 +699,10 @@
             return num.toLocaleString("ko-KR") + " ₩";
         }
         if (currency === "USD") {
-            return num.toLocaleString("en-US", {
+            return "$ " + num.toLocaleString("en-US", {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2
-            }) + " $";
+            });
         }
         if (currency === "JPY") {
             return num.toLocaleString("ja-JP") + " ¥";
@@ -844,6 +885,12 @@
     }
 
 
+    function guessCurrencyByTicker(ticker) {
+        if (/^\d{6}$/.test(ticker)) return "KRW"; // 한국
+        return "USD"; // 기본
+    }
+
+
 
     // 종목 정보 표시
     function displayStockInfo(info) {
@@ -875,7 +922,7 @@
             </div>
             <div class="info-item">
                 <span class="info-label">시가총액</span>
-                <span class="info-value">${formatMarketCap(info.marketCap)}</span>
+                <span class="info-value" id="market-cap-value">-</span>
             </div>
             <div class="info-item">
                 <span class="info-label">52주 최고/최저</span>
@@ -924,13 +971,6 @@
         });
     }
 
-    // 시가총액 포맷
-    function formatMarketCap(num) {
-        if (!num) return '0';
-        if (num >= 1e12) return (num / 1e12).toFixed(1) + '조';
-        if (num >= 1e8) return (num / 1e8).toFixed(0) + '억';
-        return formatNumber(num);
-    }
 
     // 이평선 토글
     function toggleSMA(period) {
@@ -1153,45 +1193,74 @@
 
             const d = await res.json();
 
+            if (d.marketCap != null) {
+                const el = document.getElementById('market-cap-value');
+                if (el) {
+                    el.textContent = formatMarketCap(d.marketCap, d.marketCapSource);
+
+                }
+            }
+
+
+
             panel.innerHTML = `
-        <div><b>PER:</b> ${d.per ?? '-'}</div>
+                <div class="metric-card">
+                    <div class="metric-grid">
+                        <div class="metric-item">
+                            <div class="metric-label">PER</div>
+                            <div class="metric-value">${d.per ?? '-'}</div>
+                        </div>
 
-        <div><b>ROE:</b> ${
-                d.roe != null
-                    ? (d.roe).toFixed(1) + '%'
-                    : '-'
-            }</div>
+                        <div class="metric-item">
+                            <div class="metric-label">ROE</div>
+                            <div class="metric-value roe">
+                                ${d.roe != null ? d.roe.toFixed(1) + '%' : '-'}
+                            </div>
+                        </div>
 
-        <div><b>주당 배당금:</b> ${
-                d.dividend != null
-                    ? d.dividend
-                    : '-'
-            }</div>
+                        <div class="metric-item">
+                            <div class="metric-label">주당 배당금</div>
+                            <div class="metric-value">
+                                ${d.dividend != null ? formatPrice(d.dividend, guessCurrencyByTicker(currentTicker)) : '-'}
+                            </div>
+                        </div>
 
-        <div><b>배당 수익률:</b> ${
-                d.dividendYield != null
-                    ? (d.dividendYield * 100).toFixed(2) + '%'
-                    : '-'
-            }</div>
-
-        <div><b>시가총액:</b> ${
-                d.marketCap != null
-                    ? Number(d.marketCap).toLocaleString('ko-KR') + ' 원'
-                    : '-'
-            }</div>
-
-        <div><b>상장 주식수:</b> ${
-                d.sharesOutstanding != null
-                    ? Number(d.sharesOutstanding).toLocaleString('ko-KR') + ' 주'
-                    : '-'
-            }</div>
-    `;
+                        <div class="metric-item">
+                            <div class="metric-label">배당 수익률</div>
+                            <div class="metric-value dividend">
+                                ${d.dividendYield != null ? (d.dividendYield).toFixed(2) + '%' : '-'}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                    `;
         } catch (e) {
             console.error(e);
             panel.innerHTML = `
         <div style="color:red;">지표 정보 로딩 실패</div>
     `;
         }
+    }
+
+    function formatMarketCap(value, marketCapSource) {
+        if (value == null) return '-';
+
+        marketCapSource = (marketCapSource || '').toLowerCase();
+
+        // 네이버: 억 원
+        if (marketCapSource === 'naver') {
+            return Number(value).toLocaleString('ko-KR') + '억 원';
+        }
+
+        // Alpha Vantage: 달러
+        if (marketCapSource === 'alpha') {
+            if (value >= 1e12) return '$' + (value / 1e12).toFixed(2) + 'T';
+            if (value >= 1e9)  return '$' + (value / 1e9).toFixed(2) + 'B';
+            if (value >= 1e6)  return '$' + (value / 1e6).toFixed(2) + 'M';
+            return '$' + Number(value).toLocaleString('en-US');
+        }
+
+        return '-';
     }
 
 

@@ -9,6 +9,8 @@ import org.springframework.web.client.RestTemplate;
 import org.zerock.finance_dwpj1.dto.stock.StockAlphaOverviewDTO;
 import org.zerock.finance_dwpj1.dto.stock.StockSimpleMetricDTO;
 
+import java.math.BigDecimal;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -45,19 +47,32 @@ public class StockAlphaVantageService {
         }
     }
 
+
+
     public StockSimpleMetricDTO getSimpleMetric(String symbol) {
 
         StockAlphaOverviewDTO o = getOverview(symbol);
 
+
         if (o == null) return null;
+
+
+        BigDecimal dividendYield = o.getDividendYield();
+
+        // Alpha Vantage 배당률 100배
+        if (dividendYield != null) {
+            dividendYield = dividendYield.multiply(BigDecimal.valueOf(100));
+        }
+
 
         return StockSimpleMetricDTO.builder()
                 .per(o.getPer())
                 .roe(o.getRoe())
                 .dividend(o.getDividend())
-                .dividendYield(o.getDividendYield())
+                .dividendYield(dividendYield)
                 .marketCap(o.getMarketCap())
                 .sharesOutstanding(o.getSharesOutstanding())
+                .marketCapSource("alpha")
                 .build();
     }
 

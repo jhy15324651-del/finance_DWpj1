@@ -59,19 +59,21 @@ public class StockNaverScrapeService {
                     dividend = parseBigDecimal(row);
                 }
 
+
                 if (dividendYield == null &&
                         (label.contains("시가배당률") || label.contains("배당수익률"))) {
                     dividendYield = parseBigDecimal(row);
                 }
 
-                if (marketCap == null && label.contains("시가총액")) {
-                    marketCap = parseBigDecimal(row);
-                }
 
                 if (sharesOutstanding == null && label.contains("상장주식수")) {
                     sharesOutstanding = parseLong(row);
                 }
             }
+
+            marketCap = scrapeMarketCap(doc);
+
+
 
             log.info("✅ SCRAPE RESULT per={}, roe={}, div={}, yield={}",
                     per, roe, dividend, dividendYield);
@@ -83,6 +85,7 @@ public class StockNaverScrapeService {
                     .dividendYield(dividendYield)
                     .marketCap(marketCap)
                     .sharesOutstanding(sharesOutstanding)
+                    .marketCapSource("naver")
                     .build();
 
         } catch (Exception e) {
@@ -90,6 +93,10 @@ public class StockNaverScrapeService {
             return empty();
         }
     }
+
+
+
+
 
     // ========================
     // 파싱 유틸
@@ -133,6 +140,34 @@ public class StockNaverScrapeService {
             return null;
         }
     }
+
+
+    private BigDecimal scrapeMarketCap(Document doc) {
+        try {
+            Element th = doc.selectFirst("th:contains(시가총액)");
+            if (th == null) {
+                log.warn("❌ 시가총액 th not found");
+                return null;
+            }
+
+            Element td = th.nextElementSibling();
+            if (td == null) return null;
+
+            String text = td.text()
+                    .replace(",", "")
+                    .replace("억원", "")
+                    .trim();
+
+            if (text.isEmpty() || text.equals("--")) return null;
+
+            // 이미 '억' 단위
+            return new BigDecimal(text);
+
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
 
     private StockSimpleMetricDTO empty() {
         return StockSimpleMetricDTO.builder().build();
