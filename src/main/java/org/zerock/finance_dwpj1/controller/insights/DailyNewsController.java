@@ -277,4 +277,56 @@ public class DailyNewsController {
 
         return ResponseEntity.ok(response);
     }
+
+    /**
+     * 번역 안 된 뉴스 개수 조회 (관리자 전용)
+     */
+    @GetMapping("/admin/untranslated-count")
+    public ResponseEntity<Map<String, Object>> getUntranslatedCount() {
+        log.info("번역 안 된 뉴스 개수 조회");
+
+        Map<String, Object> response = new HashMap<>();
+        try {
+            long count = dailyNewsService.getUntranslatedNewsCount();
+
+            response.put("success", true);
+            response.put("count", count);
+            response.put("message", count + "개의 번역 안 된 뉴스가 있습니다.");
+
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("error", e.getMessage());
+            response.put("message", "번역 안 된 뉴스 개수 조회 실패: " + e.getMessage());
+        }
+
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * 번역 안 된 뉴스 재번역 실행 (관리자 전용)
+     */
+    @PostMapping("/admin/retranslate")
+    public ResponseEntity<Map<String, Object>> retranslateNews() {
+        log.info("번역 안 된 뉴스 재번역 시작");
+
+        Map<String, Object> response = new HashMap<>();
+        try {
+            Map<String, Integer> result = dailyNewsService.retranslateUntranslatedNews();
+
+            response.put("success", true);
+            response.put("total", result.get("total"));
+            response.put("successCount", result.get("success"));
+            response.put("failCount", result.get("fail"));
+            response.put("message", String.format("재번역 완료 - 성공: %d개, 실패: %d개, 전체: %d개",
+                    result.get("success"), result.get("fail"), result.get("total")));
+
+        } catch (Exception e) {
+            log.error("재번역 중 오류 발생", e);
+            response.put("success", false);
+            response.put("error", e.getMessage());
+            response.put("message", "재번역 실패: " + e.getMessage());
+        }
+
+        return ResponseEntity.ok(response);
+    }
 }

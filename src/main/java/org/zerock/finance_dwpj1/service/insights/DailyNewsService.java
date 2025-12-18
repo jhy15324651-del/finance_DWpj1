@@ -28,6 +28,7 @@ public class DailyNewsService {
 
     private final InsightsNewsRepository newsRepository;
     private final InsightsCommentRepository commentRepository;
+    private final org.zerock.finance_dwpj1.service.common.GPTService gptService;
 
     /**
      * 데일리 뉴스 조회 (24시간 이내)
@@ -293,5 +294,87 @@ public class DailyNewsService {
 
         log.info("총 {}개의 샘플 뉴스가 생성되었습니다.", savedCount);
         return savedCount;
+    }
+
+    /**
+     * 번역 안 된 뉴스 개수 조회
+     */
+    @Transactional(readOnly = true)
+    public long getUntranslatedNewsCount() {
+        return newsRepository.countUntranslatedNews();
+    }
+
+    /**
+     * 번역 안 된 기존 뉴스 재번역 (기존 GPTService 재사용)
+     * @return 재번역 성공/실패 카운트
+     */
+    @Transactional
+    public java.util.Map<String, Integer> retranslateUntranslatedNews() {
+        log.info("===== 번역 안 된 뉴스 재번역 시작 =====");
+
+        List<InsightsNews> untranslatedNews = newsRepository.findUntranslatedNews();
+        log.info("번역 대상 뉴스: {}개", untranslatedNews.size());
+
+        int successCount = 0;
+        int failCount = 0;
+
+        for (InsightsNews news : untranslatedNews) {
+            try {
+                String originalContent = news.getOriginalContent();
+                if (originalContent == null || originalContent.isEmpty()) {
+                    log.warn("원문 없음 - 뉴스 ID: {}", news.getId());
+                    failCount++;
+                    continue;
+                }
+
+                // 재시도 로직 (최대 2회)
+                String translatedContent = null;
+                Exception lastError = null;
+
+                for (int attempt = 1; attempt <= 2; attempt++) {
+                    try {
+                        log.info("뉴스 ID: {} - 번역 시도 {}/2", news.getId(), attempt);
+
+                        // 기존 GPTService 재사용
+                        translatedContent = gptService.translateNewsToKorean(originalContent);
+
+                        // 성공 시 break
+                        if (translatedContent != null && !translatedContent.isEmpty()
+                            && !translatedContent.equals(originalContent)) {
+                            break;
+                        }
+
+                    } catch (Exception e) {
+                        lastError = e;
+                        log.warn("번역 실패 (시도 {}/2): {}", attempt, e.getMessage());
+
+                        if (attempt < 2) {
+                            Thread.sleep(1000); // 1초 대기 후 재시도
+                        }
+                    }
+                }
+
+                // 번역 결과 저장
+                if (translatedContent != null && !translatedContent.isEmpty()
+                    && !translatedContent.equals(originalContent)) {
+                    news.setContent(translatedContent);
+                    newsRepository.save(news);
+                    successCount++;
+                    log.info("번역 성공 - 뉴스 ID: {}", news.getId());
+                } else {
+                    // Fallback: 원문 유지
+                    failCount++;
+                    log.warn("번역 실패, 원문 유지 - 뉴스 ID: {}", news.getId());
+                }
+
+            } catch (Exception e) {
+                log.error("뉴스 재번역 중 오류 - ID: {}", news.getId(), e);
+                failCount++;
+            }
+        }
+
+        log.info("===== 재번역 완료 - 성공: {}개, 실패: {}개 =====", successCount, failCount);
+
+        return java.util.Map.of("success", successCount, "fail", failCount, "total", untranslatedNews.size());
     }
 }

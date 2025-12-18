@@ -188,19 +188,19 @@ public class AdminContentDeletionService {
     }
 
     /**
-     * 관리자 목록 조회용 - 전체 뉴스 (삭제 포함)
+     * 관리자 목록 조회용 - 전체 뉴스 (삭제 포함, 최신순)
      */
     @Transactional(readOnly = true)
     public List<InsightsNews> getAllNewsForAdmin() {
-        return newsRepository.findAll();
+        return newsRepository.findAllOrderByCreatedAtDesc();
     }
 
     /**
-     * 관리자 목록 조회용 - 전체 콘텐츠 리뷰 (삭제 포함)
+     * 관리자 목록 조회용 - 전체 콘텐츠 리뷰 (삭제 포함, 최신순)
      */
     @Transactional(readOnly = true)
     public List<ContentReview> getAllContentReviewsForAdmin() {
-        return contentReviewRepository.findAll();
+        return contentReviewRepository.findAllOrderByCreatedDateDesc();
     }
 
     // ========================================

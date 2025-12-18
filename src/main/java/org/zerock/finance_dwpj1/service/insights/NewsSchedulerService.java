@@ -84,24 +84,22 @@ public class NewsSchedulerService {
 
                     String originalContent = newsDTO.getContent(); // 크롤링한 영어 원문
 
-                    // GPT 번역 및 요약 생성 (실패해도 계속 진행)
+                    // GPT 번역 (실패해도 계속 진행)
                     try {
-                        // 한국어 번역
+                        // 한국어 번역 (summary 제거 - 번역된 content만 사용)
                         String translatedContent = gptService.translateNewsToKorean(originalContent);
                         newsDTO.setContent(translatedContent);
-
-                        // 요약 생성 (번역된 내용 기반)
-                        String summary = gptService.summarizeNews(translatedContent);
-                        newsDTO.setSummary(summary);
 
                         // 영어 원문 저장
                         newsDTO.setOriginalContent(originalContent);
 
+                        log.info("뉴스 번역 완료: {} -> {}자",
+                                originalContent.length(), translatedContent.length());
+
                     } catch (Exception gptError) {
-                        log.warn("GPT 처리 실패, 원문 사용: {}", gptError.getMessage());
+                        log.warn("GPT 번역 실패, 원문 사용: {}", gptError.getMessage());
                         newsDTO.setContent(originalContent); // 번역 실패 시 원문 사용
                         newsDTO.setOriginalContent(originalContent);
-                        newsDTO.setSummary("GPT API 키를 설정하면 자동 번역 및 요약이 생성됩니다.");
                     }
 
                     // Entity로 변환 후 저장
