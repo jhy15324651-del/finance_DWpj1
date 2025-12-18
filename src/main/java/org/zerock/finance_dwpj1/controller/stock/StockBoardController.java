@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.zerock.finance_dwpj1.dto.stock.StockBoardDTO;
 import org.zerock.finance_dwpj1.dto.stock.StockInfoDTO;
 import org.zerock.finance_dwpj1.dto.user.UserSessionDTO;
+import org.zerock.finance_dwpj1.entity.stock.StockBoard;
 import org.zerock.finance_dwpj1.service.stock.StockBoardService;
 import org.zerock.finance_dwpj1.service.stock.YahooFinanceStockService;
 import org.zerock.finance_dwpj1.service.user.CustomUserDetails;
@@ -194,14 +196,18 @@ public class StockBoardController {
 
 
 
+    //검색
     @GetMapping("/api/{ticker}")
     @ResponseBody
-    public Page<StockBoardDTO> apiList(@PathVariable String ticker,
-                                       @RequestParam(defaultValue = "0") int page,
-                                       @RequestParam(defaultValue = "10") int size) {
-
-        PageRequest pageable = PageRequest.of(page, size);
-        return stockBoardService.getList(ticker, pageable);
+    public Page<StockBoardDTO> search(
+            @PathVariable String ticker,
+            @RequestParam(defaultValue = "tc") String type,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+        return stockBoardService.getBoardListDTO(ticker, type, keyword, pageable);
     }
 
 
@@ -249,6 +255,7 @@ public class StockBoardController {
     }
 
 
+    //핫한 글
     @GetMapping("/{ticker}/hot")
     @ResponseBody
     public Map<String, Object> getHotBoard(@PathVariable String ticker) {

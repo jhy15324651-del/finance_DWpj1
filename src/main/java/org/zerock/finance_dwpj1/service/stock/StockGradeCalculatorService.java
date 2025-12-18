@@ -30,6 +30,10 @@ public class StockGradeCalculatorService {
 
     // ★ 이모지 변환 통합
     public String gradeToEmoji(String grade) {
+        if (grade == null) return "";
+
+        grade = grade.trim().toUpperCase();
+
         return switch (grade) {
             case "4" -> "💰";
             case "3" -> "💸";

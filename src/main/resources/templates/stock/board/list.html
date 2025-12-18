@@ -330,8 +330,30 @@
                     <tbody id="board-body"></tbody>
                 </table>
 
-                <div id="board-pagination"
-                     style="margin-top: 20px; text-align: center; display:none;">
+                <div id="board-pagination-wrapper"
+                     style="margin-top:20px; display:none;
+                     display:flex; justify-content:center; align-items:center;">
+
+                    <!-- 페이지네이션 버튼 -->
+                    <div id="board-pagination"></div>
+                </div>
+                <!--  게시판 검색 -->
+                <div style="display:flex; gap:6px; justify-content:flex-end; align-items:center;">
+                    <select id="board-search-type"
+                            style="padding:6px; border-radius:6px; border:1px solid #e2e8f0;">
+                        <option value="tc">제목+내용</option>
+                        <option value="t">제목</option>
+                        <option value="c">내용</option>
+                        <option value="w">작성자</option>
+                    </select>
+
+                    <input type="text"
+                           id="board-search-keyword"
+                           placeholder="게시판 검색"
+                           style="padding:6px 10px; border-radius:6px; border:1px solid #e2e8f0;"
+                           onkeypress="handleBoardSearchEnter(event)">
+
+                    <button class="quick-btn" onclick="searchBoard()">검색</button>
                 </div>
             </div>
         </div>
@@ -606,9 +628,28 @@
         const PAGE_SIZE = 20;
 
 
+
+
+
         // 게시글 목록 API 요청
         try {
-            const res = await fetch(`/stock/board/api/${currentTicker}?page=${page}&size=${PAGE_SIZE}`);
+
+                const query = new URLSearchParams({
+                    page,
+                    size: PAGE_SIZE
+                });
+
+                if (boardSearchKeyword) {
+                    query.append("type", boardSearchType);
+                    query.append("keyword", boardSearchKeyword);
+                }
+
+                const res = await fetch(
+                    `/stock/board/api/${currentTicker}?${query.toString()}`
+                );
+
+
+
             const list = await res.json();
 
             const table = document.getElementById("board-table");
@@ -616,7 +657,7 @@
             const pagination = document.getElementById("board-pagination");
 
             table.style.display = "table";
-            pagination.style.display = "block";
+            document.getElementById("board-pagination-wrapper").style.display = "flex";
 
             tbody.innerHTML = "";
 
@@ -845,9 +886,37 @@
         }
     }
 
+    let boardSearchType = "tc";
+    let boardSearchKeyword = "";
 
 
 
+    //검색
+    function searchBoard() {
+        boardSearchType =
+            document.getElementById("board-search-type").value;
+
+        boardSearchKeyword =
+            document.getElementById("board-search-keyword").value.trim();
+
+        loadBoard(0); // 검색은 항상 1페이지부터
+    }
+
+    function resetBoardSearch() {
+        boardSearchType = "tc";
+        boardSearchKeyword = "";
+
+        document.getElementById("board-search-type").value = "tc";
+        document.getElementById("board-search-keyword").value = "";
+
+        loadBoard(0);
+    }
+
+    function handleBoardSearchEnter(e) {
+        if (e.key === "Enter") {
+            searchBoard();
+        }
+    }
 
 
 
