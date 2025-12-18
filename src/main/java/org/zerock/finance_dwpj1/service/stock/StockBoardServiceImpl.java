@@ -175,6 +175,30 @@ public class StockBoardServiceImpl implements StockBoardService {
     }
 
 
+    //검색
+    public Page<StockBoardDTO> getBoardListDTO(
+            String ticker, String type, String keyword, Pageable pageable) {
+
+        Page<StockBoard> page;
+
+        if (keyword == null || keyword.isBlank()) {
+            page = stockBoardRepository.findByTickerOrderByIdDesc(ticker, pageable);
+        } else {
+            page = stockBoardRepository.search(ticker, type, keyword, pageable);
+        }
+
+        // 🔥 여기서 Entity → DTO 변환 + 이모지 계산
+        return page.map(board -> {
+            StockBoardDTO dto = entityToDTO(board);
+
+            Long userId = userService.getUserIdByNickname(board.getWriter());
+            String grade = userService.getUserGrade(userId);
+            String medal = stockGradeCalculatorService.gradeToEmoji(grade);
+
+            dto.setMedal(medal);
+            return dto;
+        });
+    }
 
 
 
@@ -212,4 +236,9 @@ public class StockBoardServiceImpl implements StockBoardService {
                 .writer(dto.getWriter())
                 .build();
     }
+
+
+
 }
+
+

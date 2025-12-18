@@ -3,6 +3,7 @@ package org.zerock.finance_dwpj1.service.stock;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.zerock.finance_dwpj1.dto.stock.StockBoardDTO;
+import org.zerock.finance_dwpj1.entity.stock.StockBoard;
 
 import java.util.List;
 
@@ -42,5 +43,8 @@ public interface StockBoardService {
     //댓글많은글
     List<StockBoardDTO> getTopComment(String ticker);
 
+    //검색
+    Page<StockBoardDTO> getBoardListDTO(String ticker, String type, String keyword, Pageable pageable);
 
-}
+
+    }

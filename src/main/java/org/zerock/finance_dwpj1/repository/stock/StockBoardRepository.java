@@ -51,4 +51,25 @@ public interface StockBoardRepository extends JpaRepository<StockBoard, Long> {
             Pageable pageable
     );
 
+
+    //검색
+    @Query("""
+    SELECT b
+    FROM StockBoard b
+    WHERE b.ticker = :ticker
+    AND (
+            (:type = 't'  AND b.title   LIKE %:keyword%)
+        OR (:type = 'c'  AND b.content LIKE %:keyword%)
+        OR (:type = 'w'  AND b.writer  LIKE %:keyword%)
+        OR (:type = 'tc' AND (b.title LIKE %:keyword% OR b.content LIKE %:keyword%))
+    )
+    ORDER BY b.id DESC
+    """)
+    Page<StockBoard> search(
+            String ticker,
+            String type,
+            String keyword,
+            Pageable pageable
+    );
+
 }

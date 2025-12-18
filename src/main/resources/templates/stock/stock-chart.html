@@ -628,7 +628,7 @@
                     id="board-list-btn"
                     style="background:#718096;"
                     onclick="goBoardList()">
-                목록
+                게시판으로
             </button>
 
             <!-- 오른쪽: 글쓰기 버튼 -->
@@ -654,9 +654,6 @@
             <tbody id="board-body"></tbody>
         </table>
 
-        <!-- 페이지 네비게이션 -->
-        <div id="board-pagination"
-             style="margin-top: 20px; text-align: center; display:none;">
         </div>
     </div>
 
@@ -1095,10 +1092,8 @@
 
             const table = document.getElementById("board-table");
             const tbody = document.getElementById("board-body");
-            const pagination = document.getElementById("board-pagination");
 
             table.style.display = "table";
-            pagination.style.display = "block";
 
             tbody.innerHTML = "";
 
@@ -1147,26 +1142,10 @@
                 tbody.insertAdjacentHTML("beforeend", row);
             });
 
-            // 페이지네이션 표시
-            pagination.innerHTML = `
-            <button onclick="changeBoardPage(${list.number - 1})"
-                    class="quick-btn" ${list.first ? "disabled" : ""}>◀ 이전</button>
-            <span style="margin:0 10px;">
-                ${list.number + 1} / ${list.totalPages}
-            </span>
-            <button onclick="changeBoardPage(${list.number + 1})"
-                    class="quick-btn" ${list.last ? "disabled" : ""}>다음 ▶</button>
-        `;
 
         } catch (err) {
             console.error("게시판 로드 실패:", err);
         }
-    }
-
-    // 📌 게시판 페이지 변경
-    function changeBoardPage(page) {
-        if (page < 0) return;
-        loadBoard(page);
     }
 
 
