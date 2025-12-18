@@ -56,11 +56,28 @@ public class StockCommentController {
         return "수정 완료";
     }
 
+
     @DeleteMapping("/{id}")
-    public String remove(@PathVariable Long id){
-        log.info("댓글 삭제", id);
+    public String remove(
+            @PathVariable Long id,
+            @AuthenticationPrincipal CustomUserDetails loginUser) {
+
+        if (loginUser == null) {
+            return "UNAUTHORIZED";
+        }
+
+        StockCommentDTO dto = stockCommentService.get(id);
+
+        boolean isAdmin = loginUser.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        // 작성자도 아니고 관리자도 아니면 차단
+        if (!isAdmin && !dto.getWriter().equals(loginUser.getNickname())) {
+            return "관리자 또는 작성자만 삭제할 수 있습니다.";
+        }
+
         stockCommentService.remove(id);
-        return "삭제 완료";
+        return "댓글이 삭제됐습니다.";
     }
 
     @GetMapping("/{boardId}/count")

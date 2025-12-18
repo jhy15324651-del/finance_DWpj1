@@ -183,8 +183,11 @@ public class StockBoardController {
 
         StockBoardDTO dto = stockBoardService.get(id);
 
-        // 권한 체크
-        if (!dto.getWriter().equals(loginUser.getNickname())) {
+        //권한 체크 (글쓴이 or 관리자)
+        boolean isAdmin = loginUser.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        if (!isAdmin && !dto.getWriter().equals(loginUser.getNickname())) {
             return "FORBIDDEN";
         }
 

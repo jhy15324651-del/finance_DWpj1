@@ -343,23 +343,32 @@
 
             <!-- 수정/삭제 -->
 
+            <div style="text-align:right; margin-top:25px; display:flex; justify-content:flex-end; gap:8px;">
+
+                <!-- 수정: 작성자만 -->
+                <button class="btn edit-btn"
+                        th:if="${loginUser != null && loginUser.nickname == dto.writer}"
+                        th:attr="data-ticker=${ticker}, data-id=${dto.id}">
+                    수정
+                </button>
+
+                <!-- 삭제: 작성자 OR 관리자 -->
+                <button class="btn delete-btn"
+                        th:if="${loginUser != null
+                && (loginUser.nickname == dto.writer
+                    || #authorization.expression('hasRole(''ADMIN'')'))}"
+                        th:attr="data-ticker=${ticker}, data-id=${dto.id}"
+                        style="background:#e53e3e;">
+                    삭제
+                </button>
+
+            </div>
+
+
         </div> <!-- 게시글 Wrapper 닫기 -->
 
 
-            <div style="text-align:right; margin-top:25px;">
-                <div th:if="${loginUser != null && loginUser.nickname == dto.writer}">
-                    <button class="btn edit-btn"
-                            th:attr="data-ticker=${ticker}, data-id=${dto.id}">
-                        수정
-                    </button>
 
-                    <button class="btn delete-btn"
-                            th:attr="data-ticker=${ticker}, data-id=${dto.id}"
-                            style="background:#e53e3e;">
-                        삭제
-                    </button>
-                </div>
-            </div>
 
 
     </div> <!-- dynamic-area 닫기 -->

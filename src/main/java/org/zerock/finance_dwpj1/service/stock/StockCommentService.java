@@ -10,6 +10,8 @@ public interface StockCommentService {
 
    Long register(StockCommentDTO dto);
 
+   StockCommentDTO get(Long id);
+
    void modify(StockCommentDTO dto);
 
    void remove(Long id);

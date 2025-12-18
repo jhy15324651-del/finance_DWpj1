@@ -88,11 +88,16 @@ public class StockCommentServiceImpl implements StockCommentService {
         stockCommentRepository.save(comment);
     }
 
-    @Override
-    public void remove(Long id){
-        stockCommentRepository.deleteById(id);
+
+    public StockCommentDTO get(Long id) {
+        return stockCommentRepository.findById(id)
+                .map(this::entityToDto)
+                .orElseThrow(() -> new IllegalArgumentException("댓글 없음"));
     }
 
+    @Override public void remove(Long id){
+        stockCommentRepository.deleteById(id);
+    }
 
 
     //댓글 갯수
