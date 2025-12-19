@@ -42,4 +42,9 @@ public interface InfoPostRepository extends JpaRepository<InfoPost, Long> {
            "LEFT JOIN FETCH p.sections s " +
            "ORDER BY p.createdDate DESC")
     List<InfoPost> findAllPostsWithSections();
+
+    // 유저 상세 페이지용 코드
+    Optional<InfoPost>
+    findTopByWriterAndIsDeletedFalseOrderByCreatedDateDesc(String writer);
+
 }

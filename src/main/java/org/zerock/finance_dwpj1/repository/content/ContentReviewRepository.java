@@ -54,6 +54,9 @@ public interface ContentReviewRepository
 
     Optional<ContentReview> findByIdAndIsDeletedFalse(Long id);
 
+    // writer 기준 조회 로직
+    List<ContentReview> findByWriterAndIsDeletedFalseOrderByCreatedDateDesc(String writer);
+
 
     // ---------------------------------------------------------
     // 🔥 4) 전체 게시글 수

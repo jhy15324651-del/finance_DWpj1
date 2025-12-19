@@ -6,19 +6,14 @@
     <title>포트폴리오 & 투자자 비교</title>
     <link rel="stylesheet" href="/css/portfolio/portfolio-comparison.css">
 </head>
+<!-- 1️⃣ head: header-main 사용 -->
+<th:block th:replace="content/layout/header-main :: header-main"></th:block>
+
 <body>
-<!-- 네비게이션 바 -->
-<nav class="navbar">
-    <div class="navbar-content">
-        <div class="navbar-logo" onclick="location.href='/'">
-            <img src="/img/snn_logo.png" alt="SNN - Signal Not Noise" />
-        </div>
-        <div class="navbar-buttons">
-            <button class="btn-nav" onclick="location.href='/'">홈으로</button>
-            <button class="btn-nav" onclick="location.href='/news'">뉴스 인사이트</button>
-        </div>
-    </div>
-</nav>
+
+<!-- 2️⃣ 공통 네비게이션 바 -->
+<th:block th:replace="content/layout/header-main :: bodyheader"></th:block>
+
 
 <div class="container">
     <div class="page-header">

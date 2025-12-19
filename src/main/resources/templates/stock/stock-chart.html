@@ -290,10 +290,7 @@
                 justify-content: space-around;
             }
 
-
-
         }
-
 
         .chart-layout {
             display: flex;
@@ -334,80 +331,6 @@
         .chart-left {
             position: relative;
         }
-
-
-
-        .navbar {
-            background: white;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-
-        .navbar-content {
-            max-width: 1600px;
-            margin: 0 auto;
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .navbar-logo {
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-        }
-
-        .navbar-logo img {
-            height: 48px;
-            width: auto;
-            object-fit: contain;
-            transition: transform 0.3s ease;
-        }
-
-        .navbar-logo img:hover {
-            transform: scale(1.05);
-        }
-
-        .navbar-buttons {
-            display: flex;
-            gap: 15px;
-        }
-
-        .btn-login {
-            padding: 10px 25px;
-            background: white;
-            color: #667eea;
-            border: 2px solid #667eea;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .btn-login:hover {
-            background: #667eea;
-            color: white;
-        }
-
-        .btn-signup {
-            padding: 10px 25px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .btn-signup:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102,126,234,0.4);
-        }
-
 
         .metric-card {
             background: #ffffff;
@@ -452,43 +375,13 @@
 
     </style>
 </head>
-<body>
-<!-- 네비게이션 바 -->
-<nav class="navbar">
-    <div class="navbar-content">
-        <div class="navbar-logo" onclick="location.href='/'">
-            <img src="/img/snn_logo.png" alt="SNN - Signal Not Noise" />
-        </div>
-
-        <div class="navbar-buttons">
-            <!-- 로그인 전 -->
-            <div sec:authorize="!isAuthenticated()">
-                <button class="btn-login" onclick="location.href='/user/login'">로그인</button>
-                <button class="btn-signup" onclick="location.href='/user/signup'">회원가입</button>
-            </div>
+<!-- 1️⃣ head: header-main 사용 -->
+<th:block th:replace="content/layout/header-main :: header-main"></th:block>
 
 
-            <!-- 관리자 로그인 -->
-            <div sec:authorize="hasRole('ADMIN')">
-                <span style="margin-right: 15px; color: #667eea; font-weight: 600;">
-                    <span sec:authentication="name"></span>님 (관리자)
-                </span>
-                <button class="btn-login" onclick="location.href='/admin'">관리자 페이지</button>
-                <button class="btn-signup" onclick="location.href='/user/logout'">로그아웃</button>
-            </div>
+<!-- 2️⃣ 공통 네비게이션 바 -->
+<th:block th:replace="content/layout/header-main :: bodyheader"></th:block>
 
-            <!-- 일반 사용자 로그인 -->
-            <div sec:authorize="hasRole('USER') and !hasRole('ADMIN')">
-                <span style="margin-right: 15px; color: #667eea; font-weight: 600;">
-                    <span sec:authentication="name"></span>님
-                </span>
-                <button class="btn-login" onclick="location.href='/user/mypage'">마이페이지</button>
-                <button class="btn-signup" onclick="location.href='/user/logout'">로그아웃</button>
-            </div>
-
-        </div>
-    </div>
-</nav>
 
 <div class="container">
     <!-- 검색 섹션 -->
