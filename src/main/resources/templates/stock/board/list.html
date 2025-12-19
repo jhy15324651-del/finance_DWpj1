@@ -381,10 +381,10 @@
             return num.toLocaleString("ko-KR") + " ₩";
         }
         if (currency === "USD") {
-            return num.toLocaleString("en-US", {
+            return"$ " + num.toLocaleString("en-US", {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2
-            }) + " $";
+            });
         }
         if (currency === "JPY") {
             return num.toLocaleString("ja-JP") + " ¥";
@@ -419,6 +419,8 @@
             displayStockInfo(stockInfo);
 
             // 차트 데이터 로드
+
+            await loadStockDetail();
             await loadBoard();
 
 
@@ -460,7 +462,7 @@
             </div>
             <div class="info-item">
                 <span class="info-label">시가총액</span>
-                <span class="info-value">${formatMarketCap(info.marketCap)}</span>
+                <span class="info-value" id="market-cap-value">-</span>
             </div>
             <div class="info-item">
                 <span class="info-label">52주 최고/최저</span>
@@ -509,13 +511,6 @@
         });
     }
 
-    // 시가총액 포맷
-    function formatMarketCap(num) {
-        if (!num) return '0';
-        if (num >= 1e12) return (num / 1e12).toFixed(1) + '조';
-        if (num >= 1e8) return (num / 1e8).toFixed(0) + '억';
-        return formatNumber(num);
-    }
     // 날짜 범위 적용
     function applyDateRange() {
         if (!chart) return;
@@ -670,15 +665,7 @@
             });
 
             // 페이지네이션 표시
-            pagination.innerHTML = `
-            <button onclick="changeBoardPage(${list.number - 1})"
-                    class="quick-btn" ${list.first ? "disabled" : ""}>◀ 이전</button>
-            <span style="margin:0 10px;">
-                ${list.number + 1} / ${list.totalPages}
-            </span>
-            <button onclick="changeBoardPage(${list.number + 1})"
-                    class="quick-btn" ${list.last ? "disabled" : ""}>다음 ▶</button>
-        `;
+            renderPagination(list);
 
         } catch (err) {
             console.error("게시판 로드 실패:", err);
@@ -687,6 +674,109 @@
 
         await loadHotBoard();
 
+    }
+
+    async function loadStockDetail() {
+        if (!currentTicker) return;
+
+        try {
+            const res = await fetch(`/stock/api/detail/${currentTicker}`);
+            if (!res.ok) return;
+
+            const d = await res.json();
+
+            const el = document.getElementById("market-cap-value");
+            if (!el) return;
+
+            if (d.marketCap != null) {
+                el.textContent = formatMarketCap(
+                    d.marketCap,
+                    d.marketCapSource
+                );
+            } else {
+                el.textContent = "-";
+            }
+
+        } catch (e) {
+            console.error("시가총액 로딩 실패", e);
+        }
+    }
+
+
+    function formatMarketCap(value, source) {
+        if (value == null) return "-";
+
+        // 네이버 (억 원)
+        if (source === "naver") {
+            return Number(value).toLocaleString("ko-KR") + "억 원";
+        }
+
+        // Alpha Vantage (달러)
+        if (source === "alpha") {
+            if (value >= 1e12) return "$" + (value / 1e12).toFixed(2) + "T";
+            if (value >= 1e9)  return "$" + (value / 1e9).toFixed(2) + "B";
+            if (value >= 1e6)  return "$" + (value / 1e6).toFixed(2) + "M";
+            return "$" + Number(value).toLocaleString("en-US");
+        }
+
+        return "-";
+    }
+
+    function renderPagination(pageData) {
+        const pagination = document.getElementById("board-pagination");
+
+        const currentPage = pageData.number;       // 0-based
+        const totalPages = pageData.totalPages;
+        const blockSize = 10;
+
+        const currentBlock = Math.floor(currentPage / blockSize);
+        const startPage = currentBlock * blockSize;
+        const endPage = Math.min(startPage + blockSize - 1, totalPages - 1);
+
+        let html = "";
+
+        // ⏮ 처음
+        if (currentPage > 0) {
+            html += `<button class="quick-btn" onclick="changeBoardPage(0)">⏮</button>`;
+        }
+
+        // ◀ 이전 블록
+        if (startPage > 0) {
+            html += `<button class="quick-btn" onclick="changeBoardPage(${startPage - 1})">◀</button>`;
+        }
+
+        // 🔢 페이지 번호
+        for (let i = startPage; i <= endPage; i++) {
+            const active = i === currentPage
+                ? `style="background:#667eea;color:white;font-weight:600;"`
+                : "";
+
+            html += `
+            <button class="quick-btn"
+                    ${active}
+                    onclick="changeBoardPage(${i})">
+                ${i + 1}
+            </button>
+        `;
+        }
+
+        // ▶ 다음 블록
+        if (endPage < totalPages - 1) {
+            html += `<button class="quick-btn" onclick="changeBoardPage(${endPage + 1})">▶</button>`;
+        }
+
+        // ⏭ 마지막
+        if (currentPage < totalPages - 1) {
+            html += `<button class="quick-btn" onclick="changeBoardPage(${totalPages - 1})">⏭</button>`;
+        }
+
+        pagination.innerHTML = html;
+    }
+
+    function changeBoardPage(page) {
+        if (page < 0) return;
+        loadBoard(page);
+        window.scrollTo({ top: 600, behavior: "smooth" });
     }
 
 
@@ -758,29 +848,6 @@
 
 
 
-    // 📌 게시판 페이지 변경
-    function changeBoardPage(page) {
-        if (page < 0) return;
-        loadBoard(page);
-    }
-
-    function formatBoardDate(dateStr) {
-        if (!dateStr) return "";
-
-        const date = new Date(dateStr);
-        const now = new Date();
-
-        const isToday =
-            date.getFullYear() === now.getFullYear() &&
-            date.getMonth() === now.getMonth() &&
-            date.getDate() === now.getDate();
-
-        if (isToday) {
-            return dateStr.substring(11, 16);  // HH:mm
-        } else {
-            return dateStr.substring(0, 10);   // yyyy-MM-dd
-        }
-    }
 
 
 
