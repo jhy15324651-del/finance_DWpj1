@@ -1,8 +1,8 @@
 <!-- =======================
       HEADER
 ======================= -->
-<th:block th:replace="content/layout/header :: header"></th:block>
-<th:block th:replace="content/layout/header :: bodyheader"></th:block>
+<th:block th:replace="content/layout/header-content :: header"></th:block>
+<th:block th:replace="content/layout/header-content :: bodyheader"></th:block>
 
 <div class="post-detail-container">
 
@@ -33,10 +33,21 @@
     <!-- 날짜 / 조회수 / 작성자 -->
     <div class="post-detail-meta">
         <div>
-            <span th:text="${#temporals.format(post.createdDate,'yyyy.MM.dd')}"></span>
+            <span th:text="${#temporals.format(post.createdDate,'yyyy.MM.dd.')}"></span>
             · 조회수 <span th:text="${post.viewCount}"></span>
         </div>
-        <b th:text="${post.writer != null ? post.writer : '익명'}"></b>
+        <b>
+            <a th:if="${post.writer != null}"
+               th:href="@{/user/{writer}(writer=${post.writer})}"
+               th:text="${post.writer}"
+               class="post-writer-link">
+            </a>
+
+            <span th:if="${post.writer == null}">
+        익명
+    </span>
+        </b>
+
     </div>
 
     <!-- 이미지 -->
@@ -581,6 +592,17 @@
             padding-bottom: 20px;
             border-bottom: 1px solid #e5e5e5;
             margin-bottom: 40px;
+        }
+
+        /* 작성자 상세 페이지 링크연결 스타일 */
+        .post-writer-link {
+            color: black;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .post-writer-link:hover {
+            text-decoration: underline;
         }
 
 

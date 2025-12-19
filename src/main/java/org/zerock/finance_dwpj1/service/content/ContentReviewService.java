@@ -41,6 +41,13 @@ public class ContentReviewService {
     private final UserRepository userRepository;
 
 
+    // writer 기준으로 게시글 조회
+    public List<ContentReview> getReviewsByWriter(String writer) {
+        return repo
+                .findByWriterAndIsDeletedFalseOrderByCreatedDateDesc(writer);
+    }
+
+
     // ---------------------------------------------------------
     // 🔥 preview 생성 유틸 (HTML 제거 + 길이 제한)
     // ---------------------------------------------------------

@@ -33,6 +33,11 @@ public class InfoPostService {
 
     private final InfoPostRepository repository;
 
+    public Optional<InfoPost> getLatestProfileByWriter(String writer) {
+        return repository
+                .findTopByWriterAndIsDeletedFalseOrderByCreatedDateDesc(writer);
+    }
+
     // application.properties에서 정보 탭 전용 업로드 경로 주입
     @Value("${file.info-upload-path}")
     private String infoUploadPath;
@@ -70,7 +75,7 @@ public class InfoPostService {
     /**
      * 게시글 저장 (여러 섹션 포함)
      *
-     * @param writer 작성자 닉네임
+     * @param writer       작성자 닉네임
      * @param sectionsData 섹션 데이터 리스트 (타입, 제목, 본문, 이미지파일)
      * @return 저장된 게시글
      */
@@ -129,7 +134,7 @@ public class InfoPostService {
     /**
      * 게시글 소프트 삭제 (관리자용)
      *
-     * @param id 삭제할 게시글 ID
+     * @param id      삭제할 게시글 ID
      * @param adminId 삭제를 요청한 관리자 ID
      * @return 삭제 성공 여부
      */
@@ -187,13 +192,13 @@ public class InfoPostService {
 
     /**
      * 이미지 파일 업로드 (콘텐츠리뷰 패턴 적용)
-     *
+     * <p>
      * ⭐ 저장 방식:
      * - 실제 저장: C:/info_uploads/2025-12-16/UUID.jpg
      * - DB 저장: /info_uploads/2025-12-16/UUID.jpg (상대 URL)
      * - 날짜별 폴더 자동 생성
      * - UUID 파일명으로 중복 방지
-     *
+     * <p>
      * ⭐ transferTo() 대신 getBytes() 사용 이유:
      * - MultipartFile의 임시 파일은 한 번만 transferTo() 가능
      * - 여러 섹션에서 동시에 파일 업로드 시 임시 파일 삭제 문제 방지
@@ -250,6 +255,7 @@ public class InfoPostService {
         }
     }
 
+
     /**
      * 섹션 데이터 DTO
      */
@@ -263,3 +269,4 @@ public class InfoPostService {
         private MultipartFile imageFile;
     }
 }
+

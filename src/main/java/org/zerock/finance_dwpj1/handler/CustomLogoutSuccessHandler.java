@@ -25,7 +25,8 @@ public class CustomLogoutSuccessHandler implements LogoutSuccessHandler {
 
         if (referer != null &&
                 !referer.contains("/user/login") &&
-                !referer.contains("/user/logout")) {
+                !referer.contains("/user/logout") &&
+                !referer.contains("/admin")) {   // ⭐ 이 줄 추가) {
 
             //
             if (referer.startsWith("http") &&

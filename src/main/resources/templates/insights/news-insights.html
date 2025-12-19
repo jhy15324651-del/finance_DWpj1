@@ -1,24 +1,19 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>뉴스 인사이트</title>
     <link rel="stylesheet" href="/css/insights/news-insights.css">
 </head>
+<!-- 1️⃣ head: header-main 사용 -->
+<th:block th:replace="content/layout/header-main :: header-main"></th:block>
+
 <body>
-<!-- 네비게이션 바 -->
-<nav class="navbar">
-    <div class="navbar-content">
-        <div class="navbar-logo" onclick="location.href='/'">
-            <img src="/img/snn_logo.png" alt="SNN - Signal Not Noise" />
-        </div>
-        <div class="navbar-buttons">
-            <button class="btn-nav" onclick="location.href='/'">홈으로</button>
-            <button class="btn-nav" onclick="location.href='/portfolio'">포트폴리오 비교</button>
-        </div>
-    </div>
-</nav>
+
+<!-- 2️⃣ 공통 네비게이션 바 -->
+<th:block th:replace="content/layout/header-main :: bodyheader"></th:block>
 
 <div class="container">
     <div class="page-header">

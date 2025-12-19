@@ -2,10 +2,10 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
 <!-- 1) head -->
-<th:block th:replace="content/layout/header :: header"></th:block>
+<th:block th:replace="content/layout/header-content :: header"></th:block>
 
 <!-- 2) body 시작 -->
-<th:block th:replace="content/layout/header :: bodyheader"></th:block>
+<th:block th:replace="content/layout/header-content :: bodyheader"></th:block>
 
 <!-- ===============================
      메인 레이아웃
@@ -49,7 +49,7 @@
                     </div>
 
                     <div class="post-meta">
-                        <span th:text="${#temporals.format(post.createdDate, 'yyyy.MM.dd')}"></span>
+                        <span th:text="${#temporals.format(post.createdDate, 'yyyy.MM.dd.')}"></span>
                         <span>👁 <span th:text="${post.viewCount}"></span></span>
                     </div>
                 </div>

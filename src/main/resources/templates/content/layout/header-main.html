@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:fragment="header-main">
+    <meta charset="UTF-8">
+    <title>Finance Review - Content</title>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+
+    <!-- 공통 CSS (NEW) -->
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" th:href="@{/css/content/content-review.css}">
+</head>
+
+<body th:fragment="bodyheader">
+
+<!-- ✅ 통일된 헤더 적용 -->
+<nav class="common-navbar">
+    <div class="common-navbar-content">
+        <!-- 로고 (좌측) -->
+        <div class="common-logo" onclick="location.href='/'">
+            <img src="/img/snn_logo.png" alt="SNN - Signal Not Noise" />
+        </div>
+
+        <!-- 메뉴 (중앙/좌측) -->
+            <div class="common-nav-menu">
+                <a th:href="@{/content/home}">콘텐츠리뷰</a>
+                <a th:href="@{/stock/chart}">종목차트&토론방</a>
+                <a th:href="@{/news}">뉴스&트위터</a>
+                <a th:href="@{/portfolio}">포트폴리오&투자자비교</a>
+            </div>
+
+        <!-- 로그인/회원가입 버튼 (우측) -->
+        <div class="common-nav-buttons">
+            <!-- 로그인 전 -->
+            <div sec:authorize="!isAuthenticated()" style="display: flex; gap: 10px;">
+                <button class="btn-common btn-outline" onclick="location.href='/user/login'">로그인</button>
+                <button class="btn-common-primary" onclick="location.href='/user/signup'">회원가입</button>
+            </div>
+
+            <!-- 관리자 로그인 -->
+            <div sec:authorize="hasRole('ADMIN')" style="display: flex; gap: 10px; align-items: center;">
+                <span style="color: #667eea; font-weight: 600;">
+                    <span sec:authentication="name"></span>님 (관리자)
+                </span>
+                <button class="btn-common btn-outline" onclick="location.href='/admin'">관리자 페이지</button>
+                <button class="btn-common-primary" onclick="location.href='/user/logout'">로그아웃</button>
+            </div>
+
+            <!-- 일반 사용자 로그인 -->
+            <div sec:authorize="hasRole('USER') and !hasRole('ADMIN')" style="display: flex; gap: 10px; align-items: center;">
+                <span style="color: #667eea; font-weight: 600;">
+                    <span sec:authentication="name"></span>님
+                </span>
+                <button class="btn-common btn-outline" onclick="location.href='/user/mypage'">마이페이지</button>
+                <button class="btn-common-primary" onclick="location.href='/user/logout'">로그아웃</button>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- 본문 전체 wrapper -->
+<div class="content-wrapper">

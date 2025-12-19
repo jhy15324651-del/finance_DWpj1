@@ -3,10 +3,10 @@
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
 <!-- 1) head -->
-<th:block th:replace="content/layout/header :: header"></th:block>
+<th:block th:replace="content/layout/header-content :: header"></th:block>
 
 <!-- 2) body 시작 -->
-<th:block th:replace="content/layout/header :: bodyheader"></th:block>
+<th:block th:replace="content/layout/header-content :: bodyheader"></th:block>
 
 <!-- ===============================
      약력 상세 페이지
@@ -26,7 +26,7 @@
             <div class="detail-meta">
                 <span th:text="'작성자: ' + ${post.writer}">작성자: 홍길동</span>
                 <span>|</span>
-                <span th:text="${#temporals.format(post.createdDate, 'yyyy.MM.dd HH:mm')}">2025.01.01 12:00</span>
+                <span th:text="${#temporals.format(post.createdDate, 'yyyy.MM.dd. HH:mm')}">2025.01.01 12:00</span>
             </div>
         </div>
 
