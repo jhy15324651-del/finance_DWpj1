@@ -188,6 +188,122 @@ body {
     color: var(--text-primary);
 }
 
+/* =========================
+   🔔 Notification Bell
+========================= */
+
+.notification-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+/* 종 아이콘 */
+.notification-bell {
+    position: relative;
+    font-size: 20px;
+    cursor: pointer;
+    line-height: 1;
+    user-select: none;
+}
+
+/* 알림 개수 배지 */
+.notification-badge {
+    position: absolute;
+    top: -6px;
+    right: -8px;
+
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+
+    background-color: #ff4d4f;
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* 알림이 0개일 때 숨김 (JS에서 토글 예정) */
+.notification-badge.hidden {
+    display: none;
+}
+
+/* =========================
+   🔔 Notification Dropdown
+========================= */
+
+.notification-dropdown {
+    position: absolute;
+    top: 30px;
+    right: 0;
+
+    width: 280px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+
+    display: none;
+    z-index: 1000;
+    overflow: hidden;
+}
+
+.notification-dropdown.open {
+    display: block;
+}
+
+.notification-item {
+    padding: 12px 14px;
+    border-bottom: 1px solid #f1f1f1;
+    cursor: pointer;
+}
+
+.notification-item:hover {
+    background-color: #f8f9ff;
+}
+
+.notification-message {
+    font-size: 14px;
+    color: #1f2a37;
+}
+
+.notification-date {
+    font-size: 11px;
+    color: #9aa3b2;
+    margin-top: 4px;
+}
+
+.notification-empty {
+    padding: 20px;
+    text-align: center;
+    font-size: 13px;
+    color: #9aa3b2;
+}
+
+.notification-footer {
+    border-top: 1px solid #eee;
+    padding: 10px;
+    text-align: center;
+}
+
+.notification-footer a {
+    font-size: 13px;
+    color: #667eea;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.notification-footer a:hover {
+    text-decoration: underline;
+}
+
+
 /* ============================
    반응형 (헤더)
 ============================= */

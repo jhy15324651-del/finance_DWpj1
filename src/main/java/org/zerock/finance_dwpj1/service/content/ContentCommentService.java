@@ -6,8 +6,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.zerock.finance_dwpj1.dto.content.ContentCommentWriteDTO;
 import org.zerock.finance_dwpj1.entity.content.ContentComment;
 import org.zerock.finance_dwpj1.entity.content.ContentReview;
+import org.zerock.finance_dwpj1.entity.notification.Notification;
+import org.zerock.finance_dwpj1.entity.notification.NotificationType;
 import org.zerock.finance_dwpj1.repository.content.ContentCommentRepository;
 import org.zerock.finance_dwpj1.repository.content.ContentReviewRepository;
+import org.zerock.finance_dwpj1.repository.notification.NotificationRepository;
 import org.zerock.finance_dwpj1.service.user.CustomUserDetails;
 
 import java.util.List;
@@ -18,6 +21,7 @@ public class ContentCommentService {
 
     private final ContentCommentRepository commentRepo;
     private final ContentReviewRepository contentRepo;
+    private final NotificationRepository notificationRepository;
 
     /**
      * 🔥 댓글 저장 (+ 평점 rating 저장 추가!)
@@ -38,6 +42,26 @@ public class ContentCommentService {
                 .build();
 
         commentRepo.save(comment);
+
+        // ============================
+        // 2️⃣ 댓글 알림 생성 (추가)
+        // ============================
+
+        ContentReview post = contentRepo.findById(dto.getPostId())
+                .orElseThrow(() -> new IllegalArgumentException("게시글 없음"));
+
+        // 👉 자기 글에 자기가 댓글 단 경우 제외
+        if (!post.getUserId().equals(userId)) {
+
+            Notification notification = Notification.builder()
+                    .receiverId(post.getUserId())   // 게시글 작성자
+                    .type(NotificationType.COMMENT)
+                    .message("내 글에 댓글이 달렸습니다.")
+                    .targetUrl("/content/post/" + post.getId())
+                    .build();
+
+            notificationRepository.save(notification);
+        }
     }
 
     /**

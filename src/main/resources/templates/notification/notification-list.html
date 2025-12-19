@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>알림</title>
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+
+    <style>
+
+        .notification-item.read {
+            opacity: 0.5;
+        }
+
+        .notification-item.unread {
+            font-weight: 600;
+        }
+
+    </style>
+</head>
+<!-- 1️⃣ head: header-main 사용 -->
+<th:block th:replace="content/layout/header-main :: header-main"></th:block>
+
+<body>
+
+<!-- 2️⃣ 공통 네비게이션 바 -->
+<th:block th:replace="content/layout/header-main :: bodyheader"></th:block>
+
+<div class="notification-page">
+    <h2>🔔 알림</h2>
+
+    <div th:each="n : ${notifications}"
+         th:class="'notification-item ' + (${n.read} ? 'read' : 'unread')">
+
+        <a th:href="@{/notifications/{id}(id=${n.id})}">
+            <div class="message" th:text="${n.message}"></div>
+            <div class="date"
+                 th:text="${#temporals.format(n.createdDate, 'yyyy-MM-dd HH:mm')}">
+            </div>
+        </a>
+    </div>
+
+    </div>
+</div>
+
+</body>
+</html>
