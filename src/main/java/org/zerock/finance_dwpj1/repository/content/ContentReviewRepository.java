@@ -157,6 +157,17 @@ public interface ContentReviewRepository
     @Query("SELECT c FROM ContentReview c ORDER BY c.createdDate DESC")
     List<ContentReview> findAllOrderByCreatedDateDesc();
 
+    /**
+     * 추천 후보 조회 (최근 N개, 삭제되지 않은 review 타입만)
+     * ContentRecommendationService에서 사용
+     */
+    @Query("""
+        SELECT c FROM ContentReview c
+        WHERE c.isDeleted = false AND c.type = 'review'
+        ORDER BY c.createdDate DESC
+        """)
+    List<ContentReview> findRecentReviewsForRecommendation(Pageable pageable);
+
     }
 
 
