@@ -24,17 +24,23 @@ public class StockCommentController {
     @PostMapping
     public ResponseEntity<?> register(
             @RequestBody StockCommentDTO dto,
-            @AuthenticationPrincipal CustomUserDetails user
-    ){
+            @AuthenticationPrincipal CustomUserDetails user){
         log.info("댓글 등록 요청: {}", dto);
 
-        // 🔒 로그인 필요
+        // 로그인 필요
         if (user == null) {
             return ResponseEntity.status(401).body("UNAUTHORIZED");
         }
 
-        // 🔥 로그인 상태 → 작성자 자동 설정
+        // 로그인 상태 → 작성자 자동 설정
         dto.setWriter(user.getNickname());
+
+
+        if (dto.getParentId() != null) {
+            dto.setDepth(1);
+        } else {
+            dto.setDepth(0);
+        }
 
         Long commentId = stockCommentService.register(dto);
 

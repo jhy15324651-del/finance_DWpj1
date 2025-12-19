@@ -23,6 +23,14 @@ public class StockComment {
     @JoinColumn(name = "board_id")
     private StockBoard board;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id")
+    private StockComment parent;
+
+    // 0 = 댓글, 1 = 대댓글
+    @Column(nullable = false)
+    private int depth;
+
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 

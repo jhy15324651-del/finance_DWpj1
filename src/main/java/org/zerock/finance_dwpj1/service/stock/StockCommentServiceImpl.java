@@ -28,7 +28,7 @@ public class StockCommentServiceImpl implements StockCommentService {
 
     private StockComment dtoToEntity(StockCommentDTO dto) {
 
-        return StockComment.builder()
+        StockComment.StockCommentBuilder builder = StockComment.builder()
                 .id(dto.getId())
                 .board(StockBoard.builder()
                         .id(dto.getBoardId())
@@ -36,23 +36,36 @@ public class StockCommentServiceImpl implements StockCommentService {
                 .writer(dto.getWriter())
                 .content(dto.getContent())
                 .regDate(dto.getRegDate())
-                .modDate(dto.getModDate())
-                .build();
+                .modDate(dto.getModDate());
+
+        // 일반 댓글
+        if (dto.getParentId() == null) {
+            builder.parent(null);
+            builder.depth(0);
+        }
+        // 대댓글
+        else {
+            StockComment parent = stockCommentRepository.findById(dto.getParentId())
+                    .orElseThrow(() -> new IllegalArgumentException("부모 댓글 없음"));
+
+            builder.parent(parent);
+            builder.depth(1);
+        }
+
+        return builder.build();
     }
 
     private StockCommentDTO entityToDto(StockComment comment) {
 
         Long writerId = userService.getUserIdByNickname(comment.getWriter());
-
         String grade = userService.getUserGrade(writerId);
-
         String medal = stockGradeCalculatorService.gradeToEmoji(grade);
-
-
 
         return StockCommentDTO.builder()
                 .id(comment.getId())
                 .boardId(comment.getBoard().getId())
+                .parentId(comment.getParent() != null ? comment.getParent().getId() : null)
+                .depth(comment.getDepth())
                 .writer(comment.getWriter())
                 .content(comment.getContent())
                 .regDate(comment.getRegDate())
