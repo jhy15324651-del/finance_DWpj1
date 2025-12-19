@@ -207,6 +207,40 @@
             display: none;
         }
 
+        .comment-item {
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .comment-item.reply {
+            margin-left: 32px;
+            background: #f9fafb;
+            border-left: 3px solid #e2e8f0;
+            padding-left: 12px;
+        }
+
+        .comment-writer {
+            font-weight: 600;
+        }
+
+        .comment-body {
+            white-space: pre-line;
+            margin: 4px 0;
+        }
+
+        .comment-footer {
+            font-size: 0.8rem;
+            color: #888;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .btn-reply {
+            padding: 6px 14px;
+            font-size: 0.8rem;
+            margin-top: 6px;
+        }
+
 
 
     </style>
@@ -267,7 +301,6 @@
             <button class="quick-btn" onclick="loadStock('035420')">NAVER</button>
             <button class="quick-btn" onclick="loadStock('035720')">카카오</button>
             <button class="quick-btn" onclick="loadStock('AAPL')">Apple</button>
-            <button class="quick-btn" onclick="loadStock('TSLA')">Tesla</button>
             <button class="quick-btn" onclick="loadStock('NVDA')">NVIDIA</button>
         </div>
     </div>
@@ -326,24 +359,30 @@
 
             <!-- 댓글 -->
             <div style="border:1px solid #ddd; border-radius:10px; padding:20px;">
-                <h3>댓글</h3>
+                <h3>댓글 <span id="comment-count" style="color:#667eea;">0</span></h3>
 
-                <div style="border-bottom:1px solid #ddd; margin:10px 0;"></div>
-
-
+                <!-- 댓글 목록 -->
                 <div id="reply-list"></div>
 
-                <textarea id="reply-content" style="width:100%; height:80px; padding:10px; margin-top:10px;"
-                          placeholder="댓글을 입력하세요"></textarea>
+                <!-- 구분선 -->
+                <div style="border-top:1px solid #e5e7eb; margin:15px 0;"></div>
 
-                <div style="text-align:right; margin-top:10px;">
-                    <button onclick="registerComment()"
-                            class="btn"
-                            style="background:#667eea; padding:10px 20px;">
-                        댓글 등록
-                    </button>
-            </div>
+                <!-- 새 댓글 작성 -->
+                <div>
+        <textarea id="reply-content"
+                  style="width:100%; height:80px; padding:12px;
+                         border:1px solid #e2e8f0; border-radius:6px;"
+                  placeholder="댓글을 입력하세요"></textarea>
+
+                    <div style="text-align:right; margin-top:10px;">
+                        <button onclick="registerComment()"
+                                class="btn"
+                                style="background:#667eea; padding:10px 20px;">
+                            댓글 등록
+                        </button>
+                    </div>
                 </div>
+            </div>
 
 
                 <div style="border-bottom:1px solid #ddd; margin:10px 0;"></div>
@@ -773,6 +812,11 @@
             // 테이블 렌더링
             list.content.forEach(board => {
 
+                const imageBadge =
+                    board.images && board.images.length > 0
+                        ? ` <span title="이미지 첨부됨" style="font-size:0.85em; opacity:0.7;">🖼️</span>`
+                        : "";
+
                 const commentBadge = board.commentCount > 0
                     ? ` <span style="font-size:0.8rem; color:#e53e3e;">[${board.commentCount}]</span>`
                     : "";   // 0개면 표시 안함
@@ -784,7 +828,7 @@
              <td style="padding:10px;">
         <a href="/stock/board/${currentTicker}/read/${board.id}"
            style="color:#2b6cb0; text-decoration:none;">
-            ${board.title}${commentBadge}
+            ${board.title}${imageBadge}${commentBadge}
         </a>
     </td>
 
@@ -853,6 +897,11 @@
             }
 
             const comments = await res.json();
+
+            document.getElementById("comment-count").innerText = comments.length;
+
+
+
             const listEl = document.getElementById("reply-list");
             listEl.innerHTML = "";
 
@@ -861,32 +910,98 @@
                 return;
             }
 
+
+            const commentMap = {};
+
+
             comments.forEach(reply => {
+                if (reply.depth !== 0) return;
+
                 const item = `
-                <div style="border-bottom:1px solid #eee; padding:10px 0;">
-                    <div style="font-weight:600; margin-bottom:4px;">
-                        ${reply.medal}${reply.writer ?? '익명'}
-                    </div>
-                    <div style="white-space:pre-line; margin-bottom:6px;">
-                        ${reply.content}
-                    </div>
-                    <div style="font-size:0.8rem; color:#888; display:flex; justify-content:space-between;">
-                        <span>${reply.regDate ? reply.regDate.replace('T',' ').substring(0,16) : ''}</span>
-                        <button type="button"
-                                onclick="deleteComment(${reply.id})"
-                                style="background:none; border:none; color:#e53e3e; cursor:pointer; font-size:0.8rem;">
-                            삭제
-                        </button>
-                    </div>
+            <div id="comment-${reply.id}" class="comment-item">
+
+            <div class="comment-writer">${reply.medal}${reply.writer}</div>
+            <div class="comment-body">${reply.content}</div>
+
+            <div class="comment-footer">
+                <span>${reply.regDate?.replace('T',' ').substring(0,16)}</span>
+                <div>
+                    <button onclick="toggleReplyForm(${reply.id})"
+                            style="background:none; border:none; color:#667eea;
+                                   cursor:pointer; font-size:1rem;">
+                        대댓글
+                    </button>
+                    <button onclick="deleteComment(${reply.id})"
+                            style="background:none; border:none; color:#e53e3e;
+                                   cursor:pointer; font-size:1rem;">
+                        삭제
+                    </button>
                 </div>
-            `;
+            </div>
+
+            <div id="reply-form-${reply.id}" style="display:none; margin-top:8px;">
+                <textarea id="reply-content-${reply.id}"
+                          style="width:100%; height:60px;"
+                          placeholder="댓글을 입력하세요"></textarea>
+                <div style="text-align:right; margin-top:5px;">
+                    <button class="btn btn-reply" onclick="registerReply(${reply.id})">대댓글 등록</button>
+                </div>
+            </div>
+                <div class="reply-children" id="children-${reply.id}"></div>
+
+        </div>
+    `;
+
                 listEl.insertAdjacentHTML("beforeend", item);
+                commentMap[reply.id] = document.getElementById(`comment-${reply.id}`);
             });
+
+            comments.forEach(reply => {
+                if (reply.depth !== 1) return;
+
+                const parentEl = commentMap[reply.parentId];
+                if (!parentEl) return;
+
+                const replyItem = `
+        <div class="comment-item reply">
+
+            <div><b>${reply.medal}${reply.writer}</b></div>
+            <div style="white-space:pre-line;">${reply.content}</div>
+            <div class="comment-footer">
+            <div style="font-size:0.8rem; color:#888;">
+                ${reply.regDate?.replace('T',' ').substring(0,16)}
+            </div>
+            <button onclick="deleteComment(${reply.id})"
+                        style="background:none; border:none;
+                               color:#e53e3e; cursor:pointer;
+                               font-size:0.9rem;">
+                    삭제
+                </button>
+            </div>
+        </div>
+    `;
+
+                const parentChildren =
+                    document.getElementById(`children-${reply.parentId}`);
+
+                if (!parentChildren) return;
+
+                parentChildren.insertAdjacentHTML("beforeend", replyItem);            });
+
 
         } catch (e) {
             console.error("댓글 불러오기 중 오류:", e);
         }
     }
+
+
+        function toggleReplyForm(commentId) {
+            const el = document.getElementById(`reply-form-${commentId}`);
+            if (!el) return;
+            el.style.display = el.style.display === "none" ? "block" : "none";
+        }
+
+
 
     const boardId = /*[[${dto.id}]]*/0;
 
@@ -941,6 +1056,41 @@
     window.addEventListener("load", () => {
         loadComments();
     });
+
+
+    //대댓글
+        async function registerReply(parentId) {
+
+
+            // 🔒 로그인 체크
+            if (!isLogin) {
+                alert("로그인 후 댓글 작성이 가능합니다.");
+                location.href = "/user/login";
+                return;
+            }
+
+
+            const content = document
+                .getElementById(`reply-content-${parentId}`)
+                .value.trim();
+
+            if (!content) {
+                alert("대댓글을 입력하세요");
+                return;
+            }
+
+            await fetch("/comments", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    boardId: Number(boardId),
+                    parentId: parentId,
+                    content: content
+                })
+            });
+
+            loadComments();
+        }
 
 
     //댓글 삭제
