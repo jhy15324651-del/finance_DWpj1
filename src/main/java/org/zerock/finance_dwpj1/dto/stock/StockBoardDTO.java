@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
@@ -34,6 +35,8 @@ public class StockBoardDTO {
     private String grade;
 
     private String medal;
+
+    private List<StockBoardImageDTO> images;
 
 
  }

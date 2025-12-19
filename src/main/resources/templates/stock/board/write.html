@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns:enctype="http://www.w3.org/1999/xhtml"
       layout:decorate="~{layouts/layout1}">
 
 <head>
@@ -121,9 +121,11 @@
 
         <form th:action="@{|/stock/board/${ticker}/write|}"
               th:object="${dto}"
-              method="post">
+              method="post"
+              enctype="multipart/form-data">
 
-            <!-- 제목 -->
+
+        <!-- 제목 -->
             <label class="write-label">제목</label>
             <input type="text"
                    th:field="*{title}"
@@ -139,6 +141,12 @@
                       required></textarea>
 
             <input type="hidden" th:field="*{ticker}"/>
+
+
+            <input type="file"
+                   name="uploadFiles"
+                   multiple
+                   accept="image/*">
 
             <!-- 버튼 -->
             <div class="write-btn-area">

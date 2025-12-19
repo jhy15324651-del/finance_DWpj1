@@ -1,15 +1,19 @@
 package org.zerock.finance_dwpj1.controller.stock;
 
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.FileSystemResource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.zerock.finance_dwpj1.dto.stock.StockBoardDTO;
 import org.zerock.finance_dwpj1.dto.stock.StockInfoDTO;
 import org.zerock.finance_dwpj1.dto.user.UserSessionDTO;
@@ -78,20 +82,26 @@ public class StockBoardController {
     public String write(
             @PathVariable String ticker,
             @ModelAttribute("dto") StockBoardDTO dto,
+            @RequestParam(name = "uploadFiles", required = false)
+            MultipartFile[] uploadFiles,
             @AuthenticationPrincipal CustomUserDetails loginUser) {
 
-        //  로그인 확인
         if (loginUser == null) {
             return "redirect:/user/login";
         }
 
-        // 작성자 자동 설정
+        System.out.println("uploadFiles = " + uploadFiles);
+        if (uploadFiles != null) {
+            for (MultipartFile f : uploadFiles) {
+                System.out.println("file name = " + f.getOriginalFilename());
+                System.out.println("file size = " + f.getSize());
+            }
+        }
+
         dto.setWriter(loginUser.getNickname());
         dto.setTicker(ticker);
 
-
-        stockBoardService.register(dto);
-
+        stockBoardService.register(dto, uploadFiles);
         return "redirect:/stock/board/" + ticker;
     }
 
@@ -271,6 +281,8 @@ public class StockBoardController {
 
         return hotResult;
     }
+
+
 
 
 }

@@ -302,6 +302,13 @@
 
             <!-- 본문 -->
             <div style="padding:20px; min-height:250px; white-space:pre-line;">
+
+                <div th:if="${dto.images != null}">
+                    <img th:each="img : ${dto.images}"
+                         th:src="@{/upload/{f}(f=${img.filePath})}"
+                         style="max-width:600px; display:block; margin-bottom:10px;">
+                </div>
+
                 [[${dto.content}]]
             </div>
 
