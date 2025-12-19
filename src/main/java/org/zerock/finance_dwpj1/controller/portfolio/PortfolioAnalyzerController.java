@@ -5,17 +5,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.zerock.finance_dwpj1.dto.portfolio.ContentRecommendationDTO;
 import org.zerock.finance_dwpj1.dto.portfolio.PortfolioAnalysisRequest;
 import org.zerock.finance_dwpj1.dto.portfolio.PortfolioAnalysisResponse;
+import org.zerock.finance_dwpj1.service.portfolio.ContentRecommendationService;
 import org.zerock.finance_dwpj1.service.portfolio.OcrService;
 import org.zerock.finance_dwpj1.service.portfolio.PortfolioMatchingService;
 import org.zerock.finance_dwpj1.service.portfolio.TickerMappingService;
 import org.zerock.finance_dwpj1.service.portfolio.ocr.BrokerType;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -31,6 +30,7 @@ public class PortfolioAnalyzerController {
     private final OcrService ocrService;
     private final PortfolioMatchingService matchingService;
     private final TickerMappingService tickerMappingService;
+    private final ContentRecommendationService contentRecommendationService;
 
     /**
      * OCR로 이미지에서 포트폴리오 추출
@@ -120,14 +120,31 @@ public class PortfolioAnalyzerController {
                                     topMatches.get(i), i + 1))
                             .collect(Collectors.toList());
 
-            // 더미 콘텐츠 추천 생성
-            List<PortfolioAnalysisResponse.ContentRecommendation> dummyContents =
-                    generateDummyContentRecommendations(topMatches);
+            // 🔥 실제 콘텐츠 추천 생성 (더미 대신 DB 기반)
+            Set<String> userTickers = request.getPortfolio().keySet();
+            List<ContentRecommendationDTO> recommendedContentDTOs =
+                    contentRecommendationService.recommendContents(userTickers, topMatches);
+
+            // ContentRecommendationDTO → PortfolioAnalysisResponse.ContentRecommendation 변환
+            List<PortfolioAnalysisResponse.ContentRecommendation> recommendedContents =
+                    recommendedContentDTOs.stream()
+                            .map(dto -> PortfolioAnalysisResponse.ContentRecommendation.builder()
+                                    .contentId(dto.getId())
+                                    .title(dto.getTitle())
+                                    .category(dto.getCategoryLabel())
+                                    .rating(dto.getRating())
+                                    .thumbnailUrl(dto.getThumbnailUrl())
+                                    .keyword(dto.getHashtags() != null && !dto.getHashtags().isEmpty()
+                                            ? dto.getHashtags().get(0) : "")
+                                    .build())
+                            .collect(Collectors.toList());
+
+            log.info("추천 콘텐츠 개수: {}", recommendedContents.size());
 
             // 응답 구성
             PortfolioAnalysisResponse response = PortfolioAnalysisResponse.builder()
                     .topMatches(investorMatches)
-                    .recommendedContents(dummyContents)
+                    .recommendedContents(recommendedContents)
                     .build();
 
             return ResponseEntity.ok(response);
@@ -138,65 +155,5 @@ public class PortfolioAnalyzerController {
         }
     }
 
-    /**
-     * 더미 콘텐츠 추천 데이터 생성
-     * (실제로는 콘텐츠 DB에서 조회)
-     */
-    private List<PortfolioAnalysisResponse.ContentRecommendation> generateDummyContentRecommendations(
-            List<PortfolioMatchingService.MatchResult> matches) {
-
-        List<PortfolioAnalysisResponse.ContentRecommendation> contents = new ArrayList<>();
-
-        // TOP 1 투자대가 기반 콘텐츠
-        if (!matches.isEmpty()) {
-            String topInvestor = matches.get(0).getInvestorName();
-
-            contents.add(PortfolioAnalysisResponse.ContentRecommendation.builder()
-                    .contentId(1L)
-                    .title(topInvestor + "의 투자 철학과 성공 비결")
-                    .category("투자 전략")
-                    .rating(4.8)
-                    .thumbnailUrl("/images/content/dummy1.jpg")
-                    .keyword(topInvestor)
-                    .build());
-
-            contents.add(PortfolioAnalysisResponse.ContentRecommendation.builder()
-                    .contentId(2L)
-                    .title("가치투자 vs 성장주 투자: 어떤 전략이 나에게 맞을까?")
-                    .category("투자 입문")
-                    .rating(4.7)
-                    .thumbnailUrl("/images/content/dummy2.jpg")
-                    .keyword("투자 전략")
-                    .build());
-
-            contents.add(PortfolioAnalysisResponse.ContentRecommendation.builder()
-                    .contentId(3L)
-                    .title("포트폴리오 분산투자의 중요성")
-                    .category("리스크 관리")
-                    .rating(4.6)
-                    .thumbnailUrl("/images/content/dummy3.jpg")
-                    .keyword("분산투자")
-                    .build());
-
-            contents.add(PortfolioAnalysisResponse.ContentRecommendation.builder()
-                    .contentId(4L)
-                    .title("초보 투자자가 피해야 할 5가지 실수")
-                    .category("투자 팁")
-                    .rating(4.9)
-                    .thumbnailUrl("/images/content/dummy4.jpg")
-                    .keyword("투자 실수")
-                    .build());
-
-            contents.add(PortfolioAnalysisResponse.ContentRecommendation.builder()
-                    .contentId(5L)
-                    .title("2025년 주목해야 할 산업과 종목")
-                    .category("시장 분석")
-                    .rating(4.5)
-                    .thumbnailUrl("/images/content/dummy5.jpg")
-                    .keyword("시장 전망")
-                    .build());
-        }
-
-        return contents;
-    }
+    // 더미 콘텐츠 생성 메서드 제거 (더 이상 사용하지 않음)
 }

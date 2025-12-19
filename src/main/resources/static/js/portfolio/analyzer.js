@@ -627,7 +627,16 @@ function displayRecommendedContents(contents) {
     container.innerHTML = '';
 
     if (!contents || contents.length === 0) {
-        container.innerHTML = '<p style="text-align: center; color: #999;">추천 콘텐츠가 없습니다.</p>';
+        container.innerHTML = `
+            <div class="empty-recommendation">
+                <i class="fas fa-box-open" style="font-size: 64px; color: #cbd5e1; margin-bottom: 20px;"></i>
+                <h4 style="color: #64748b; margin-bottom: 12px;">추천할 콘텐츠가 없습니다</h4>
+                <p style="color: #94a3b8; font-size: 15px;">
+                    포트폴리오와 관련된 콘텐츠를 찾지 못했습니다.<br>
+                    다양한 종목을 추가하거나, 콘텐츠 게시판에서 직접 검색해보세요.
+                </p>
+            </div>
+        `;
         return;
     }
 
@@ -649,9 +658,23 @@ function createContentCard(content) {
     const card = document.createElement('div');
     card.className = 'content-card';
 
+    // 썸네일 URL 처리 (null이면 기본 이미지)
+    const thumbnailUrl = content.thumbnailUrl || '/images/placeholder.jpg';
+
+    // 해시태그 처리 (배열이면 최대 3개만 표시)
+    let hashtagsHtml = '';
+    if (content.hashtags && content.hashtags.length > 0) {
+        const displayTags = content.hashtags.slice(0, 3);
+        hashtagsHtml = `
+            <div class="content-hashtags">
+                ${displayTags.map(tag => `<span class="hashtag-badge">#${tag}</span>`).join('')}
+            </div>
+        `;
+    }
+
     card.innerHTML = `
         <div class="content-thumbnail">
-            <img src="${content.thumbnailUrl}"
+            <img src="${thumbnailUrl}"
                  alt="${content.title}"
                  onerror="this.src='/images/placeholder.jpg'">
             <div class="content-category">${content.category}</div>
@@ -662,18 +685,20 @@ function createContentCard(content) {
                 <span class="rating">
                     <i class="fas fa-star"></i> ${content.rating.toFixed(1)}
                 </span>
+                ${content.keyword ? `
                 <span class="keyword">
                     <i class="fas fa-tag"></i> ${content.keyword}
                 </span>
+                ` : ''}
             </div>
+            ${hashtagsHtml}
         </div>
     `;
 
-    // 클릭 이벤트 (추후 콘텐츠 상세 페이지 연결)
+    // 클릭 이벤트 (콘텐츠 상세 페이지로 이동)
     card.addEventListener('click', () => {
         console.log('콘텐츠 클릭:', content.contentId);
-        // TODO: 콘텐츠 상세 페이지로 이동
-        // window.location.href = `/contents/${content.contentId}`;
+        window.location.href = `/content/post/${content.contentId}`;
     });
 
     return card;
