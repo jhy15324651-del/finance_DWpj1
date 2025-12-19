@@ -154,6 +154,12 @@ public interface ContentReviewRepository
     """)
     Page<ContentReview> findRecommendationCandidates(Pageable pageable);
 
+    /**
+     * 관리자용 전체 콘텐츠 리뷰 조회 (삭제 포함, 최신순)
+     */
+    @Query("SELECT c FROM ContentReview c ORDER BY c.createdDate DESC")
+    List<ContentReview> findAllOrderByCreatedDateDesc();
+
     }
 
 

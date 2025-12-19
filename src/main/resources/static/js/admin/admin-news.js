@@ -56,7 +56,7 @@ function renderNewsList(newsList) {
 
         const deleteButton = isDeleted
             ? '<button disabled style="opacity: 0.5; cursor: not-allowed;" class="btn-sm btn-danger">삭제됨</button>'
-            : `<button onclick="openDeleteNewsModal(${news.id}, '${escapeHtml(news.title)}')" class="btn-sm btn-danger">삭제</button>`;
+            : `<button onclick="openDeleteNewsModal(${news.id})" class="btn-sm btn-danger">삭제</button>`;
 
         return `
             <tr style="${isDeleted ? 'background-color: #f8f9fa; opacity: 0.7;' : ''}">
@@ -87,11 +87,10 @@ function updateNewsStats(newsList) {
 /**
  * 삭제 모달 열기 (뉴스)
  */
-function openDeleteNewsModal(newsId, newsTitle) {
+function openDeleteNewsModal(newsId) {
     currentDeleteTarget = {
         type: 'news',
-        id: newsId,
-        title: newsTitle
+        id: newsId
     };
 
     document.getElementById('delete-reason').value = '';
@@ -186,6 +185,74 @@ function escapeHtml(text) {
 }
 
 /**
+ * 번역 안 된 뉴스 개수 확인
+ */
+async function checkUntranslatedNews() {
+    try {
+        const response = await fetch('/api/news/admin/untranslated-count');
+        const result = await response.json();
+
+        if (result.success) {
+            document.getElementById('news-untranslated-count').textContent = result.count;
+            alert(result.message);
+        } else {
+            alert('오류: ' + result.message);
+        }
+
+    } catch (error) {
+        console.error('번역 안 된 뉴스 개수 조회 실패:', error);
+        alert('번역 안 된 뉴스 개수 조회 중 오류가 발생했습니다.');
+    }
+}
+
+/**
+ * 번역 안 된 뉴스 재번역 실행
+ */
+async function retranslateNews() {
+    // 확인 메시지
+    if (!confirm('번역 안 된 뉴스를 재번역하시겠습니까?\n\n번역에는 시간이 소요될 수 있습니다.')) {
+        return;
+    }
+
+    try {
+        // 로딩 표시
+        const originalText = document.getElementById('news-untranslated-count').textContent;
+        document.getElementById('news-untranslated-count').textContent = '번역 중...';
+        document.getElementById('news-untranslated-count').style.color = '#0d6efd';
+
+        const response = await fetch('/api/news/admin/retranslate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            alert(result.message);
+
+            // 통계 업데이트
+            document.getElementById('news-untranslated-count').textContent = result.failCount || 0;
+            document.getElementById('news-untranslated-count').style.color = '#fd7e14';
+
+            // 뉴스 목록 새로고침
+            loadNewsList();
+        } else {
+            alert('재번역 실패: ' + result.message);
+            document.getElementById('news-untranslated-count').textContent = originalText;
+            document.getElementById('news-untranslated-count').style.color = '#fd7e14';
+        }
+
+    } catch (error) {
+        console.error('재번역 실패:', error);
+        alert('재번역 중 오류가 발생했습니다.');
+        document.getElementById('news-untranslated-count').textContent = '오류';
+        document.getElementById('news-untranslated-count').style.color = '#dc3545';
+    }
+}
+
+/**
  * 뉴스 탭 활성화 시 자동 로드
  */
 document.addEventListener('DOMContentLoaded', function() {
@@ -193,9 +260,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const newsTabBtn = document.querySelector('[data-tab="news"]');
     if (newsTabBtn) {
         newsTabBtn.addEventListener('click', function() {
-            // 뉴스 탭 클릭 시 목록 로드
+            // 뉴스 탭 클릭 시 목록 로드 및 번역 안 된 뉴스 개수 조회
             setTimeout(() => {
                 loadNewsList();
+                checkUntranslatedNews();
             }, 100);
         });
     }

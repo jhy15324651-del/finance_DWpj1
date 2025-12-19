@@ -55,6 +55,31 @@ export class APIService {
     }
 
     /**
+     * 합의형 포트폴리오 생성 (도넛 차트용)
+     * 4명 투자자가 회의 후 모두 동의한 합의 종목 10개 선정
+     */
+    async generateConsensusPortfolio(investorIds) {
+        try {
+            const response = await fetch('/api/portfolio/consensus', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ investors: investorIds })
+            });
+
+            if (!response.ok) {
+                throw new Error('합의형 포트폴리오 생성에 실패했습니다.');
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('합의형 포트폴리오 생성 오류:', error);
+            throw error;
+        }
+    }
+
+    /**
      * 투자자 검색
      */
     async searchInvestor(investorName) {

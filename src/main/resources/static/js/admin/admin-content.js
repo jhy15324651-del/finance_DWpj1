@@ -54,7 +54,7 @@ function renderContentReviewList(reviewList) {
 
         const deleteButton = isDeleted
             ? '<button disabled style="opacity: 0.5; cursor: not-allowed;" class="btn-sm btn-danger">삭제됨</button>'
-            : `<button onclick="openDeleteContentModal(${review.id}, '${escapeHtml(review.title)}')" class="btn-sm btn-danger">삭제</button>`;
+            : `<button onclick="openDeleteContentModal(${review.id})" class="btn-sm btn-danger">삭제</button>`;
 
         return `
             <tr style="${isDeleted ? 'background-color: #f8f9fa; opacity: 0.7;' : ''}">
@@ -85,11 +85,10 @@ function updateContentStats(reviewList) {
 /**
  * 삭제 모달 열기 (콘텐츠 리뷰)
  */
-function openDeleteContentModal(reviewId, reviewTitle) {
+function openDeleteContentModal(reviewId) {
     currentDeleteTarget = {
         type: 'content',
-        id: reviewId,
-        title: reviewTitle
+        id: reviewId
     };
 
     document.getElementById('delete-reason').value = '';

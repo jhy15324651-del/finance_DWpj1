@@ -67,4 +67,31 @@ public interface InsightsNewsRepository extends JpaRepository<InsightsNews, Long
      */
     @Query("SELECT n FROM InsightsNews n WHERE n.status = :status AND n.isDeleted = false ORDER BY n.createdAt DESC")
     Page<InsightsNews> findByStatus(@Param("status") InsightsNews.NewsStatus status, Pageable pageable);
+
+    /**
+     * 관리자용 전체 뉴스 조회 (삭제 포함, 최신순)
+     */
+    @Query("SELECT n FROM InsightsNews n ORDER BY n.createdAt DESC")
+    List<InsightsNews> findAllOrderByCreatedAtDesc();
+
+    /**
+     * 번역 안 된 뉴스 조회 (재번역 대상)
+     * - 원문은 있는데 번역이 없거나 비어있는 경우
+     * - 또는 content가 originalContent와 동일한 경우 (번역 실패 시 원문으로 저장됨)
+     */
+    @Query("SELECT n FROM InsightsNews n WHERE " +
+           "n.isDeleted = false AND " +
+           "n.originalContent IS NOT NULL AND n.originalContent != '' AND " +
+           "(n.content IS NULL OR n.content = '' OR n.content = n.originalContent) " +
+           "ORDER BY n.createdAt DESC")
+    List<InsightsNews> findUntranslatedNews();
+
+    /**
+     * 번역 안 된 뉴스 개수 조회
+     */
+    @Query("SELECT COUNT(n) FROM InsightsNews n WHERE " +
+           "n.isDeleted = false AND " +
+           "n.originalContent IS NOT NULL AND n.originalContent != '' AND " +
+           "(n.content IS NULL OR n.content = '' OR n.content = n.originalContent)")
+    long countUntranslatedNews();
 }
