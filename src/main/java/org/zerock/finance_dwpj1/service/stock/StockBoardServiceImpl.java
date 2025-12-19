@@ -6,15 +6,20 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import org.zerock.finance_dwpj1.dto.stock.StockBoardDTO;
+import org.zerock.finance_dwpj1.dto.stock.StockBoardImageDTO;
 import org.zerock.finance_dwpj1.entity.stock.StockBichu;
 import org.zerock.finance_dwpj1.entity.stock.StockBoard;
+import org.zerock.finance_dwpj1.entity.stock.StockBoardImage;
 import org.zerock.finance_dwpj1.entity.stock.StockGechu;
 import org.zerock.finance_dwpj1.repository.stock.StockBichuRepository;
+import org.zerock.finance_dwpj1.repository.stock.StockBoardImageRepository;
 import org.zerock.finance_dwpj1.repository.stock.StockBoardRepository;
 import org.zerock.finance_dwpj1.repository.stock.StockGechuRepository;
 import org.zerock.finance_dwpj1.service.stock.StockCommentService;
 import org.zerock.finance_dwpj1.service.user.UserService;
+import org.zerock.finance_dwpj1.util.stock.StockFileStorage;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -30,6 +35,9 @@ public class StockBoardServiceImpl implements StockBoardService {
     private final StockCommentService stockCommentService;
     private final UserService userService;
     private final StockGradeCalculatorService stockGradeCalculatorService;
+    private final StockBoardImageRepository stockBoardImageRepository;
+    private final StockFileStorage stockFileStorage;
+
 
 
     @Override
@@ -53,9 +61,27 @@ public class StockBoardServiceImpl implements StockBoardService {
     }
 
     @Override
-    public Long register(StockBoardDTO dto) {
+    public Long register(StockBoardDTO dto, MultipartFile[] images) {
+
         StockBoard board = dtoToEntity(dto);
         stockBoardRepository.save(board);
+
+        if (images != null) {
+            for (MultipartFile file : images) {
+                if (file.isEmpty()) continue;
+
+                String savedName = stockFileStorage.save(file);
+
+                stockBoardImageRepository.save(
+                        StockBoardImage.builder()
+                                .board(board)
+                                .fileName(file.getOriginalFilename())
+                                .filePath(savedName)
+                                .build()
+                );
+            }
+        }
+
         return board.getId();
     }
 
@@ -210,6 +236,17 @@ public class StockBoardServiceImpl implements StockBoardService {
 
         String medal = stockGradeCalculatorService.gradeToEmoji(grade);
 
+        List<StockBoardImageDTO> images =
+                stockBoardImageRepository.findByBoard(board)
+                        .stream()
+                        .map(img -> StockBoardImageDTO.builder()
+                                .id(img.getId())
+                                .fileName(img.getFileName())
+                                .filePath(img.getFilePath())
+                                .build())
+                        .toList();
+
+
         return StockBoardDTO.builder()
                 .id(board.getId())
                 .ticker(board.getTicker())
@@ -224,6 +261,7 @@ public class StockBoardServiceImpl implements StockBoardService {
                 .commentCount(commentCount(board.getId()))
                 .recommend(board.getRecommend())
                 .unrecommend(board.getUnrecommend())
+                .images(images)
                 .build();
     }
 

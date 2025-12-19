@@ -2,6 +2,7 @@ package org.zerock.finance_dwpj1.service.stock;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.multipart.MultipartFile;
 import org.zerock.finance_dwpj1.dto.stock.StockBoardDTO;
 import org.zerock.finance_dwpj1.entity.stock.StockBoard;
 
@@ -16,7 +17,7 @@ public interface StockBoardService {
     StockBoardDTO get(Long id);
 
     // 글 작성
-    Long register(StockBoardDTO dto);
+    Long register(StockBoardDTO dto, MultipartFile[] images);
 
     // 글 수정
     void modify(StockBoardDTO dto);
