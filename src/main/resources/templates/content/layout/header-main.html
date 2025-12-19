@@ -36,6 +36,26 @@
 
         <!-- 로그인/회원가입 버튼 (우측) -->
         <div class="common-nav-buttons">
+
+            <!-- 🔔 알림 아이콘 (로그인 사용자만 표시) -->
+            <div class="notification-wrapper"
+                 sec:authorize="isAuthenticated()">
+
+                <!-- 종 아이콘 -->
+                <div class="notification-bell" id="notificationBell">
+                    🔔
+                    <!-- 안 읽은 알림 개수 -->
+                    <span class="notification-badge"
+                          id="notificationCount">0</span>
+                </div>
+
+                <!-- 알림 드롭다운 (지금은 비워둠) -->
+                <div class="notification-dropdown"
+                     id="notificationDropdown">
+                    <!-- 다음 단계에서 알림 리스트 채움 -->
+                </div>
+            </div>
+
             <!-- 로그인 전 -->
             <div sec:authorize="!isAuthenticated()" style="display: flex; gap: 10px;">
                 <button class="btn-common btn-outline" onclick="location.href='/user/login'">로그인</button>
@@ -62,6 +82,127 @@
         </div>
     </div>
 </nav>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+
+        const badge = document.getElementById("notificationCount");
+        const bell = document.getElementById("notificationBell");
+        const dropdown = document.getElementById("notificationDropdown");
+
+        if (!badge || !bell || !dropdown) return;
+
+        /* =========================
+           🔔 안 읽은 알림 개수 조회
+        ========================= */
+        fetch("/api/notifications/unread-count")
+            .then(res => res.json())
+            .then(count => {
+                if (count > 0) {
+                    badge.textContent = count;
+                    badge.classList.remove("hidden");
+                } else {
+                    badge.classList.add("hidden");
+                }
+            })
+            .catch(() => badge.classList.add("hidden"));
+
+        /* =========================
+           🔔 종 클릭 → 드롭다운 토글
+        ========================= */
+        bell.addEventListener("click", (e) => {
+            e.stopPropagation();
+            dropdown.classList.toggle("open");
+
+            if (dropdown.classList.contains("open")) {
+                loadNotifications();
+            }
+        });
+
+        /* 바깥 클릭 시 닫기 */
+        document.addEventListener("click", () => {
+            dropdown.classList.remove("open");
+        });
+
+        /* =========================
+           🔔 최신 알림 로드 (안 읽은 알림만)
+        ========================= */
+        function loadNotifications() {
+            fetch("/api/notifications/latest")
+                .then(res => res.json())
+                .then(list => renderNotifications(list))
+                .catch(() => {
+                    dropdown.innerHTML = `
+                    <div class="notification-empty">
+                        알림을 불러오지 못했습니다
+                    </div>
+                `;
+                });
+        }
+
+        /* =========================
+           🔔 알림 렌더링
+        ========================= */
+        function renderNotifications(list) {
+
+            let html = "";
+
+            if (list.length === 0) {
+                html += `
+                <div class="notification-empty">
+                    알림이 없습니다
+                </div>
+            `;
+            } else {
+                html += list.map(n => `
+                <div class="notification-item"
+                     data-id="${n.id}"
+                     data-url="${n.targetUrl}">
+                    <div class="notification-message">
+                        ${n.message}
+                    </div>
+                    <div class="notification-date">
+                        ${n.createdDate.replace("T", " ").substring(0, 16)}
+                    </div>
+                </div>
+            `).join("");
+            }
+
+            /* 🔽 하단: 전체 알림 보기 */
+            html += `
+            <div class="notification-footer">
+                <a href="/notifications">전체 알림 보기 →</a>
+            </div>
+        `;
+
+            dropdown.innerHTML = html;
+
+            /* =========================
+               🔔 알림 클릭 → 읽음 처리 + 이동
+            ========================= */
+            dropdown.querySelectorAll(".notification-item")
+                .forEach(item => {
+                    item.addEventListener("click", (e) => {
+                        e.stopPropagation();
+
+                        const id = item.dataset.id;
+                        const url = item.dataset.url;
+
+                        // 읽음 처리 (fire & forget)
+                        fetch(`/api/notifications/${id}/read`, {
+                            method: "POST"
+                        });
+
+                        // 페이지 이동
+                        window.location.href = url;
+                    });
+                });
+        }
+    });
+</script>
+
+
 
 <!-- 본문 전체 wrapper -->
 <div class="content-wrapper">

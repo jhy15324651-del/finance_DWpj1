@@ -16,6 +16,7 @@ import org.zerock.finance_dwpj1.entity.user.Role;
 import org.zerock.finance_dwpj1.repository.content.ContentCommentRepository;
 import org.zerock.finance_dwpj1.repository.content.ContentReviewRepository;
 import org.zerock.finance_dwpj1.repository.user.UserRepository;
+import org.zerock.finance_dwpj1.service.user.CustomUserDetails;
 
 
 import java.io.IOException;
@@ -283,7 +284,6 @@ public class ContentReviewService {
 
         return repo.save(post);
     }
-
 
     // ---------------------------------------------------------
     // 🔥 수정 기능

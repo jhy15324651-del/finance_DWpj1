@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -573,50 +574,19 @@
         }
     </style>
 </head>
+
+<!-- 1️⃣ head: header-main 사용 -->
+<th:block th:replace="content/layout/header-main :: header-main"></th:block>
+
+<!-- 2️⃣ 공통 네비게이션 바 -->
+<th:block th:replace="content/layout/header-main :: bodyheader"></th:block>
+
 <body>
-<!-- 네비게이션 바 -->
-<nav class="navbar">
-    <div class="navbar-content">
-        <div class="navbar-logo" onclick="location.href='/'">
-            <img src="/img/snn_logo.png" alt="SNN - Signal Not Noise"/>
-        </div>
-        <div class="navbar-buttons">
-            <!-- 로그인 전 -->
-            <div sec:authorize="!isAuthenticated()">
-                <button class="btn-login" onclick="location.href='/user/login'">로그인</button>
-                <button class="btn-signup" onclick="location.href='/user/signup'">회원가입</button>
-            </div>
-
-            <!-- 관리자 로그인 -->
-            <div sec:authorize="hasRole('ADMIN')">
-                <span style="margin-right: 15px; color: #667eea; font-weight: 600;">
-                    <span sec:authentication="name"></span>님 (관리자)
-                </span>
-                <button class="btn-login" onclick="location.href='/admin'">관리자 페이지</button>
-                <button class="btn-signup" onclick="location.href='/user/logout'">로그아웃</button>
-            </div>
-
-            <!-- 일반 사용자 로그인 -->
-            <div sec:authorize="hasRole('USER') and !hasRole('ADMIN')">
-                <span style="margin-right: 15px; color: #667eea; font-weight: 600;">
-                    <span sec:authentication="name"></span>님
-                </span>
-                <button class="btn-login" onclick="location.href='/user/mypage'">마이페이지</button>
-                <button class="btn-signup" onclick="location.href='/user/logout'">로그아웃</button>
-            </div>
-        </div>
-    </div>
-</nav>
-
 <!-- 히어로 섹션 -->
 <section class="hero">
     <div class="container">
         <h1>투자자들을 위한 경제 콘텐츠 리뷰 & 종목 토론 플랫폼</h1>
         <p>신뢰할 수 있는 투자 인사이트와 커뮤니티를 한곳에서 경험하세요</p>
-        <div class="hero-buttons">
-            <button class="btn btn-primary">서비스 소개 보기</button>
-            <button class="btn btn-secondary">바로 데모 살펴보기</button>
-        </div>
     </div>
 </section>
 
@@ -800,4 +770,6 @@
 
 <!-- 3) footer -->
 <th:block th:replace="content/layout/footer :: footer"></th:block>
+
+</html>
 
