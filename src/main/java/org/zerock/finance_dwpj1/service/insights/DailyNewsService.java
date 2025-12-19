@@ -30,6 +30,11 @@ public class DailyNewsService {
     private final InsightsCommentRepository commentRepository;
     private final org.zerock.finance_dwpj1.service.common.GPTService gptService;
 
+    // Self-injection for REQUIRES_NEW transaction propagation
+    @org.springframework.beans.factory.annotation.Autowired
+    @org.springframework.context.annotation.Lazy
+    private DailyNewsService self;
+
     /**
      * 데일리 뉴스 조회 (24시간 이내)
      */
@@ -306,65 +311,40 @@ public class DailyNewsService {
 
     /**
      * 번역 안 된 기존 뉴스 재번역 (기존 GPTService 재사용)
+     * 데드락 방지: 각 뉴스를 독립 트랜잭션으로 처리, 배치 사이즈 제한
      * @return 재번역 성공/실패 카운트
      */
-    @Transactional
     public java.util.Map<String, Integer> retranslateUntranslatedNews() {
         log.info("===== 번역 안 된 뉴스 재번역 시작 =====");
 
         List<InsightsNews> untranslatedNews = newsRepository.findUntranslatedNews();
         log.info("번역 대상 뉴스: {}개", untranslatedNews.size());
 
+        // 배치 사이즈 제한 (데드락 방지)
+        int batchSize = 50;
+        int processCount = Math.min(untranslatedNews.size(), batchSize);
+        log.info("이번 배치 처리 개수: {}개 (배치 사이즈: {})", processCount, batchSize);
+
         int successCount = 0;
         int failCount = 0;
 
-        for (InsightsNews news : untranslatedNews) {
+        for (int i = 0; i < processCount; i++) {
+            InsightsNews news = untranslatedNews.get(i);
+
             try {
-                String originalContent = news.getOriginalContent();
-                if (originalContent == null || originalContent.isEmpty()) {
-                    log.warn("원문 없음 - 뉴스 ID: {}", news.getId());
-                    failCount++;
-                    continue;
-                }
+                // 각 뉴스를 독립적인 트랜잭션으로 처리 (데드락 방지)
+                // self-injection을 통해 프록시 호출 (REQUIRES_NEW 트랜잭션 적용)
+                boolean success = self.translateSingleNewsInNewTransaction(news);
 
-                // 재시도 로직 (최대 2회)
-                String translatedContent = null;
-                Exception lastError = null;
-
-                for (int attempt = 1; attempt <= 2; attempt++) {
-                    try {
-                        log.info("뉴스 ID: {} - 번역 시도 {}/2", news.getId(), attempt);
-
-                        // 기존 GPTService 재사용
-                        translatedContent = gptService.translateNewsToKorean(originalContent);
-
-                        // 성공 시 break
-                        if (translatedContent != null && !translatedContent.isEmpty()
-                            && !translatedContent.equals(originalContent)) {
-                            break;
-                        }
-
-                    } catch (Exception e) {
-                        lastError = e;
-                        log.warn("번역 실패 (시도 {}/2): {}", attempt, e.getMessage());
-
-                        if (attempt < 2) {
-                            Thread.sleep(1000); // 1초 대기 후 재시도
-                        }
-                    }
-                }
-
-                // 번역 결과 저장
-                if (translatedContent != null && !translatedContent.isEmpty()
-                    && !translatedContent.equals(originalContent)) {
-                    news.setContent(translatedContent);
-                    newsRepository.save(news);
+                if (success) {
                     successCount++;
-                    log.info("번역 성공 - 뉴스 ID: {}", news.getId());
                 } else {
-                    // Fallback: 원문 유지
                     failCount++;
-                    log.warn("번역 실패, 원문 유지 - 뉴스 ID: {}", news.getId());
+                }
+
+                // 데드락 방지를 위한 짧은 지연 (100ms)
+                if (i < processCount - 1) {
+                    Thread.sleep(100);
                 }
 
             } catch (Exception e) {
@@ -375,6 +355,69 @@ public class DailyNewsService {
 
         log.info("===== 재번역 완료 - 성공: {}개, 실패: {}개 =====", successCount, failCount);
 
-        return java.util.Map.of("success", successCount, "fail", failCount, "total", untranslatedNews.size());
+        return java.util.Map.of(
+            "success", successCount,
+            "fail", failCount,
+            "total", untranslatedNews.size(),
+            "processed", processCount
+        );
+    }
+
+    /**
+     * 개별 뉴스를 독립적인 트랜잭션으로 번역 처리 (데드락 방지)
+     * 주의: Spring AOP 프록시를 위해 public으로 선언 (self-injection 호출용)
+     * @param news 번역할 뉴스 엔티티
+     * @return 번역 성공 여부
+     */
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.REQUIRES_NEW)
+    public boolean translateSingleNewsInNewTransaction(InsightsNews news) {
+        try {
+            String originalContent = news.getOriginalContent();
+            if (originalContent == null || originalContent.isEmpty()) {
+                log.warn("원문 없음 - 뉴스 ID: {}", news.getId());
+                return false;
+            }
+
+            // 재시도 로직 (최대 2회)
+            String translatedContent = null;
+
+            for (int attempt = 1; attempt <= 2; attempt++) {
+                try {
+                    log.info("뉴스 ID: {} - 번역 시도 {}/2", news.getId(), attempt);
+
+                    // 기존 GPTService 재사용
+                    translatedContent = gptService.translateNewsToKorean(originalContent);
+
+                    // 성공 시 break
+                    if (translatedContent != null && !translatedContent.isEmpty()
+                        && !translatedContent.equals(originalContent)) {
+                        break;
+                    }
+
+                } catch (Exception e) {
+                    log.warn("번역 실패 (시도 {}/2): {}", attempt, e.getMessage());
+
+                    if (attempt < 2) {
+                        Thread.sleep(500); // 500ms 대기 후 재시도
+                    }
+                }
+            }
+
+            // 번역 결과 저장
+            if (translatedContent != null && !translatedContent.isEmpty()
+                && !translatedContent.equals(originalContent)) {
+                news.setContent(translatedContent);
+                newsRepository.save(news);
+                log.info("번역 성공 - 뉴스 ID: {}", news.getId());
+                return true;
+            } else {
+                log.warn("번역 실패, 원문 유지 - 뉴스 ID: {}", news.getId());
+                return false;
+            }
+
+        } catch (Exception e) {
+            log.error("개별 뉴스 번역 중 오류 - ID: {}", news.getId(), e);
+            return false;
+        }
     }
 }

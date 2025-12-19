@@ -164,6 +164,99 @@ public class GPTService {
     }
 
     /**
+     * 합의형 포트폴리오 생성 (JSON ONLY)
+     * 4명의 투자자가 회의실에서 토론 후 모두 동의했을 법한 합의 종목 10개 선정
+     * - 단순 25% 혼합 금지
+     * - JSON 형식으로만 응답
+     * - ticker 필수, weightPercent 합계 100
+     */
+    public String generateConsensusPortfolio(List<String> investorIds) {
+        try {
+            // 투자자 이름 리스트 생성
+            StringBuilder investorNames = new StringBuilder();
+            for (String id : investorIds) {
+                investorNames.append(getInvestorName(id)).append(", ");
+            }
+            String investorsStr = investorNames.substring(0, investorNames.length() - 2);
+
+            // Gemini 프리미엄 모델 사용 (더 정확한 JSON 생성)
+            String model = null;
+            int maxTokens = 3000;
+
+            if (aiClient.getProviderName().equals("openai")) {
+                model = "gpt-4";
+                maxTokens = 2500;
+            } else if (aiClient.getProviderName().equals("gemini")) {
+                model = "gemini-2.0-flash-exp"; // Gemini 2.0 사용
+            }
+
+            String systemPrompt = "당신은 세계적인 투자 전문가입니다. 반드시 JSON 형식으로만 응답하세요. 다른 텍스트나 마크다운 없이 순수 JSON만 출력하세요.";
+
+            String userPrompt = String.format(
+                    "다음 4명의 투자자 (%s)가 한 회의실에 모여 토론했습니다.\n\n" +
+                            "**핵심 가정: 이들이 토론 끝에 '모두가 동의한 합의 종목 10개'를 선정합니다.**\n\n" +
+                            "- 단순히 각자 포트폴리오를 25%%씩 섞는 것이 아닙니다.\n" +
+                            "- 4명이 모두 '이 종목은 투자할 가치가 있다'고 동의해야 선정됩니다.\n" +
+                            "- 각 종목은 4명의 투자 철학이 동시에 반영되어야 합니다.\n\n" +
+                            "**JSON 스키마 (이 형식만 출력):**\n" +
+                            "```json\n" +
+                            "{\n" +
+                            "  \"investmentCommitteePhilosophy\": \"3~4문장으로 설명\",\n" +
+                            "  \"stocks\": [\n" +
+                            "    {\n" +
+                            "      \"company\": \"회사명\",\n" +
+                            "      \"ticker\": \"AAPL\",\n" +
+                            "      \"sector\": \"Technology\",\n" +
+                            "      \"weightPercent\": 15.0,\n" +
+                            "      \"consensusReason\": \"4명이 모두 동의한 이유 (각 투자자 철학 언급)\",\n" +
+                            "      \"longTermView\": \"5~10년 전망\"\n" +
+                            "    }\n" +
+                            "  ],\n" +
+                            "  \"portfolioCharacteristics\": [\"특징1\", \"특징2\", \"특징3\"],\n" +
+                            "  \"riskNotes\": [\"리스크1\", \"리스크2\", \"리스크3\"]\n" +
+                            "}\n" +
+                            "```\n\n" +
+                            "**필수 조건:**\n" +
+                            "1. stocks 배열은 정확히 10개\n" +
+                            "2. ticker는 반드시 포함 (실제 미국 주식 ticker)\n" +
+                            "3. weightPercent 합계 = 100 (오차 ±0.1 허용)\n" +
+                            "4. consensusReason은 4명의 철학이 모두 반영되어야 함\n\n" +
+                            "**응답 형식:** 순수 JSON만 출력하고, ```json``` 마크다운이나 다른 텍스트는 절대 포함하지 마세요.",
+                    investorsStr
+            );
+
+            AiRequest request = AiRequest.builder()
+                    .system(systemPrompt)
+                    .user(userPrompt)
+                    .temperature(0.3) // 낮은 temperature로 일관성 확보
+                    .maxTokens(maxTokens)
+                    .timeoutSeconds(120)
+                    .model(model)
+                    .build();
+
+            AiResult result = aiClient.generate(request);
+            String response = result.getText().trim();
+
+            // 마크다운 코드 블록 제거 (```json ... ```)
+            if (response.startsWith("```json")) {
+                response = response.substring(7);
+            }
+            if (response.startsWith("```")) {
+                response = response.substring(3);
+            }
+            if (response.endsWith("```")) {
+                response = response.substring(0, response.length() - 3);
+            }
+
+            return response.trim();
+
+        } catch (AiClientException e) {
+            log.error("[{}] API 호출 오류 (합의형 포트폴리오 생성): {}", e.getProvider(), e.getMessage());
+            throw new RuntimeException("포트폴리오 생성 실패: " + e.getMessage(), e);
+        }
+    }
+
+    /**
      * 뉴스 요약 생성 (더 이상 사용 안 함 - summary 필드 제거로 deprecated)
      * @param content 뉴스 본문
      * @return AI 요약 (3-4문장)

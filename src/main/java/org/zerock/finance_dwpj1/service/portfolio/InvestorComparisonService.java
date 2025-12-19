@@ -1,13 +1,17 @@
 package org.zerock.finance_dwpj1.service.portfolio;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
+import org.zerock.finance_dwpj1.dto.insights.InvestorInsightDTO;
+import org.zerock.finance_dwpj1.dto.portfolio.ConsensusPortfolioResponse;
 import org.zerock.finance_dwpj1.dto.portfolio.InvestorComparisonDTO;
 import org.zerock.finance_dwpj1.dto.portfolio.InvestorSearchRequest;
 import org.zerock.finance_dwpj1.dto.portfolio.InvestorSearchResponse;
 import org.zerock.finance_dwpj1.dto.portfolio.PortfolioRecommendationResponse;
 import org.zerock.finance_dwpj1.service.common.GPTService;
+import org.zerock.finance_dwpj1.service.insights.InvestorInsightService;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,6 +25,8 @@ import java.util.regex.Pattern;
 public class InvestorComparisonService {
 
     private final GPTService gptService;
+    private final InvestorInsightService investorInsightService;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public List<InvestorComparisonDTO> compareInvestors(List<String> investorIds) {
         List<InvestorComparisonDTO> comparisons = new ArrayList<>();
@@ -35,9 +41,16 @@ public class InvestorComparisonService {
                 comparison = getInvestorPhilosophy(investorId);
             }
 
-            // GPT API로 인사이트 생성
-            String insights = gptService.analyzeInvestorPhilosophy(investorId);
-            comparison.setInsights(insights);
+            // DB에서 인사이트 조회 (AI 호출 대신 관리자가 작성한 정적 콘텐츠 사용)
+            try {
+                InvestorInsightDTO dbInsight = investorInsightService.getInsightByInvestorId(investorId);
+                comparison.setInsights(dbInsight.getPhilosophyKo());
+                log.info("DB에서 인사이트 조회 성공 - investorId: {}", investorId);
+            } catch (IllegalArgumentException e) {
+                // DB에 데이터가 없으면 하드코딩된 insights 유지 (fallback)
+                log.warn("DB에 인사이트 없음, 기본값 사용 - investorId: {}", investorId);
+                // comparison.insights는 이미 getInvestorPhilosophy()에서 설정됨
+            }
 
             comparisons.add(comparison);
         }
@@ -346,5 +359,70 @@ public class InvestorComparisonService {
                     .insights("알 수 없는 투자자입니다.")
                     .build();
         };
+    }
+
+    /**
+     * 합의형 포트폴리오 생성 (JSON 파싱 + 검증 + 1회 리트라이)
+     * 4명 투자자가 회의 후 모두 동의한 합의 종목 10개 선정
+     */
+    public ConsensusPortfolioResponse generateConsensusPortfolio(List<String> investorIds) {
+        log.info("===== 합의형 포트폴리오 생성 시작 - 투자자: {} =====", investorIds);
+
+        ConsensusPortfolioResponse result = null;
+        int maxAttempts = 2; // 최대 2회 시도 (1회 리트라이)
+
+        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+            try {
+                log.info("포트폴리오 생성 시도 {}/{}", attempt, maxAttempts);
+
+                // AI API 호출 (JSON 응답)
+                String jsonResponse = gptService.generateConsensusPortfolio(investorIds);
+                log.info("AI 응답 수신 완료 (길이: {} bytes)", jsonResponse.length());
+
+                // JSON 파싱
+                result = objectMapper.readValue(jsonResponse, ConsensusPortfolioResponse.class);
+                log.info("JSON 파싱 성공 - 종목 개수: {}", result.getStocks() != null ? result.getStocks().size() : 0);
+
+                // 검증
+                if (result.validate()) {
+                    log.info("===== 합의형 포트폴리오 생성 성공 (시도 {}/{}) =====", attempt, maxAttempts);
+                    return result;
+                } else {
+                    String errorMsg = result.getValidationErrorMessage();
+                    log.warn("검증 실패 (시도 {}/{}): {}", attempt, maxAttempts, errorMsg);
+
+                    if (attempt == maxAttempts) {
+                        throw new RuntimeException("포트폴리오 검증 실패: " + errorMsg);
+                    }
+                }
+
+            } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+                log.error("JSON 파싱 실패 (시도 {}/{}): {}", attempt, maxAttempts, e.getMessage());
+
+                if (attempt == maxAttempts) {
+                    throw new RuntimeException("포트폴리오 JSON 파싱 실패: " + e.getMessage(), e);
+                }
+            } catch (RuntimeException e) {
+                log.error("포트폴리오 생성 실패 (시도 {}/{}): {}", attempt, maxAttempts, e.getMessage());
+
+                if (attempt == maxAttempts) {
+                    throw e;
+                }
+            }
+
+            // 재시도 전 짧은 대기 (1초)
+            if (attempt < maxAttempts) {
+                try {
+                    Thread.sleep(1000);
+                    log.info("재시도 대기 완료, 다시 시도합니다...");
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    throw new RuntimeException("재시도 대기 중 인터럽트 발생", ie);
+                }
+            }
+        }
+
+        // 여기까지 도달하면 안 되지만, 안전장치
+        throw new RuntimeException("포트폴리오 생성 실패 (최대 시도 횟수 초과)");
     }
 }

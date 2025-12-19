@@ -2,7 +2,9 @@ package org.zerock.finance_dwpj1.controller.portfolio;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.zerock.finance_dwpj1.dto.portfolio.ConsensusPortfolioResponse;
 import org.zerock.finance_dwpj1.dto.portfolio.InvestorComparisonDTO;
 import org.zerock.finance_dwpj1.dto.portfolio.InvestorComparisonRequest;
 import org.zerock.finance_dwpj1.dto.portfolio.InvestorSearchRequest;
@@ -40,6 +42,25 @@ public class PortfolioApiController {
     public PortfolioRecommendationResponse generatePortfolioRecommendation(@RequestBody InvestorComparisonRequest request) {
         log.info("포트폴리오 추천 요청: " + request.getInvestors());
         return investorComparisonService.generatePortfolioRecommendation(request.getInvestors());
+    }
+
+    /**
+     * 합의형 포트폴리오 생성 (도넛 차트용)
+     * 4명 투자자가 회의 후 모두 동의한 합의 종목 10개 선정
+     */
+    @PostMapping("/consensus")
+    public ResponseEntity<ConsensusPortfolioResponse> generateConsensusPortfolio(@RequestBody InvestorComparisonRequest request) {
+        log.info("===== 합의형 포트폴리오 생성 요청 - 투자자: {} =====", request.getInvestors());
+
+        try {
+            ConsensusPortfolioResponse portfolio = investorComparisonService.generateConsensusPortfolio(request.getInvestors());
+            log.info("===== 합의형 포트폴리오 생성 성공 - 종목 개수: {} =====", portfolio.getStocks().size());
+            return ResponseEntity.ok(portfolio);
+
+        } catch (RuntimeException e) {
+            log.error("합의형 포트폴리오 생성 실패: {}", e.getMessage(), e);
+            return ResponseEntity.status(500).body(null);
+        }
     }
 
     /**

@@ -136,7 +136,7 @@ export class UIController {
     }
 
     /**
-     * 포트폴리오 생성 및 표시
+     * 포트폴리오 생성 및 표시 (합의형 포트폴리오 + 도넛 차트)
      */
     async generatePortfolio() {
         if (!this.investorManager.canGeneratePortfolio()) {
@@ -149,14 +149,14 @@ export class UIController {
 
         // 버튼 비활성화 및 로딩 표시
         generateBtn.disabled = true;
-        generateBtn.textContent = 'AI가 포트폴리오를 생성 중입니다...';
-        container.innerHTML = '<div class="loading">GPT API를 통해 추천 포트폴리오를 생성하고 있습니다. 잠시만 기다려주세요...</div>';
+        generateBtn.textContent = 'AI가 합의형 포트폴리오를 생성 중입니다...';
+        container.innerHTML = '<div class="loading">4명의 투자자가 회의 후 모두 동의한 합의 종목 10개를 AI가 선정하고 있습니다. 잠시만 기다려주세요...</div>';
 
         try {
-            const data = await this.apiService.generatePortfolio(this.investorManager.selectedInvestors);
-            this.displayPortfolio(data);
+            const data = await this.apiService.generateConsensusPortfolio(this.investorManager.selectedInvestors);
+            this.displayConsensusPortfolio(data);
         } catch (error) {
-            console.error('포트폴리오 생성 오류:', error);
+            console.error('합의형 포트폴리오 생성 오류:', error);
             container.innerHTML = '<div class="loading">포트폴리오 생성에 실패했습니다. API 키를 확인하거나 나중에 다시 시도해주세요.</div>';
         } finally {
             generateBtn.disabled = false;
@@ -165,27 +165,139 @@ export class UIController {
     }
 
     /**
-     * 포트폴리오 데이터 표시
+     * 합의형 포트폴리오 데이터 표시 (도넛 차트 포함)
      */
-    displayPortfolio(data) {
+    displayConsensusPortfolio(data) {
         const container = document.getElementById('portfolio-container');
 
         const investorNames = this.investorManager.getSelectedInvestors()
             .map(inv => inv.name)
             .join(', ');
 
+        // HTML 구조 생성
         container.innerHTML = `
-            <div class="portfolio-content">
+            <div class="consensus-portfolio">
                 <div class="portfolio-section">
-                    <h3>📌 선택된 투자자</h3>
+                    <h3>📌 참여 투자자</h3>
                     <div class="portfolio-text">${investorNames}</div>
                 </div>
+
                 <div class="portfolio-section">
-                    <h3>💼 추천 포트폴리오</h3>
-                    <div class="portfolio-text">${data.rationale || data.combinedPhilosophy}</div>
+                    <h3>💡 합의 위원회 철학</h3>
+                    <div class="portfolio-text">${data.committeePhilosophy || '선정된 투자자들의 합의로 도출된 포트폴리오입니다.'}</div>
+                </div>
+
+                <div class="portfolio-section">
+                    <h3>📊 포트폴리오 구성 (도넛 차트)</h3>
+                    <div class="chart-container">
+                        <canvas id="consensusChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="portfolio-section">
+                    <h3>📋 종목 리스트</h3>
+                    <div class="stock-list" id="stockList"></div>
+                </div>
+
+                <div class="portfolio-section">
+                    <h3>🎯 포트폴리오 특성</h3>
+                    <div class="portfolio-text">${data.portfolioCharacteristics || '합의된 종목들의 특성을 반영한 포트폴리오입니다.'}</div>
                 </div>
             </div>
         `;
+
+        // 도넛 차트 렌더링
+        this.renderDonutChart(data.stocks);
+
+        // 종목 리스트 렌더링
+        this.renderStockList(data.stocks);
+    }
+
+    /**
+     * Chart.js 도넛 차트 렌더링
+     */
+    renderDonutChart(stocks) {
+        const ctx = document.getElementById('consensusChart');
+
+        // 기존 차트가 있다면 제거
+        if (this.currentChart) {
+            this.currentChart.destroy();
+        }
+
+        const labels = stocks.map(stock => `${stock.ticker} (${stock.weightPercent}%)`);
+        const data = stocks.map(stock => stock.weightPercent);
+
+        // 10개 색상 팔레트
+        const colors = [
+            '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+            '#FF9F40', '#FF6384', '#C9CBCF', '#4BC0C0', '#FF9F40'
+        ];
+
+        this.currentChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    backgroundColor: colors,
+                    borderWidth: 2,
+                    borderColor: '#ffffff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            font: {
+                                size: 12
+                            },
+                            padding: 15,
+                            boxWidth: 15
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const stock = stocks[context.dataIndex];
+                                return [
+                                    `${stock.companyName || stock.ticker}`,
+                                    `비중: ${stock.weightPercent}%`,
+                                    `섹터: ${stock.sector || 'N/A'}`
+                                ];
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    /**
+     * 종목 리스트 테이블 렌더링
+     */
+    renderStockList(stocks) {
+        const container = document.getElementById('stockList');
+
+        let html = '<table class="stock-table">';
+        html += '<thead><tr><th>티커</th><th>회사명</th><th>섹터</th><th>비중</th></tr></thead>';
+        html += '<tbody>';
+
+        stocks.forEach(stock => {
+            html += `
+                <tr>
+                    <td><strong>${stock.ticker}</strong></td>
+                    <td>${stock.companyName || '-'}</td>
+                    <td>${stock.sector || '-'}</td>
+                    <td><span class="weight-badge">${stock.weightPercent}%</span></td>
+                </tr>
+            `;
+        });
+
+        html += '</tbody></table>';
+        container.innerHTML = html;
     }
 
     /**
