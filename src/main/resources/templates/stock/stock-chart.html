@@ -10,26 +10,34 @@
     <script src="https://unpkg.com/lightweight-charts@3.8.0/dist/lightweight-charts.standalone.production.js"></script>
 
     <style>
-        * {
-            margin: 0;
-            padding: 0;
+        /* ========================================
+           📌 Stock 페이지 전용 스코프 스타일
+           - 다른 페이지에 영향을 주지 않도록 .stock-page 스코프 적용
+           - common.css 및 Bootstrap 클래스와 충돌 방지
+           ======================================== */
+
+        /* Box-sizing만 스코프 내에서 적용 (전역 reset 제거) */
+        .stock-page,
+        .stock-page * {
             box-sizing: border-box;
         }
 
-        body {
+        /* body 스타일 → .stock-page로 스코프 제한 */
+        .stock-page {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothic', sans-serif;
             background: #f8f9fa;
             color: #333;
         }
 
-
-        .container {
+        /* .container → .stock-container로 변경 (Bootstrap 충돌 방지) */
+        .stock-page .stock-container {
             max-width: 1600px;
             margin: 0 auto;
             padding: 20px;
         }
 
-        .search-section {
+        /* 검색 섹션 */
+        .stock-page .search-section {
             background: white;
             padding: 20px;
             border-radius: 12px;
@@ -37,13 +45,13 @@
             margin-bottom: 20px;
         }
 
-        .search-box {
+        .stock-page .search-box {
             display: flex;
             gap: 10px;
             margin-bottom: 15px;
         }
 
-        .search-input {
+        .stock-page .search-input {
             flex: 1;
             padding: 12px 15px;
             border: 2px solid #e2e8f0;
@@ -51,12 +59,13 @@
             font-size: 1rem;
         }
 
-        .search-input:focus {
+        .stock-page .search-input:focus {
             outline: none;
             border-color: #667eea;
         }
 
-        .btn {
+        /* 버튼 스타일 (Bootstrap .btn과 충돌 방지) */
+        .stock-page .btn {
             padding: 12px 25px;
             background: #667eea;
             color: white;
@@ -67,18 +76,18 @@
             transition: all 0.3s;
         }
 
-        .btn:hover {
+        .stock-page .btn:hover {
             background: #5568d3;
             transform: translateY(-2px);
         }
 
-        .quick-search {
+        .stock-page .quick-search {
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
         }
 
-        .quick-btn {
+        .stock-page .quick-btn {
             padding: 8px 15px;
             background: #f7fafc;
             border: 1px solid #e2e8f0;
@@ -87,13 +96,14 @@
             transition: all 0.3s;
         }
 
-        .quick-btn:hover {
+        .stock-page .quick-btn:hover {
             background: #667eea;
             color: white;
             border-color: #667eea;
         }
 
-        .chart-section {
+        /* 차트 섹션 */
+        .stock-page .chart-section {
             background: white;
             padding: 20px;
             border-radius: 12px;
@@ -101,7 +111,7 @@
             margin-bottom: 20px;
         }
 
-        .stock-info {
+        .stock-page .stock-info {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 15px;
@@ -111,31 +121,31 @@
             border-radius: 8px;
         }
 
-        .info-item {
+        .stock-page .info-item {
             display: flex;
             flex-direction: column;
             gap: 5px;
         }
 
-        .info-label {
+        .stock-page .info-label {
             font-size: 0.85rem;
             color: #718096;
         }
 
-        .info-value {
+        .stock-page .info-value {
             font-size: 1.2rem;
             font-weight: 600;
         }
 
-        .price-up {
+        .stock-page .price-up {
             color: #e53e3e;
         }
 
-        .price-down {
+        .stock-page .price-down {
             color: #3182ce;
         }
 
-        .chart-controls {
+        .stock-page .chart-controls {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -144,12 +154,12 @@
             gap: 10px;
         }
 
-        .timeframe-buttons {
+        .stock-page .timeframe-buttons {
             display: flex;
             gap: 5px;
         }
 
-        .timeframe-btn {
+        .stock-page .timeframe-btn {
             padding: 8px 15px;
             background: white;
             border: 2px solid #e2e8f0;
@@ -159,19 +169,19 @@
             font-weight: 600;
         }
 
-        .timeframe-btn.active {
+        .stock-page .timeframe-btn.active {
             background: #667eea;
             color: white;
             border-color: #667eea;
         }
 
-        .indicator-controls {
+        .stock-page .indicator-controls {
             display: flex;
             gap: 10px;
             align-items: center;
         }
 
-        .indicator-label {
+        .stock-page .indicator-label {
             display: flex;
             align-items: center;
             gap: 5px;
@@ -181,7 +191,7 @@
             font-size: 0.9rem;
         }
 
-        .indicator-toggle {
+        .stock-page .indicator-toggle {
             display: flex;
             align-items: center;
             gap: 5px;
@@ -193,21 +203,21 @@
             transition: all 0.2s;
         }
 
-        .indicator-toggle:hover {
+        .stock-page .indicator-toggle:hover {
             background: #edf2f7;
         }
 
-        .indicator-toggle input {
+        .stock-page .indicator-toggle input {
             cursor: pointer;
         }
 
-        .color-dot {
+        .stock-page .color-dot {
             width: 12px;
             height: 12px;
             border-radius: 50%;
         }
 
-        .date-range-controls {
+        .stock-page .date-range-controls {
             display: flex;
             align-items: center;
             gap: 10px;
@@ -215,19 +225,19 @@
             flex-wrap: wrap;
         }
 
-        .date-input {
+        .stock-page .date-input {
             padding: 8px 12px;
             border: 2px solid #e2e8f0;
             border-radius: 6px;
             font-size: 0.9rem;
         }
 
-        .date-input:focus {
+        .stock-page .date-input:focus {
             outline: none;
             border-color: #667eea;
         }
 
-        .btn-small {
+        .stock-page .btn-small {
             padding: 8px 15px;
             background: #667eea;
             color: white;
@@ -239,76 +249,80 @@
             font-size: 0.9rem;
         }
 
-        .btn-small:hover {
+        .stock-page .btn-small:hover {
             background: #5568d3;
         }
 
-        .btn-secondary {
+        .stock-page .btn-secondary {
             background: #718096;
         }
 
-        .btn-secondary:hover {
+        .stock-page .btn-secondary:hover {
             background: #4a5568;
         }
 
-        #chart-container {
+        /* 차트 컨테이너 (높이 조정으로 빈공간 제거) */
+        .stock-page #chart-container {
             width: 100%;
             height: 600px;
             position: relative;
+            margin-bottom: 0; /* 빈공간 방지 */
         }
 
-        .loading {
+        .stock-page .loading {
             text-align: center;
             padding: 40px;
             color: #718096;
             font-size: 1.1rem;
         }
 
-        .error {
+        .stock-page .error {
             text-align: center;
             padding: 40px;
             color: #e53e3e;
             font-size: 1.1rem;
         }
 
+        /* 반응형 미디어 쿼리 */
         @media (max-width: 768px) {
-            .stock-info {
+            .stock-page .stock-info {
                 grid-template-columns: repeat(2, 1fr);
             }
 
-            #chart-container {
+            .stock-page #chart-container {
                 height: 400px;
             }
 
-            .chart-controls {
+            .stock-page .chart-controls {
                 flex-direction: column;
                 align-items: stretch;
             }
 
-            .timeframe-buttons {
+            .stock-page .timeframe-buttons {
                 width: 100%;
                 justify-content: space-around;
             }
-
         }
 
-        .chart-layout {
+        /* 차트 레이아웃 */
+        .stock-page .chart-layout {
             display: flex;
             gap: 20px;
         }
 
-        .chart-left {
+        .stock-page .chart-left {
             flex: 2;   /* 2:1 비율 → 좌측이 더 넓음 */
+            position: relative;
         }
 
-        .chart-right {
+        .stock-page .chart-right {
             flex: 1;
             display: flex;
             flex-direction: column;
             gap: 15px;
         }
 
-        .chart-overlay-controls {
+        .stock-page .chart-overlay-controls {
             position: absolute;
             top: 10px;
             right: 10px;
@@ -321,18 +335,15 @@
             z-index: 10;
         }
 
-        .chart-overlay-controls label {
+        .stock-page .chart-overlay-controls label {
             display: flex;
             align-items: center;
             gap: 5px;
             cursor: pointer;
         }
 
-        .chart-left {
-            position: relative;
-        }
-
-        .metric-card {
+        /* 지표 카드 */
+        .stock-page .metric-card {
             background: #ffffff;
             border-radius: 12px;
             padding: 8px;
@@ -340,37 +351,43 @@
             margin-top: 6px;
         }
 
-
-        .metric-grid {
+        .stock-page .metric-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 12px;
         }
 
-        .metric-item {
+        .stock-page .metric-item {
             background: #f7fafc;
             border-radius: 10px;
             padding: 12px;
         }
 
-        .metric-label {
+        .stock-page .metric-label {
             font-size: 0.8rem;
             color: #718096;
             margin-bottom: 4px;
         }
 
-        .metric-value {
+        .stock-page .metric-value {
             font-size: 1.4rem;
             font-weight: 700;
             color: #2d3748;
         }
 
-        .metric-value.roe {
+        .stock-page .metric-value.roe {
             color: #e53e3e;
         }
 
-        .metric-value.dividend {
+        .stock-page .metric-value.dividend {
             color: #2b6cb0;
+        }
+
+        /* ========================================
+           📌 토론방 영역 보호 (전역 reset 영향 방지)
+           ======================================== */
+        .stock-page .board-section {
+            /* 토론방은 기존 common.css 스타일을 최대한 유지 */
         }
 
     </style>
@@ -382,8 +399,10 @@
 <!-- 2️⃣ 공통 네비게이션 바 -->
 <th:block th:replace="content/layout/header-main :: bodyheader"></th:block>
 
+<!-- 📌 stock 페이지 스코프 래퍼 시작 -->
+<div class="stock-page">
 
-<div class="container">
+<div class="stock-container">
     <!-- 검색 섹션 -->
     <div class="search-section">
         <h2 style="margin-bottom: 15px;">종목 검색</h2>
@@ -549,8 +568,8 @@
         </div>
     </div>
 
-</div>
-</div>
+</div> <!-- stock-container 닫기 -->
+</div> <!-- stock-page 래퍼 닫기 -->
 
 <script>
     let chart = null;
