@@ -10,27 +10,34 @@
     <script src="https://unpkg.com/lightweight-charts@3.8.0/dist/lightweight-charts.standalone.production.js"></script>
 
     <style>
+        /* ========================================
+           📌 Stock Page Scoped CSS (충돌 방지용)
+           ======================================== */
 
-        * {
-            margin: 0;
-            padding: 0;
+        /* ❌ 전역 reset 제거 → 스코프 reset */
+        .stock-page,
+        .stock-page * {
             box-sizing: border-box;
         }
 
-        body {
+        /* body 대체 */
+        .stock-page {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothic', sans-serif;
             background: #f8f9fa;
             color: #333;
         }
 
-
-        .container {
+        /* container 충돌 제거 */
+        .stock-page .stock-container {
             max-width: 1600px;
             margin: 0 auto;
             padding: 20px;
         }
 
-        .search-section {
+        /* ===============================
+           검색 영역
+           =============================== */
+        .stock-page .search-section {
             background: white;
             padding: 20px;
             border-radius: 12px;
@@ -38,13 +45,13 @@
             margin-bottom: 20px;
         }
 
-        .search-box {
+        .stock-page .search-box {
             display: flex;
             gap: 10px;
             margin-bottom: 15px;
         }
 
-        .search-input {
+        .stock-page .search-input {
             flex: 1;
             padding: 12px 15px;
             border: 2px solid #e2e8f0;
@@ -52,12 +59,15 @@
             font-size: 1rem;
         }
 
-        .search-input:focus {
+        .stock-page .search-input:focus {
             outline: none;
             border-color: #667eea;
         }
 
-        .btn {
+        /* ===============================
+           버튼 (Bootstrap 보호)
+           =============================== */
+        .stock-page .btn {
             padding: 12px 25px;
             background: #667eea;
             color: white;
@@ -68,18 +78,29 @@
             transition: all 0.3s;
         }
 
-        .btn:hover {
+        .stock-page .btn:hover {
             background: #5568d3;
             transform: translateY(-2px);
         }
 
-        .quick-search {
+        .stock-page .btn-secondary {
+            background: #718096;
+        }
+
+        .stock-page .btn-secondary:hover {
+            background: #4a5568;
+        }
+
+        /* ===============================
+           빠른 검색
+           =============================== */
+        .stock-page .quick-search {
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
         }
 
-        .quick-btn {
+        .stock-page .quick-btn {
             padding: 8px 15px;
             background: #f7fafc;
             border: 1px solid #e2e8f0;
@@ -88,21 +109,16 @@
             transition: all 0.3s;
         }
 
-        .quick-btn:hover {
+        .stock-page .quick-btn:hover {
             background: #667eea;
             color: white;
             border-color: #667eea;
         }
 
-        .chart-section {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }
-
-        .stock-info {
+        /* ===============================
+           종목 정보
+           =============================== */
+        .stock-page .stock-info {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 15px;
@@ -112,178 +128,91 @@
             border-radius: 8px;
         }
 
-        .info-item {
+        .stock-page .info-item {
             display: flex;
             flex-direction: column;
             gap: 5px;
         }
 
-        .info-label {
+        .stock-page .info-label {
             font-size: 0.85rem;
             color: #718096;
         }
 
-        .info-value {
+        .stock-page .info-value {
             font-size: 1.2rem;
             font-weight: 600;
         }
 
-        .price-up {
+        .stock-page .price-up {
             color: #e53e3e;
         }
 
-        .price-down {
+        .stock-page .price-down {
             color: #3182ce;
         }
 
-        .navbar {
-            background: white;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-
-        .navbar-content {
-            max-width: 1600px;
-            margin: 0 auto;
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .navbar-logo {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #667eea;
-            cursor: pointer;
-        }
-
-        .navbar-buttons {
-            display: flex;
-            gap: 15px;
-        }
-
-        .btn-login {
-            padding: 10px 25px;
-            background: white;
-            color: #667eea;
-            border: 2px solid #667eea;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .btn-login:hover {
-            background: #667eea;
-            color: white;
-        }
-
-        .btn-signup {
-            padding: 10px 25px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .btn-signup:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102,126,234,0.4);
-        }
-
-
-        #hot-board-box {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.07);
-            margin: 20px 0;
-            display: none;
-        }
-
-        .comment-item {
+        /* ===============================
+           게시글 / 댓글 보호
+           =============================== */
+        .stock-page .comment-item {
             padding: 12px 0;
             border-bottom: 1px solid #eee;
         }
 
-        .comment-item.reply {
+        .stock-page .comment-item.reply {
             margin-left: 32px;
             background: #f9fafb;
             border-left: 3px solid #e2e8f0;
             padding-left: 12px;
         }
 
-        .comment-writer {
+        .stock-page .comment-writer {
             font-weight: 600;
         }
 
-        .comment-body {
+        .stock-page .comment-body {
             white-space: pre-line;
             margin: 4px 0;
         }
 
-        .comment-footer {
+        .stock-page .comment-footer {
             font-size: 0.8rem;
             color: #888;
             display: flex;
             justify-content: space-between;
         }
 
-        .btn-reply {
+        .stock-page .btn-reply {
             padding: 6px 14px;
             font-size: 0.8rem;
             margin-top: 6px;
         }
 
-
-
+        /* ===============================
+           종토방 보호
+           =============================== */
+        .stock-page .board-section {
+            /* common.css 스타일 유지 */
+        }
     </style>
+
 </head>
 
+
+<!-- 1️⃣ head: header-main 사용 -->
+<th:block th:replace="content/layout/header-main :: header-main"></th:block>
+
+
+<!-- 2️⃣ 공통 네비게이션 바 -->
+<th:block th:replace="content/layout/header-main :: bodyheader"></th:block>
+
+
 <body>
-
-<!-- 네비게이션 -->
-<nav class="navbar">
-    <div class="navbar-content">
-            <div class="navbar-logo" onclick="location.href='/'">📈 Finance Platform</div>
-
-        <div class="navbar-buttons">
-            <!-- 로그인 전 -->
-            <div sec:authorize="!isAuthenticated()">
-                <button class="btn-login" onclick="location.href='/user/login'">로그인</button>
-                <button class="btn-signup" onclick="location.href='/user/signup'">회원가입</button>
-            </div>
+<div class="stock-page">
 
 
-            <!-- 관리자 로그인 -->
-            <div sec:authorize="hasRole('ADMIN')">
-                <span style="margin-right: 15px; color: #667eea; font-weight: 600;">
-                    <span sec:authentication="name"></span>님 (관리자)
-                </span>
-                <button class="btn-login" onclick="location.href='/admin'">관리자 페이지</button>
-                <button class="btn-signup" onclick="location.href='/user/logout'">로그아웃</button>
-            </div>
-
-            <!-- 일반 사용자 로그인 -->
-            <div sec:authorize="hasRole('USER') and !hasRole('ADMIN')">
-                <span style="margin-right: 15px; color: #667eea; font-weight: 600;">
-                    <span sec:authentication="name"></span>님
-                </span>
-                <button class="btn-login" onclick="location.href='/user/mypage'">마이페이지</button>
-                <button class="btn-signup" onclick="location.href='/user/logout'">로그아웃</button>
-            </div>
-
-        </div>
-    </div>
-</nav>
-
-<div class="container">
+    <div class="stock-container">
 
     <!-- 검색 -->
     <div class="search-section">
@@ -495,6 +424,7 @@
 
 </div> <!-- container 끝 -->
 
+</div>
 <script th:inline="javascript">
 
     let currentTicker = /*[[${ticker}]]*/ "";
