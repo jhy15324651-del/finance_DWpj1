@@ -62,9 +62,9 @@ dependencies {
 
     implementation 'com.yahoofinance-api:YahooFinanceAPI:3.17.0'
 
-
-
-
+    // Apache POI for Excel generation
+    implementation 'org.apache.poi:poi:5.2.5'
+    implementation 'org.apache.poi:poi-ooxml:5.2.5'
 }
 
 tasks.named('test') {
@@ -78,4 +78,10 @@ tasks.withType(JavaCompile) {
 
 tasks.withType(Test) {
     systemProperty 'file.encoding', 'UTF-8'
+}
+
+// Task to run RequirementsExcelGenerator
+tasks.register('generateRequirements', JavaExec) {
+    mainClass = 'org.zerock.finance_dwpj1.util.RequirementsExcelGenerator'
+    classpath = sourceSets.main.runtimeClasspath
 }
