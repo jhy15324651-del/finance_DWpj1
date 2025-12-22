@@ -38,47 +38,28 @@ public class ContentWriteController {
     ============================================================ */
     @PostMapping("/write")
     public String writeContent(
+            @AuthenticationPrincipal CustomUserDetails user,
             @RequestParam String title,
             @RequestParam String content,
             @RequestParam(required = false) String hashtags,
-            @RequestParam(required = false) MultipartFile image,
-            @AuthenticationPrincipal CustomUserDetails loginUser,
-            RedirectAttributes redirectAttributes
-    ) throws IOException {
-
-        if (loginUser == null) {
-            return "redirect:/user/login";
-        }
+            Model model
+    ) {
 
         ContentReview post = ContentReview.builder()
                 .title(title)
                 .content(content)
                 .hashtags(hashtags)
-                .userId(loginUser.getId())
-                .writer(loginUser.getNickname())
-                .viewCount(0)
-                .type("review")
-                .isDeleted(false)
                 .build();
 
-        if (image != null && !image.isEmpty()) {
-            String uploadDir = "src/main/resources/static/upload/";
-            Path uploadPath = Paths.get(uploadDir);
-            if (!Files.exists(uploadPath)) Files.createDirectories(uploadPath);
-
-            String fileName = System.currentTimeMillis() + "_" + image.getOriginalFilename();
-            Path filePath = uploadPath.resolve(fileName);
-            Files.write(filePath, image.getBytes());
-            post.setImgUrl("/upload/" + fileName);
-        }
-
         try {
-            contentReviewService.saveContent(post);
+            contentReviewService.saveContent(post, user);
         } catch (IllegalArgumentException e) {
-            // ⭐ alert로 띄울 메시지 전달
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-            // ⭐ 다시 글쓰기 페이지로
-            return "redirect:/content/write";
+
+            // 🔥 이 두 줄이 없으면 alert 절대 안 뜸
+            model.addAttribute("post", post);
+            model.addAttribute("errorMessage", e.getMessage());
+
+            return "content/write"; // ❌ redirect 아님
         }
 
         return "redirect:/content/category";
@@ -114,18 +95,38 @@ public class ContentWriteController {
             @RequestParam String title,
             @RequestParam String content,
             @RequestParam(required = false) String hashtags,
-            @RequestParam(required = false) MultipartFile image
-    ) throws IOException {
+            @RequestParam(required = false) MultipartFile image,
+            Model model
+    ) {
 
         ContentReview post = contentReviewService.getContentById(id);
 
-        if (user == null || !post.getWriter().equals(user.getNickname())) {
-            return "redirect:/content/post/" + id;
+        try {
+            contentReviewService.updateContent(
+                    id, title, content, hashtags, image, user
+            );
+        } catch (IllegalArgumentException e) {
+
+            post.setTitle(title);
+            post.setContent(content);
+            post.setHashtags(hashtags);
+
+            model.addAttribute("post", post);
+            model.addAttribute("errorMessage", e.getMessage());
+
+            return "content/edit";
+
+        } catch (IOException e) {
+            // 🔥 파일 업로드 중 오류
+            model.addAttribute("post", post);
+            model.addAttribute("errorMessage", "이미지 처리 중 오류가 발생했습니다.");
+
+            return "content/edit";
         }
 
-        contentReviewService.updateContent(id, title, content, hashtags, image);
         return "redirect:/content/post/" + id;
     }
+
 
     /* ============================================================
        5) 게시글 삭제 (소프트 삭제)

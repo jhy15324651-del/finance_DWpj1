@@ -68,7 +68,21 @@ public class User {
     @Builder.Default
     private Role role = Role.USER;
 
-
     @Column()
     private String grade;
+
+    /**
+     * 알림용 관심 태그 필드
+     */
+    @Column(length = 500)
+    private String interestedTags;
+
+    /**
+     * 알림 ON/OFF
+     */
+    // User.java
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean notificationEnabled = true;
+
 }

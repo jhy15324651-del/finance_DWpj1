@@ -5,6 +5,116 @@
     <link rel="stylesheet" th:href="@{/css/common.css}">
 
     <style>
+        /* ===============================
+           전체 레이아웃
+        =============================== */
+        .notification-layout {
+            max-width: 1200px;
+            margin: 40px auto;
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 28px;
+        }
+
+        @media (max-width: 900px) {
+            .notification-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ===============================
+           카드 공통
+        =============================== */
+        .card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 28px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.04);
+        }
+
+        .card h2,
+        .card h3 {
+            margin-bottom: 12px;
+        }
+
+        /* ===============================
+           🔔 알림 카드 헤더
+        =============================== */
+        .card-header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+        }
+
+        .notification-toggle-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .notification-status-text {
+            font-size: 14px;
+            color: #555;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        /* ===============================
+           토글 스위치
+        =============================== */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 46px;
+            height: 24px;
+        }
+
+        .switch input {
+            display: none;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            inset: 0;
+            background-color: #ddd;
+            border-radius: 999px;
+            transition: 0.2s;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            top: 3px;
+            background-color: white;
+            border-radius: 50%;
+            transition: 0.2s;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+
+        .switch input:checked + .slider {
+            background-color: #667eea;
+        }
+
+        .switch input:checked + .slider:before {
+            transform: translateX(22px);
+        }
+
+        /* ===============================
+           알림 리스트
+        =============================== */
+        .notification-item {
+            padding: 14px 0;
+            border-bottom: 1px solid #f1f1f1;
+        }
+
+        .notification-item:last-child {
+            border-bottom: none;
+        }
 
         .notification-item.read {
             opacity: 0.5;
@@ -14,32 +124,284 @@
             font-weight: 600;
         }
 
+        /* ===============================
+           관심 태그 카드
+        =============================== */
+        .tag-guide {
+            margin-bottom: 16px;
+            color: #555;
+        }
+
+        .interest-tag-form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .interest-tag-input {
+            flex: 1;
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+        }
+
+        .tag-preview {
+            margin-bottom: 22px;
+        }
+
+        .tag-preview-container {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .tag-preview-empty {
+            font-size: 13px;
+            color: #aaa;
+        }
+
+        .current-tags-title {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 6px;
+        }
+
+        .tag-badge-container {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-bottom: 6px;
+        }
+
+        .tag-remove-guide {
+            font-size: 13px;
+            color: #777;
+            margin-bottom: 24px;
+        }
+
+        .tag-badge {
+            background: #f1f3ff;
+            color: #4a5bdc;
+            padding: 4px 10px;
+            border-radius: 14px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+
+        .tag-badge:hover {
+            background: #ffecec;
+            color: #d32f2f;
+            transform: scale(1.05);
+            box-shadow: 0 2px 6px rgba(211, 47, 47, 0.15);
+        }
+
+        /* ===============================
+           #공지 안내
+        =============================== */
+        .notice-alarm-info {
+            padding: 16px 18px;
+            background: #fff8e1;
+            border: 1px solid #ffe0a3;
+            border-radius: 10px;
+            font-size: 14px;
+            color: #6b4e00;
+        }
+
+        .notice-alarm-info strong {
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .notice-tag {
+            background: #ffd54f;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
     </style>
 </head>
-<!-- 1️⃣ head: header-main 사용 -->
+
 <th:block th:replace="content/layout/header-main :: header-main"></th:block>
-
 <body>
-
-<!-- 2️⃣ 공통 네비게이션 바 -->
 <th:block th:replace="content/layout/header-main :: bodyheader"></th:block>
 
-<div class="notification-page">
-    <h2>🔔 알림</h2>
+<div class="notification-layout">
 
-    <div th:each="n : ${notifications}"
-         th:class="'notification-item ' + (${n.read} ? 'read' : 'unread')">
+    <!-- ===============================
+         왼쪽: 알림 카드
+    =============================== -->
+    <section class="card">
 
-        <a th:href="@{/notifications/{id}(id=${n.id})}">
-            <div class="message" th:text="${n.message}"></div>
-            <div class="date"
-                 th:text="${#temporals.format(n.createdDate, 'yyyy-MM-dd HH:mm')}">
+        <!-- 🔔 헤더 + 토글 -->
+        <div class="card-header-row">
+            <h2>🔔 알림</h2>
+
+            <div class="notification-toggle-wrap">
+                <span class="notification-status-text"
+                      th:text="${notificationEnabled} ? '알림 ON' : '알림 OFF'"></span>
+
+                <form th:action="@{/notifications/toggle}" method="post">
+                    <label class="switch">
+                        <input type="checkbox"
+                               th:checked="${notificationEnabled}"
+                               onchange="this.form.submit()"> <!-- ⭐ 수정 -->
+                        <span class="slider"></span>
+                    </label>
+                </form>
             </div>
-        </a>
-    </div>
+        </div>
 
-    </div>
+        <div th:each="n : ${notifications}"
+             th:class="'notification-item ' + (${n.read} ? 'read' : 'unread')">
+            <a th:href="@{/notifications/{id}(id=${n.id})}">
+                <div th:text="${n.message}"></div>
+                <div th:text="${#temporals.format(n.createdDate, 'yyyy-MM-dd HH:mm')}"></div>
+            </a>
+        </div>
+    </section>
+
+    <!-- ===============================
+         오른쪽: 관심 태그 카드
+    =============================== -->
+    <section class="card">
+
+        <h3>🔖 관심 태그 설정</h3>
+
+        <p class="tag-guide">
+            관심 태그를 입력해주세요.(띄어쓰기로 구분)
+        </p>
+
+        <form th:action="@{/notifications/tags}" method="post" class="interest-tag-form">
+            <input type="text"
+                   class="interest-tag-input"
+                   placeholder="예) 엔비디아 테슬라"/>
+
+            <input type="hidden"
+                   name="interestedTags"
+                   id="finalInterestedTags"
+                   th:value="${interestedTags}"/>
+
+            <button type="submit" class="btn-common-primary">저장</button>
+        </form>
+
+        <div class="tag-preview">
+            <div class="tag-preview-container" id="tagPreview">
+                <span class="tag-preview-empty">아직 입력된 태그가 없습니다.</span>
+            </div>
+        </div>
+
+        <div th:if="${interestedTags != null and !#strings.isEmpty(interestedTags)}">
+            <p class="current-tags-title">현재 설정된 관심 태그</p>
+            <div class="tag-badge-container">
+                <span class="tag-badge"
+                      th:each="tag : ${#strings.arraySplit(interestedTags, ' ')}"
+                      th:text="${tag}"
+                      th:attr="data-tag=${tag}">
+                </span>
+            </div>
+        </div>
+
+        <p class="tag-remove-guide">
+            💡 태그를 클릭하고 저장 버튼을 누르면 삭제할 수 있습니다.
+        </p>
+
+        <div class="notice-alarm-info">
+            <strong>#공지 알림 안내</strong>
+            <p>
+                <span class="notice-tag">#공지</span> 태그가 포함된 글은<br/>
+                <b>관심 태그 설정과 관계없이 모든 사용자에게 알림</b>이 전송됩니다.
+            </p>
+        </div>
+
+    </section>
 </div>
+
+<!-- ===============================
+     JS (기존 그대로 유지)
+=============================== -->
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const hidden = document.getElementById("finalInterestedTags");
+
+        document.querySelectorAll(".tag-badge").forEach(badge => {
+            badge.addEventListener("click", () => {
+                const tag = badge.dataset.tag;
+                if (!tag || !hidden) return;
+
+                let tags = hidden.value.split(" ")
+                    .map(t => t.trim())
+                    .filter(t => t.length > 0);
+
+                tags = tags.filter(t => t !== tag);
+                hidden.value = tags.join(" ");
+                badge.remove();
+            });
+        });
+    });
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const input = document.querySelector(".interest-tag-input");
+        const preview = document.getElementById("tagPreview");
+
+        if (!input || !preview) return;
+
+        function normalizeTags(raw) {
+            if (!raw) return [];
+            return [...new Set(
+                raw.split(/\s+/)
+                    .map(t => t.trim())
+                    .filter(t => t.length > 0)
+                    .map(t => t.startsWith("#") ? t : "#" + t)
+            )].slice(0, 5);
+        }
+
+        function renderPreview() {
+            const tags = normalizeTags(input.value);
+            if (tags.length === 0) {
+                preview.innerHTML =
+                    `<span class="tag-preview-empty">아직 입력된 태그가 없습니다.</span>`;
+                return;
+            }
+            preview.innerHTML = tags
+                .map(tag => `<span class="tag-badge">${tag}</span>`)
+                .join("");
+        }
+
+        input.addEventListener("input", renderPreview);
+        renderPreview();
+    });
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const form = document.querySelector(".interest-tag-form");
+        const input = document.querySelector(".interest-tag-input");
+        const hidden = document.getElementById("finalInterestedTags");
+
+        if (!form || !input || !hidden) return;
+
+        form.addEventListener("submit", () => {
+            let tags = hidden.value
+                ? hidden.value.split(" ").map(t => t.trim())
+                : [];
+
+            const newTags = input.value
+                .split(/\s+/)
+                .map(t => t.trim())
+                .filter(t => t.length > 0)
+                .map(t => t.replace(/^#+/, "#"))
+                .map(t => t.startsWith("#") ? t : "#" + t);
+
+            const merged = [...new Set([...tags, ...newTags])].slice(0, 5);
+            hidden.value = merged.join(" ");
+            input.value = "";
+        });
+    });
+</script>
 
 </body>
 </html>

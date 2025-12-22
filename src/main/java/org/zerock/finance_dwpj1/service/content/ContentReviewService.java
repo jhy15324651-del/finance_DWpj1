@@ -1,21 +1,30 @@
 package org.zerock.finance_dwpj1.service.content;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.security.core.userdetails.User;
+import org.springframework.jmx.export.notification.NotificationPublisher;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.zerock.finance_dwpj1.entity.user.User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.zerock.finance_dwpj1.entity.content.ContentComment;
 import org.zerock.finance_dwpj1.entity.content.ContentReview;
+import org.zerock.finance_dwpj1.entity.notification.Notification;
+import org.zerock.finance_dwpj1.entity.notification.NotificationType;
 import org.zerock.finance_dwpj1.entity.user.Role;
 import org.zerock.finance_dwpj1.repository.content.ContentCommentRepository;
 import org.zerock.finance_dwpj1.repository.content.ContentReviewRepository;
+import org.zerock.finance_dwpj1.repository.notification.NotificationRepository;
 import org.zerock.finance_dwpj1.repository.user.UserRepository;
+import org.zerock.finance_dwpj1.service.notification.NotificationPolicyService;
 import org.zerock.finance_dwpj1.service.user.CustomUserDetails;
 
 
@@ -26,6 +35,7 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -35,11 +45,15 @@ import java.util.regex.Pattern;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 @Slf4j
+@Getter
+@Setter
 public class ContentReviewService {
 
     private final ContentReviewRepository repo;
     private final ContentCommentRepository commentRepo;
     private final UserRepository userRepository;
+    private final NotificationRepository notificationRepository;
+    private final NotificationPolicyService notificationPolicyService;
 
 
     // writer 기준으로 게시글 조회
@@ -259,51 +273,146 @@ public class ContentReviewService {
     // 🔥 저장
     // ---------------------------------------------------------
     @Transactional
-    public ContentReview saveContent(ContentReview post) {
+    public ContentReview saveContent(ContentReview post, CustomUserDetails loginUser) {
 
+        // 🔐 공지 태그 권한 체크
         String hashtags = post.getHashtags();
+        if (hashtags != null) {
+            List<String> tagList = Arrays.stream(hashtags.split("\\s+"))
+                    .map(String::trim)
+                    .filter(tag -> !tag.isEmpty())
+                    .toList();
 
-        // 🔐 [1단계] #공지 해시태그 권한 체크
-        if (hashtags != null && hashtags.contains("#공지")) {
+            if (tagList.contains("#공지")) {
+                boolean isAdmin = loginUser.getAuthorities().stream()
+                        .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
-            org.zerock.finance_dwpj1.entity.user.User user =
-                    userRepository.findById(post.getUserId())
-                            .orElseThrow(() -> new IllegalStateException("사용자 정보 없음"));
-
-            if (user.getRole() != Role.ADMIN) {
-                throw new IllegalArgumentException("공지 태그는 관리자만 사용할 수 있습니다.");
+                if (!isAdmin) {
+                    throw new IllegalArgumentException("공지 태그는 관리자만 사용할 수 있습니다.");
+                }
             }
         }
 
-        // 🔥 본문 첫 이미지 → thumbnail 자동 생성
-        String thumbnail = extractFirstImage(post.getContent());
-        post.setThumbnail(thumbnail);  // null이면 null 저장됨 (OK)
+        // =====================================================
+        // 🔥🔥🔥 작성자 정보 세팅 (핵심 수정 부분)
+        // =====================================================
 
-        // 🔥 preview도 자동 생성하는 경우
+        // 작성자 ID
+        post.setUserId(loginUser.getId());
+
+        // 작성자 표시 이름
+        String writerName = loginUser.getNickname();
+
+        // 관리자 계정 nickname 방어 처리
+        if (writerName == null || writerName.isBlank()) {
+            boolean isAdmin = loginUser.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+            writerName = isAdmin ? "관리자" : "익명";
+        }
+
+        post.setWriter(writerName);
+
+        // =====================================================
+        // 🔥 기타 자동 처리
+        // =====================================================
+
+        // 썸네일 자동 추출
+        String thumbnail = extractFirstImage(post.getContent());
+        post.setThumbnail(thumbnail);
+
+        // 미리보기 자동 생성
         post.setPreview(makePreview(post.getContent()));
 
-        return repo.save(post);
+        // 기본값 보장 (혹시 null 방어)
+        if (post.getViewCount() == null) {
+            post.setViewCount(0);
+        }
+
+        if (post.getType() == null) {
+            post.setType("review");
+        }
+
+        post.setIsDeleted(false);
+
+        // =====================================================
+        // 🔥 저장 + 알림
+        // =====================================================
+
+        ContentReview savedPost = repo.save(post);
+        createTagNotifications(savedPost);
+
+        return savedPost;
     }
+
+
+    private void createTagNotifications(ContentReview post) {
+
+        String hashtags = post.getHashtags();
+        if (hashtags == null || hashtags.isBlank()) return;
+
+        List<String> tags = parseTags(hashtags);
+        if (tags.isEmpty()) return;
+
+        String tag1 = tags.size() > 0 ? tags.get(0) : "";
+        String tag2 = tags.size() > 1 ? tags.get(1) : "";
+        String tag3 = tags.size() > 2 ? tags.get(2) : "";
+        String tag4 = tags.size() > 3 ? tags.get(3) : "";
+        String tag5 = tags.size() > 4 ? tags.get(4) : "";
+
+        List<Long> targetUserIds =
+                userRepository.findUserIdsByInterestedTags(tag1, tag2, tag3, tag4, tag5);
+
+        for (Long userId : targetUserIds) {
+
+            // 1️⃣ 자기 글 제외
+            if (userId.equals(post.getUserId())) continue;
+
+            // 2️⃣ 🔔 알림 정책 검사 (⭐ 여기만 변경)
+            if (!notificationPolicyService.canSendNotification(
+                    userId,
+                    NotificationType.TAG
+            )) {
+                continue;
+            }
+
+            Notification notification = Notification.builder()
+                    .receiverId(userId)
+                    .type(NotificationType.TAG)
+                    .message("관심 태그 글이 새로 올라왔습니다.")
+                    .targetUrl("/content/post/" + post.getId())
+                    .build();
+
+            notificationRepository.save(notification);
+        }
+    }
+
 
     // ---------------------------------------------------------
     // 🔥 수정 기능
     // ---------------------------------------------------------
     @Transactional
     public void updateContent(Long id, String title, String content,
-                              String hashtags, MultipartFile image) throws IOException {
+                              String hashtags, MultipartFile image,
+                              CustomUserDetails loginUser) throws IOException {
 
         ContentReview post = repo.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글입니다."));
 
-        // 🔐 [2단계] 공지 태그 수정 권한 체크
-        if (hashtags != null && hashtags.contains("#공지")) {
+        // 🔐 공지 태그 수정 권한 체크 (작성과 동일 방식)
+        if (hashtags != null) {
+            List<String> tagList = Arrays.stream(hashtags.split("\\s+"))
+                    .map(String::trim)
+                    .filter(tag -> !tag.isEmpty())
+                    .toList();
 
-            org.zerock.finance_dwpj1.entity.user.User user =
-                    userRepository.findById(post.getUserId())
-                            .orElseThrow(() -> new IllegalStateException("사용자 정보 없음"));
+            if (tagList.contains("#공지")) {
+                boolean isAdmin = loginUser.getAuthorities().stream()
+                        .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
-            if (user.getRole() != Role.ADMIN) {
-                throw new IllegalArgumentException("공지 태그는 관리자만 사용할 수 있습니다.");
+                if (!isAdmin) {
+                    throw new IllegalArgumentException("공지 태그는 관리자만 사용할 수 있습니다.");
+                }
             }
         }
 
@@ -311,11 +420,9 @@ public class ContentReviewService {
         post.setContent(content);
         post.setHashtags(hashtags);
 
-        // 🔥 본문 첫 이미지 → thumbnail 다시 계산!!
         String thumbnail = extractFirstImage(content);
         post.setThumbnail(thumbnail);
 
-        // 🔥 이미지 업로드 처리 (기존 코드 그대로)
         if (image != null && !image.isEmpty()) {
             String uploadDir = "src/main/resources/static/upload/";
             Path uploadPath = Paths.get(uploadDir);
@@ -330,6 +437,7 @@ public class ContentReviewService {
 
         repo.save(post);
     }
+
 
 
 
@@ -436,5 +544,26 @@ public class ContentReviewService {
 
         return score;
     }
+
+    // ---------------------------------------------------------
+    // 🔥 해시태그 파싱 유틸
+    // ---------------------------------------------------------
+    private List<String> parseTags(String hashtags) {
+
+        List<String> tags = new ArrayList<>();
+
+        if (hashtags == null) return tags;
+
+        Pattern pattern = Pattern.compile("#\\S+");
+        Matcher matcher = pattern.matcher(hashtags);
+
+        while (matcher.find()) {
+            tags.add(matcher.group());
+        }
+
+        return tags;
+    }
+
+
 
 }
