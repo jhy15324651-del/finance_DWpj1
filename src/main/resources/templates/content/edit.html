@@ -11,56 +11,57 @@
 
         <!-- 제목 -->
         <label>제목</label>
-        <input type="text" name="title" th:value="${post.title}" required>
+        <input type="text"
+               name="title"
+               required
+               th:value="${post.title}">
 
         <!-- Quill CSS -->
         <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
 
-        <!-- 본문 (Quill Editor) -->
+        <!-- 본문 -->
         <label>본문</label>
         <div id="editor-container" style="height: 400px;"></div>
 
-        <!-- 서버로 보낼 본문 -->
-        <input type="hidden" id="content-hidden" name="content">
+        <!-- 서버로 보낼 본문 HTML -->
+        <input type="hidden"
+               id="content-hidden"
+               name="content"
+               th:value="${post.content}">
 
         <!-- 해시태그 -->
         <label>해시태그</label>
-        <input type="text" name="hashtags"
-               th:value="${post.hashtags}"
-               placeholder="#원유 #엔비디아 #경제">
+        <input type="text"
+               name="hashtags"
+               placeholder="#원유 #엔비디아 #경제"
+               th:value="${post.hashtags}">
 
         <!-- 버튼 -->
         <div style="text-align:center; margin-top:20px;">
             <button type="submit" class="btn-submit">수정하기</button>
-            <a th:href="@{/content/post/{id}(id=${post.id})}" class="btn-cancel">돌아가기</a>
+            <a th:href="@{/content/post/{id}(id=${post.id})}"
+               class="btn-cancel">돌아가기</a>
         </div>
 
-        <!-- 삭제된 글일 때만 리포스트 버튼 표시 -->
+        <!-- 삭제된 글일 때만 복구 버튼 -->
         <div th:if="${post.isDeleted}" style="text-align:center; margin-top:10px;">
             <a th:href="@{/content/restore/{id}(id=${post.id})}"
                class="btn-restore">게시글 복구하기</a>
         </div>
-
     </form>
 </div>
+
 
 <!-- Quill JS -->
 <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
 
-<!-- 🔥 Thymeleaf 변수 안전하게 JS에 전달 -->
-<script th:inline="javascript">
-
-    /* 기존 본문 HTML */
-    var originalHtml = /*[[${post.content}]]*/ "";
-
-    /* 작성 페이지와 동일한 툴바 구성 */
+<script>
     var toolbarOptions = [
         ['bold', 'italic', 'underline'],
         [{ 'header': 1 }, { 'header': 2 }],
         ['image']
     ];
 
-    /* Quill 에디터 생성 */
     var quill = new Quill('#editor-container', {
         theme: 'snow',
         placeholder: '내용을 입력하세요...',
@@ -76,7 +77,12 @@
         }
     });
 
-    /* 이미지 업로드 기능 */
+    // 🔥 서버에서 넘어온 기존 content 복원
+    const existingContent = document.getElementById("content-hidden").value;
+    if (existingContent) {
+        quill.root.innerHTML = existingContent;
+    }
+
     function selectLocalImage() {
         const input = document.createElement("input");
         input.type = "file";
@@ -104,22 +110,17 @@
             })
             .catch(err => {
                 console.error("이미지 업로드 실패", err);
+                alert("이미지 업로드 중 오류가 발생했습니다.");
             });
     }
 
-    /* 🔥 기존 HTML → Delta 변환 후 Quill에 삽입 */
-    var delta = quill.clipboard.convert(originalHtml);
-    quill.setContents(delta, 'silent');
-
-    /* 🔥 제출 시 Hidden input에 HTML 삽입 */
+    // submit 시 Quill 내용 hidden input에 담기
     document.querySelector(".write-form").addEventListener("submit", function () {
         document.querySelector("#content-hidden").value = quill.root.innerHTML;
     });
-
 </script>
 
 <style>
-    /* 리포스트 버튼 */
     .btn-restore {
         display: inline-block;
         padding: 8px 18px;
@@ -134,6 +135,17 @@
         background-color: #3e8e41;
     }
 </style>
+
+<!-- 🔔 서버 에러 메시지 모달 -->
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    let errorMessage = [[${errorMessage}]];
+
+    if (errorMessage !== null && errorMessage !== undefined) {
+        alert(errorMessage);
+    }
+    /*]]>*/
+</script>
 
 
 <th:block th:replace="content/layout/footer :: footer"></th:block>

@@ -11,6 +11,7 @@ import org.zerock.finance_dwpj1.entity.notification.NotificationType;
 import org.zerock.finance_dwpj1.repository.content.ContentCommentRepository;
 import org.zerock.finance_dwpj1.repository.content.ContentReviewRepository;
 import org.zerock.finance_dwpj1.repository.notification.NotificationRepository;
+import org.zerock.finance_dwpj1.service.notification.NotificationPolicyService;
 import org.zerock.finance_dwpj1.service.user.CustomUserDetails;
 
 import java.util.List;
@@ -22,6 +23,7 @@ public class ContentCommentService {
     private final ContentCommentRepository commentRepo;
     private final ContentReviewRepository contentRepo;
     private final NotificationRepository notificationRepository;
+    private final NotificationPolicyService notificationPolicyService;
 
     /**
      * 🔥 댓글 저장 (+ 평점 rating 저장 추가!)
@@ -53,16 +55,24 @@ public class ContentCommentService {
         // 👉 자기 글에 자기가 댓글 단 경우 제외
         if (!post.getUserId().equals(userId)) {
 
-            Notification notification = Notification.builder()
-                    .receiverId(post.getUserId())   // 게시글 작성자
-                    .type(NotificationType.COMMENT)
-                    .message("내 글에 댓글이 달렸습니다.")
-                    .targetUrl("/content/post/" + post.getId())
-                    .build();
+            // ⭐ 추가: 알림 ON/OFF 검사
+            if (!notificationPolicyService.canSendNotification(
+                    post.getUserId(),
+                    NotificationType.COMMENT
+            )) {
+                return;
+            }
 
-            notificationRepository.save(notification);
+            Notification notification = Notification.builder()
+                        .receiverId(post.getUserId())   // 게시글 작성자
+                        .type(NotificationType.COMMENT)
+                        .message("내 글에 댓글이 달렸습니다.")
+                        .targetUrl("/content/post/" + post.getId())
+                        .build();
+
+                notificationRepository.save(notification);
+            }
         }
-    }
 
     /**
      * 🔥 특정 게시글의 댓글 전체 조회
