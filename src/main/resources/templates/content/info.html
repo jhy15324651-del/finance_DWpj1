@@ -2,11 +2,18 @@
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
-<!-- 1) head -->
-<th:block th:replace="content/layout/header-content :: header"></th:block>
+<!-- 1️⃣ head: header-main 사용 -->
+<th:block th:replace="content/layout/header-main :: header-main"></th:block>
 
-<!-- 2) body 시작 -->
-<th:block th:replace="content/layout/header-content :: bodyheader"></th:block>
+<!-- 2️⃣ 공통 네비게이션 바 -->
+<th:block th:replace="content/layout/header-main :: bodyheader"></th:block>
+
+<div class="content-tabs">
+    <a href="/content/home" class="tab">메인으로</a>
+    <a href="/content/category" class="tab">카테고리</a>
+    <a href="/content/info" class="tab active">프로필</a>
+</div>
+
 
 <!-- ===============================
      메인 레이아웃
@@ -219,6 +226,49 @@
     .popular-box p {
         font-size: 0.9rem;
     }
+
+    /* ===============================
+       콘텐츠 리뷰 전용 탭 (최종)
+    ================================ */
+
+    .content-tabs {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin: 16px auto 0px;
+        max-width: 1200px;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    /* 탭 기본 */
+    .content-tabs .tab {
+        padding: 15px 30px;
+        background: transparent;
+        border: none;
+        font-size: 1.05rem;
+        font-weight: 600;
+        cursor: pointer;
+        color: #718096;
+        text-decoration: none;
+
+        /* 핵심 */
+        border-bottom: 3px solid transparent;
+        transition: all 0.3s ease;
+    }
+
+    /* hover */
+    .content-tabs .tab:hover {
+        color: #667eea;
+    }
+
+    /* 활성 탭 */
+    .content-tabs .tab.active {
+        color: #667eea;
+        border-bottom-color: #667eea;
+    }
+
+
+
 </style>
 
 <!-- 3) footer -->
