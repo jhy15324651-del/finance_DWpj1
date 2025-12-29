@@ -105,6 +105,70 @@
         .btn-secondary:hover {
             background: #718096;
         }
+
+
+        /* 이미지 업로드 영역 */
+        .image-upload-box {
+            margin-top: 10px;
+        }
+
+        /* 업로드 버튼 */
+        .image-upload-btn {
+            display: inline-block;
+            padding: 14px 26px;
+            background: #edf2ff;
+            color: #364fc7;
+            font-weight: 700;
+            border-radius: 10px;
+            cursor: pointer;
+            border: 2px dashed #748ffc;
+            transition: 0.2s;
+        }
+
+        .image-upload-btn:hover {
+            background: #dbe4ff;
+        }
+
+        /* 미리보기 영역 */
+        .image-preview {
+            display: flex;
+            gap: 14px;
+            margin-top: 18px;
+            flex-wrap: wrap;
+        }
+
+        /* 썸네일 카드 */
+        .preview-item {
+            position: relative;
+            width: 140px;
+            height: 140px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* 삭제 버튼 */
+        .preview-remove {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            border: none;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
     </style>
 </head>
 
@@ -143,10 +207,21 @@
             <input type="hidden" th:field="*{ticker}"/>
 
 
-            <input type="file"
-                   name="uploadFiles"
-                   multiple
-                   accept="image/*">
+            <label class="write-label" style="margin-top:30px;">이미지 첨부</label>
+
+            <div class="image-upload-box">
+                <label class="image-upload-btn">
+                    이미지 선택
+                    <input type="file"
+                           name="uploadFiles"
+                           multiple
+                           accept="image/*"
+                           onchange="previewImages(this)"
+                           hidden>
+                </label>
+
+                <div id="image-preview" class="image-preview"></div>
+            </div>
 
             <!-- 버튼 -->
             <div class="write-btn-area">
@@ -159,6 +234,27 @@
     </div>
 
 </div>
+
+
+<script>
+    function previewImages(input) {
+        const preview = document.getElementById("image-preview");
+        preview.innerHTML = "";
+
+        Array.from(input.files).forEach(file => {
+            const reader = new FileReader();
+            reader.onload = e => {
+                const div = document.createElement("div");
+                div.className = "preview-item";
+                div.innerHTML = `<img src="${e.target.result}">`;
+                preview.appendChild(div);
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+</script>
+
 
 </body>
 </html>

@@ -86,13 +86,46 @@ public class StockBoardServiceImpl implements StockBoardService {
     }
 
     @Override
-    public void modify(StockBoardDTO dto) {
+    public void modify(
+            StockBoardDTO dto,
+            MultipartFile[] newImages,
+            String removeImageIds) {
+
         StockBoard board = stockBoardRepository.findById(dto.getId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 글입니다."));
 
         board.setTitle(dto.getTitle());
         board.setContent(dto.getContent());
-        // 더티 체킹으로 자동 update
+
+        // 🔥 기존 이미지 삭제 (안전)
+        if (removeImageIds != null && !removeImageIds.isBlank()) {
+            for (String idStr : removeImageIds.split(",")) {
+                Long imgId = Long.parseLong(idStr);
+
+                stockBoardImageRepository.findById(imgId)
+                        .ifPresent(img -> {
+                            stockFileStorage.delete(img.getFilePath());
+                            stockBoardImageRepository.delete(img);
+                        });
+            }
+        }
+
+        // 새 이미지 추가
+        if (newImages != null) {
+            for (MultipartFile file : newImages) {
+                if (file.isEmpty()) continue;
+
+                String savedName = stockFileStorage.save(file);
+
+                stockBoardImageRepository.save(
+                        StockBoardImage.builder()
+                                .board(board)
+                                .fileName(file.getOriginalFilename())
+                                .filePath(savedName)
+                                .build()
+                );
+            }
+        }
     }
 
     @Override

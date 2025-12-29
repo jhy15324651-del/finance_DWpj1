@@ -27,4 +27,14 @@ public class StockFileStorage {
             throw new RuntimeException("파일 저장 실패", e);
         }
     }
+
+    public void delete(String savedFileName) {
+        try {
+            Path path = Paths.get(uploadDir, savedFileName);
+            Files.deleteIfExists(path);
+        } catch (Exception e) {
+            throw new RuntimeException("파일 삭제 실패", e);
+        }
+    }
+
 }
