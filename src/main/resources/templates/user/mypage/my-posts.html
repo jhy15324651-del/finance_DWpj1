@@ -1,5 +1,16 @@
-<th:block th:replace="content/layout/header-mypage :: header"></th:block>
-<th:block th:replace="content/layout/header-mypage :: bodyheader"></th:block>
+<!-- 1️⃣ head: header-main 사용 -->
+<th:block th:replace="content/layout/header-main :: header-main"></th:block>
+
+<!-- 2️⃣ 공통 네비게이션 바 -->
+<th:block th:replace="content/layout/header-main :: bodyheader"></th:block>
+
+<!-- ===============================
+     마이페이지 전용 탭
+================================ -->
+<div class="mypage-tabs">
+    <a href="/user/mypage/posts" class="tab active">내가 작성한 글</a>
+    <a href="/user/mypage/comments" class="tab">내가 작성한 댓글</a>
+</div>
 
 <div class="mypage-section">
     <h2>📌 내가 작성한 게시글</h2>
@@ -222,7 +233,7 @@
  ===================== */
     .mypage-section > h2 {
         text-align: center;
-        margin: 40px 0 32px;
+        margin: 10px 0 32px;
         font-size: 28px;
         font-weight: 800;
         letter-spacing: -0.5px;
@@ -233,5 +244,42 @@
         margin: 0 auto;
         padding: 0 24px 60px;
     }
+
+    /* ===============================
+   마이페이지 전용 탭
+================================ */
+
+    .mypage-tabs {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin: 16px auto 10px;
+        max-width: 1200px;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .mypage-tabs .tab {
+        padding: 15px 30px;
+        background: transparent;
+        border: none;
+        font-size: 1.05rem;
+        font-weight: 600;
+        cursor: pointer;
+        color: #718096;
+        text-decoration: none;
+
+        border-bottom: 3px solid transparent;
+        transition: all 0.3s ease;
+    }
+
+    .mypage-tabs .tab:hover {
+        color: #667eea;
+    }
+
+    .mypage-tabs .tab.active {
+        color: #667eea;
+        border-bottom-color: #667eea;
+    }
+
 
 </style>
