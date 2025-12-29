@@ -9,10 +9,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.zerock.finance_dwpj1.entity.audit.AuditDeleteLog;
 import org.zerock.finance_dwpj1.entity.content.ContentReview;
+import org.zerock.finance_dwpj1.entity.content.InfoPost;
 import org.zerock.finance_dwpj1.entity.insights.InsightsNews;
 import org.zerock.finance_dwpj1.entity.user.Role;
 import org.zerock.finance_dwpj1.repository.audit.AuditDeleteLogRepository;
 import org.zerock.finance_dwpj1.repository.content.ContentReviewRepository;
+import org.zerock.finance_dwpj1.repository.content.InfoPostRepository;
 import org.zerock.finance_dwpj1.repository.insights.InsightsNewsRepository;
 import org.zerock.finance_dwpj1.service.user.CustomUserDetails;
 
@@ -32,6 +34,7 @@ public class AdminContentDeletionService {
 
     private final InsightsNewsRepository newsRepository;
     private final ContentReviewRepository contentReviewRepository;
+    private final InfoPostRepository infoPostRepository;
     private final AuditDeleteLogRepository auditLogRepository;
 
     /**
@@ -110,6 +113,45 @@ public class AdminContentDeletionService {
         auditLogRepository.save(auditLog);
 
         log.info("콘텐츠 리뷰 소프트 삭제 완료 - ID: {}, 관리자: {}, 사유: {}", reviewId, adminEmail, deleteReason);
+    }
+
+    /**
+     * Info 게시글 소프트 삭제 (관리자용)
+     */
+    @Transactional
+    public void softDeleteInfoPost(Long postId, String deleteReason, HttpServletRequest request) {
+        InfoPost post = infoPostRepository.findById(postId)
+                .orElseThrow(() -> new IllegalArgumentException("약력 게시글을 찾을 수 없습니다: " + postId));
+
+        // 이미 삭제된 경우 예외 발생
+        if (post.getIsDeleted()) {
+            throw new IllegalStateException("이미 삭제된 약력 게시글입니다: " + postId);
+        }
+
+        // 관리자 정보 추출
+        String adminEmail = getCurrentAdminEmail();
+        Long adminUserId = getCurrentAdminUserId();
+        String adminRole = "ROLE_ADMIN";
+
+        // 소프트 삭제 실행
+        post.softDelete(adminEmail, deleteReason);
+        infoPostRepository.save(post);
+
+        // 감사 로그 기록
+        AuditDeleteLog auditLog = AuditDeleteLog.createSoftDeleteLog(
+                AuditDeleteLog.TargetType.INFO,
+                postId,
+                post.getTitle(),
+                adminUserId,
+                adminEmail,
+                adminRole,
+                deleteReason,
+                getClientIp(request),
+                request.getHeader("User-Agent")
+        );
+        auditLogRepository.save(auditLog);
+
+        log.info("약력 게시글 소프트 삭제 완료 - ID: {}, 관리자: {}, 사유: {}", postId, adminEmail, deleteReason);
     }
 
     /**

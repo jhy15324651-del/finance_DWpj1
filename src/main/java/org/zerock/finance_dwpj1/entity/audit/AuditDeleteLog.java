@@ -91,7 +91,8 @@ public class AuditDeleteLog {
 
     public enum TargetType {
         NEWS,           // InsightsNews
-        CONTENT_REVIEW  // ContentReview
+        CONTENT_REVIEW, // ContentReview
+        INFO            // InfoPost (약력 소개)
     }
 
     // ========================================

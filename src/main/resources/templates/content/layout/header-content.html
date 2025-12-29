@@ -44,7 +44,7 @@
             <!-- 관리자 로그인 -->
             <div sec:authorize="hasRole('ADMIN')" style="display: flex; gap: 10px; align-items: center;">
                 <span style="color: #667eea; font-weight: 600;">
-                    <span sec:authentication="name"></span>님 (관리자)
+                    <span th:text="${#authentication?.principal?.nickname != null ? #authentication.principal.nickname : #authentication.name}"></span>님 (관리자)
                 </span>
                 <button class="btn-common btn-outline" onclick="location.href='/admin'">관리자 페이지</button>
                 <button class="btn-common-primary" onclick="location.href='/user/logout'">로그아웃</button>
@@ -53,7 +53,7 @@
             <!-- 일반 사용자 로그인 -->
             <div sec:authorize="hasRole('USER') and !hasRole('ADMIN')" style="display: flex; gap: 10px; align-items: center;">
                 <span style="color: #667eea; font-weight: 600;">
-                    <span sec:authentication="name"></span>님
+                    <span th:text="${#authentication?.principal?.nickname != null ? #authentication.principal.nickname : #authentication.name}"></span>님
                 </span>
                 <button class="btn-common btn-outline" onclick="location.href='/user/mypage'">마이페이지</button>
                 <button class="btn-common-primary" onclick="location.href='/user/logout'">로그아웃</button>

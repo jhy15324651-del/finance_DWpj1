@@ -88,6 +88,12 @@ public class InfoPost {
     private String deletedBy;
 
     /**
+     * 삭제 사유 (News/ContentReview 패턴과 동일)
+     */
+    @Column(name = "delete_reason", columnDefinition = "TEXT")
+    private String deleteReason;
+
+    /**
      * 이 글에 포함된 섹션들
      * (PROFILE, CHANNEL, ACTIVITY, WHY, SIGNATURE, SOURCES)
      */
@@ -123,7 +129,17 @@ public class InfoPost {
     }
 
     /**
-     * 소프트 삭제 실행
+     * 소프트 삭제 실행 (관리자용 - 삭제 사유 포함)
+     */
+    public void softDelete(String deletedBy, String deleteReason) {
+        this.isDeleted = true;
+        this.deletedDate = LocalDateTime.now();
+        this.deletedBy = deletedBy;
+        this.deleteReason = deleteReason;
+    }
+
+    /**
+     * 소프트 삭제 실행 (기존 호환성 유지)
      */
     public void softDelete(String deletedBy) {
         this.isDeleted = true;
@@ -138,5 +154,6 @@ public class InfoPost {
         this.isDeleted = false;
         this.deletedDate = null;
         this.deletedBy = null;
+        this.deleteReason = null;
     }
 }

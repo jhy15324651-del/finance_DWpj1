@@ -252,11 +252,11 @@
         <h1>마이페이지</h1>
         <div class="user-info">
             <div class="user-avatar" sec:authorize="isAuthenticated()">
-                <span th:text="${#authentication.name.substring(0, 1).toUpperCase()}">U</span>
+                <span th:text="${(#authentication?.principal?.nickname != null ? #authentication.principal.nickname : #authentication.name).substring(0, 1).toUpperCase()}">U</span>
             </div>
             <div class="user-details" sec:authorize="isAuthenticated()">
                 <div class="user-email">
-                    <span sec:authentication="name">user@example.com</span>
+                    <span th:text="${#authentication?.principal?.nickname != null ? #authentication.principal.nickname : #authentication.name}">user@example.com</span>
                     <span class="info-badge">활성</span>
                 </div>
                 <div class="user-nickname">Finance DW 회원</div>
@@ -280,22 +280,10 @@
                 <div class="menu-item-title">내가 작성한 댓글</div>
                 <div class="menu-item-desc">내가 작성한 댓글을 확인하고 관리합니다</div>
             </a>
-
-            <div class="menu-item">
-                <div class="menu-item-title">북마크</div>
-                <div class="menu-item-desc">저장한 게시글과 뉴스를 확인합니다</div>
-            </div>
-            <div class="menu-item">
-                <div class="menu-item-title">내 포트폴리오</div>
-                <div class="menu-item-desc">내 투자 포트폴리오를 관리합니다</div>
-            </div>
             <a href="/notifications" class="menu-item">
                 <div class="menu-item-title">알림 설정</div>
                 <div class="menu-item-desc">받고 싶은 알림을 설정합니다</div>
             </a>
-        </div>
-        <div class="placeholder-message">
-            해당 기능들은 추후 구현 예정입니다
         </div>
     </div>
 
