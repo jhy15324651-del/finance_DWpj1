@@ -1,5 +1,8 @@
-<th:block th:replace="content/layout/header-content :: header"></th:block>
-<th:block th:replace="content/layout/header-content :: bodyheader"></th:block>
+<!-- 1️⃣ head: header-main 사용 -->
+<th:block th:replace="content/layout/header-main :: header-main"></th:block>
+
+<!-- 2️⃣ 공통 네비게이션 바 -->
+<th:block th:replace="content/layout/header-main :: bodyheader"></th:block>
 
 <div class="write-container">
     <h2>새 글 작성</h2>

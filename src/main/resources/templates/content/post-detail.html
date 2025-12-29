@@ -1,10 +1,16 @@
-<!-- =======================
-      HEADER
-======================= -->
-<th:block th:replace="content/layout/header-content :: header"></th:block>
-<th:block th:replace="content/layout/header-content :: bodyheader"></th:block>
+<!-- 1️⃣ head: header-main 사용 -->
+<th:block th:replace="content/layout/header-main :: header-main"></th:block>
+
+<!-- 2️⃣ 공통 네비게이션 바 -->
+<th:block th:replace="content/layout/header-main :: bodyheader"></th:block>
 
 <div class="post-detail-container">
+
+    <!-- 뒤로 가기 버튼 -->
+    <div class="back-button">
+        <a href="/content/home" class="btn-back">← 메인으로</a>
+        <a href="/content/category" class="btn-back">← 목록으로</a>
+    </div>
 
     <!-- =======================
           제목
@@ -555,6 +561,26 @@
     </script>
 
     <style>
+
+        /* 뒤로 가기 */
+        .back-button {
+            margin-bottom: 20px;
+        }
+
+        .btn-back {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #f5f5f5;
+            color: #333;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: 0.2s;
+        }
+
+        .btn-back:hover {
+            background: #e0e0e0;
+        }
 
         /* =====================
          본문 정보

@@ -2,11 +2,11 @@
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
-<!-- 1) head -->
-<th:block th:replace="content/layout/header-content :: header"></th:block>
+<!-- 1️⃣ head: header-main 사용 -->
+<th:block th:replace="content/layout/header-main :: header-main"></th:block>
 
-<!-- 2) body 시작 -->
-<th:block th:replace="content/layout/header-content :: bodyheader"></th:block>
+<!-- 2️⃣ 공통 네비게이션 바 -->
+<th:block th:replace="content/layout/header-main :: bodyheader"></th:block>
 
 <!-- ===============================
      약력 상세 페이지
@@ -64,6 +64,7 @@
 ================================= -->
 <style>
     .detail-wrapper {
+        width: 100%;
         max-width: 900px;
         margin: 40px auto;
         padding: 0 20px;
