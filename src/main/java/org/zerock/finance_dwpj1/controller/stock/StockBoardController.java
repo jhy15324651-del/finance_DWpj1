@@ -160,18 +160,16 @@ public class StockBoardController {
     public String edit(
             @PathVariable String ticker,
             @PathVariable Long id,
-            @ModelAttribute("dto") StockBoardDTO dto,
+            @ModelAttribute StockBoardDTO dto,
+            @RequestParam(required = false) MultipartFile[] uploadFiles,
+            @RequestParam(required = false) String removeImageIds,
             @AuthenticationPrincipal CustomUserDetails loginUser) {
-
-        if (loginUser == null) {
-            return "redirect:/user/login";
-        }
 
         dto.setId(id);
         dto.setTicker(ticker);
         dto.setWriter(loginUser.getNickname());
 
-        stockBoardService.modify(dto);
+        stockBoardService.modify(dto, uploadFiles, removeImageIds);
 
         return "redirect:/stock/board/" + ticker + "/read/" + id;
     }

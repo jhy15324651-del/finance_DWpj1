@@ -20,7 +20,11 @@ public interface StockBoardService {
     Long register(StockBoardDTO dto, MultipartFile[] images);
 
     // 글 수정
-    void modify(StockBoardDTO dto);
+    void modify(
+            StockBoardDTO dto,
+            MultipartFile[] newImages,
+            String removeImageIds
+    );
 
     // 글 삭제
     void remove(Long id);
