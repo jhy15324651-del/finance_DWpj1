@@ -129,8 +129,21 @@ public class StockBoardServiceImpl implements StockBoardService {
     }
 
     @Override
+    @Transactional
     public void remove(Long id) {
-        stockBoardRepository.deleteById(id);
+
+        StockBoard board = stockBoardRepository.findById(id)
+                .orElseThrow();
+
+        List<StockBoardImage> images =
+                stockBoardImageRepository.findByBoard(board);
+
+        for (StockBoardImage img : images) {
+            stockFileStorage.delete(img.getFilePath()); // 실제 파일 삭제
+            stockBoardImageRepository.delete(img);      // DB 삭제
+        }
+
+        stockBoardRepository.delete(board);
     }
 
 
