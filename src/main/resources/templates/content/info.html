@@ -52,7 +52,7 @@
                     </div>
                 </div>
 
-                <!-- 🔹 하단: 작성자 + 날짜 -->
+                <!-- 🔹 하단: 작성자 + 날짜 + 관리자 버튼 -->
                 <div class="post-bottom">
                     <div class="post-extra">
                         <span th:text="'작성자: ' + ${post.writer}"></span>
@@ -60,6 +60,15 @@
 
                     <div class="post-meta">
                         <span th:text="${#temporals.format(post.createdDate, 'yyyy.MM.dd')}"></span>
+
+                        <!-- 관리자 삭제 버튼 (클릭 이벤트 전파 방지) -->
+                        <div class="admin-buttons" sec:authorize="hasRole('ADMIN')">
+                            <button class="btn-delete"
+                                    th:attr="data-id=${post.id}"
+                                    onclick="event.stopPropagation(); deletePost(this);">
+                                삭제
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -270,6 +279,72 @@
 
 
 </style>
+
+<!-- ===============================
+     관리자 삭제 JavaScript
+================================= -->
+<script>
+/**
+ * 약력 게시글 삭제 (관리자 전용)
+ * News/ContentReview 패턴과 동일
+ */
+function deletePost(button) {
+    const postId = button.getAttribute('data-id');
+
+    // 1️⃣ 확인 다이얼로그
+    if (!confirm('정말 이 약력 게시글을 삭제하시겠습니까?')) {
+        return;
+    }
+
+    // 2️⃣ 삭제 사유 입력 (필수)
+    const deleteReason = prompt('삭제 사유를 입력해주세요 (필수):');
+
+    if (deleteReason === null) {
+        // 취소 버튼 클릭
+        return;
+    }
+
+    if (deleteReason.trim() === '') {
+        alert('삭제 사유는 필수 입력 항목입니다.');
+        return;
+    }
+
+    // 3️⃣ 버튼 비활성화 (중복 클릭 방지)
+    button.disabled = true;
+    button.textContent = '삭제 중...';
+
+    // 4️⃣ DELETE 요청
+    fetch(`/api/admin/info-sections/${postId}`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            deleteReason: deleteReason
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message || '약력 게시글이 삭제되었습니다.');
+            // 5️⃣ 페이지 새로고침 (삭제된 카드 제거)
+            location.reload();
+        } else {
+            alert('삭제 실패: ' + (data.message || '알 수 없는 오류'));
+            // 버튼 복원
+            button.disabled = false;
+            button.textContent = '삭제';
+        }
+    })
+    .catch(error => {
+        console.error('삭제 중 오류:', error);
+        alert('삭제 중 오류가 발생했습니다.');
+        // 버튼 복원
+        button.disabled = false;
+        button.textContent = '삭제';
+    });
+}
+</script>
 
 <!-- 3) footer -->
 <th:block th:replace="content/layout/footer :: footer"></th:block>

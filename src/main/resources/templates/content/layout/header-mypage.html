@@ -50,7 +50,7 @@
 
             <!-- 닉네임 -->
             <span style="color:#667eea; font-weight:600;">
-                <span sec:authentication="name"></span>님
+                <span th:text="${#authentication?.principal?.nickname != null ? #authentication.principal.nickname : #authentication.name}"></span>님
             </span>
 
             <!-- 마이페이지 -->

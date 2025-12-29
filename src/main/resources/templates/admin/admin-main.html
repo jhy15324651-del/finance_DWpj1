@@ -14,7 +14,7 @@
             <h1>📊 Finance 관리자 페이지</h1>
         </div>
         <div class="header-right">
-            <span class="user-info" sec:authentication="name">관리자</span>
+            <span class="user-info" th:text="${#authentication?.principal?.nickname != null ? #authentication.principal.nickname : #authentication.name}">관리자</span>
             <a th:href="@{/}" class="btn-link">메인으로</a>
             <form th:action="@{/user/logout}" method="post" style="display: inline;">
                 <button type="submit" class="btn-logout">로그아웃</button>

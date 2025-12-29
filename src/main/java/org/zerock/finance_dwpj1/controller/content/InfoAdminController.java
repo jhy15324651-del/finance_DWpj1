@@ -1,11 +1,13 @@
 package org.zerock.finance_dwpj1.controller.content;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import org.zerock.finance_dwpj1.service.admin.AdminContentDeletionService;
 import org.zerock.finance_dwpj1.service.content.InfoPostService;
 
 import java.security.Principal;
@@ -31,33 +33,66 @@ import java.util.Map;
 public class InfoAdminController {
 
     private final InfoPostService postService;
+    private final AdminContentDeletionService deletionService;
 
     /**
      * 게시글 소프트 삭제 (관리자 전용)
      * DELETE /api/admin/info-sections/{id}
      *
-     * 동작:
-     * - 실제 DB 삭제가 아닌 isDeleted=true로 변경
-     * - deletedDate, deletedBy 기록
-     * - 일반 사용자는 목록에서 볼 수 없음
-     * - 연결된 모든 섹션도 함께 숨겨짐
+     * News/ContentReview 패턴과 동일하게 감사 로그 기록
      *
      * @param id 삭제할 게시글 ID
-     * @param principal 현재 로그인한 관리자 정보
+     * @param requestBody 삭제 사유 (deleteReason 필수)
+     * @param request HTTP 요청 (IP, UserAgent 추출용)
      * @return 삭제 결과
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> softDeleteSection(@PathVariable Long id, Principal principal) {
-        String adminId = principal.getName();
-        log.info("🗑️ 게시글 삭제 요청: ID={}, 관리자={}", id, adminId);
+    public ResponseEntity<Map<String, Object>> softDeleteSection(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> requestBody,
+            HttpServletRequest request
+    ) {
+        log.info("🗑️ 약력 게시글 삭제 요청 - ID: {}", id);
 
-        boolean success = postService.softDeletePost(id, adminId);
+        String deleteReason = requestBody.get("deleteReason");
 
-        if (success) {
-            return ResponseEntity.ok(createResponse(true, "게시글이 삭제되었습니다"));
-        } else {
-            return ResponseEntity.badRequest()
-                    .body(createResponse(false, "게시글 삭제에 실패했습니다"));
+        // 삭제 사유 필수 체크 (News/ContentReview 패턴)
+        if (deleteReason == null || deleteReason.trim().isEmpty()) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "삭제 사유를 입력해주세요.");
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
+
+        try {
+            // AdminContentDeletionService 사용 (감사 로그 자동 기록)
+            deletionService.softDeleteInfoPost(id, deleteReason, request);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "약력 게시글이 삭제되었습니다.");
+            return ResponseEntity.ok(response);
+
+        } catch (IllegalArgumentException e) {
+            log.error("약력 게시글을 찾을 수 없음: {}", id, e);
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+
+        } catch (IllegalStateException e) {
+            log.error("이미 삭제된 약력 게시글: {}", id, e);
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+
+        } catch (Exception e) {
+            log.error("약력 게시글 삭제 중 오류 발생: {}", id, e);
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "삭제 중 오류가 발생했습니다: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(errorResponse);
         }
     }
 
