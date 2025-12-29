@@ -60,11 +60,44 @@ public class StockOCRController {
                     "type", result.getType()
             );
 
-            return ResponseEntity.ok(response);  // 🔥 수정됨
+            return ResponseEntity.ok(response);
+
+        } catch (IllegalStateException e) {
+            // traineddata 파일 없음 등 설정 오류
+            log.error("[Stock OCR Controller] 설정 오류 발생: {}", e.getMessage());
+            return ResponseEntity.status(500).body(Map.of(
+                "error", "OCR 설정 오류",
+                "message", e.getMessage(),
+                "hint", "관리자에게 문의하세요. (traineddata 파일 경로 확인 필요)"
+            ));
+
+        } catch (IllegalArgumentException e) {
+            // 이미지 파일 형식 오류 등
+            log.error("[Stock OCR Controller] 잘못된 요청: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of(
+                "error", "잘못된 파일",
+                "message", e.getMessage(),
+                "hint", "PNG, JPG, JPEG 형식의 이미지 파일을 업로드하세요."
+            ));
 
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.badRequest().body("OCR 처리 실패 : " + e.getMessage());
+            // 기타 예외
+            log.error("[Stock OCR Controller] OCR 처리 중 예외 발생", e);
+            return ResponseEntity.status(500).body(Map.of(
+                "error", "OCR 처리 실패",
+                "message", e.getMessage() != null ? e.getMessage() : "알 수 없는 오류"
+            ));
+
+        } catch (Throwable t) {
+            // 🔥 Error까지 포함 (JNA Invalid memory access, OutOfMemoryError 등)
+            // 서버 크래시 방지를 위한 최종 방어선
+            log.error("[Stock OCR Controller] 심각한 오류 발생 (Error 레벨): {}", t.getClass().getName(), t);
+            return ResponseEntity.status(500).body(Map.of(
+                "error", "서버 내부 오류",
+                "message", "OCR 처리 중 심각한 오류가 발생했습니다.",
+                "detail", t.getMessage() != null ? t.getMessage() : t.getClass().getName(),
+                "hint", "관리자에게 문의하세요. (Tesseract 라이브러리 오류 가능성)"
+            ));
         }
     }
 
