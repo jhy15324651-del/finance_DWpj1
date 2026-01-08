@@ -330,3 +330,286 @@ body {
         font-size: 14px;
     }
 }
+
+/* ====================================
+   투자 판단 4단계 프로세스 섹션
+   (.snn-process 스코프 제한)
+==================================== */
+
+/* Stepper (진행바) */
+.snn-process .process-stepper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    max-width: 800px;
+    margin: 0 auto 60px;
+    padding: 0 20px;
+}
+
+.snn-process .step-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.snn-process .step-circle {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: #e2e8f0;
+    color: #718096;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    font-weight: 700;
+    transition: all 0.3s;
+}
+
+.snn-process .step-item.active .step-circle {
+    background: linear-gradient(135deg, #6f63ff 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(111, 99, 255, 0.4);
+}
+
+.snn-process .step-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #718096;
+}
+
+.snn-process .step-item.active .step-label {
+    color: #6f63ff;
+}
+
+.snn-process .step-connector {
+    flex: 1;
+    height: 3px;
+    background: #e2e8f0;
+    margin: 0 10px;
+    max-width: 120px;
+}
+
+/* 4단계 카드 Flexbox 레이아웃 */
+.snn-process .process-row {
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    gap: 18px;
+    flex-wrap: nowrap;
+    max-width: 1300px;
+    margin: 0 auto;
+}
+
+.snn-process .process-card {
+    width: 270px;
+    min-height: 360px;
+    padding: 28px 22px;
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 18px;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: transform 0.15s ease;
+}
+
+.snn-process .process-card:hover {
+    transform: translateY(-2px);
+}
+
+.snn-process .process-badge {
+    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: rgba(111, 99, 255, 0.12);
+    color: #4b46c6;
+    font-weight: 800;
+    margin-bottom: 16px;
+}
+
+.snn-process .process-icon {
+    width: 56px;
+    height: 56px;
+    margin: 6px 0 14px;
+    font-size: 2.8rem;
+}
+
+.snn-process .process-title {
+    font-size: 18px;
+    font-weight: 900;
+    margin: 6px 0 10px;
+    line-height: 1.25;
+    color: #1f2937;
+}
+
+.snn-process .process-desc {
+    font-size: 13px;
+    color: rgba(0, 0, 0, 0.62);
+    line-height: 1.55;
+    margin-bottom: auto;
+}
+
+.snn-process .process-btn {
+    margin-top: 18px;
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: #6f63ff;
+    color: #fff;
+    font-weight: 800;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.snn-process .process-btn:hover {
+    background: #5a4fe6;
+    transform: translateY(-1px);
+}
+
+.snn-process .process-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    font-size: 18px;
+    font-weight: 900;
+    color: rgba(111, 99, 255, 0.45);
+    margin: 0 2px;
+    flex-shrink: 0;
+}
+
+/* 이달의 자료 섹션 */
+.snn-process .monthly-data-section {
+    margin-top: 60px;
+    padding-top: 40px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.snn-process .monthly-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #2d3748;
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+.snn-process .monthly-list {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 15px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.snn-process .monthly-item {
+    background: white;
+    border-radius: 8px;
+    transition: all 0.2s;
+    overflow: hidden;
+}
+
+.snn-process .monthly-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.snn-process .monthly-link {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+    padding: 15px;
+}
+
+.snn-process .monthly-rank {
+    font-weight: 700;
+    color: #6f63ff;
+    font-size: 1.2rem;
+    min-width: 30px;
+    text-align: center;
+}
+
+.snn-process .monthly-rank.top {
+    color: #fbbf24;
+}
+
+.snn-process .monthly-content {
+    flex: 1;
+}
+
+.snn-process .monthly-post-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 5px;
+    line-height: 1.4;
+
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.snn-process .monthly-views {
+    font-size: 0.8rem;
+    color: #718096;
+}
+
+/* 반응형 (프로세스 섹션만) */
+@media (max-width: 992px) {
+    .snn-process .process-row {
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .snn-process .process-arrow {
+        display: none;
+    }
+
+    .snn-process .process-card {
+        width: min(92vw, 420px);
+    }
+
+    .snn-process .step-connector {
+        max-width: 80px;
+    }
+}
+
+@media (max-width: 768px) {
+    .snn-process .process-stepper {
+        margin-bottom: 40px;
+    }
+
+    .snn-process .step-circle {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+    }
+
+    .snn-process .step-label {
+        font-size: 0.75rem;
+    }
+
+    .snn-process .step-connector {
+        max-width: 40px;
+        margin: 0 5px;
+    }
+
+    .snn-process .process-card {
+        padding: 25px 18px;
+        min-height: 320px;
+    }
+
+    .snn-process .monthly-list {
+        grid-template-columns: 1fr;
+    }
+}

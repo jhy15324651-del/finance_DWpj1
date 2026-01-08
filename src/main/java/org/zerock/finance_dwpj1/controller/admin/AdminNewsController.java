@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.zerock.finance_dwpj1.entity.insights.InsightsNews;
 import org.zerock.finance_dwpj1.service.admin.AdminContentDeletionService;
+import org.zerock.finance_dwpj1.service.insights.NewsSchedulerService;
 
 import java.util.HashMap;
 import java.util.List;
@@ -24,6 +25,7 @@ import java.util.Map;
 public class AdminNewsController {
 
     private final AdminContentDeletionService deletionService;
+    private final NewsSchedulerService newsSchedulerService;
 
     /**
      * 관리자용 뉴스 전체 목록 조회 (삭제 포함)
@@ -84,6 +86,31 @@ public class AdminNewsController {
             errorResponse.put("success", false);
             errorResponse.put("message", "삭제 중 오류가 발생했습니다: " + e.getMessage());
             return ResponseEntity.internalServerError().body(errorResponse);
+        }
+    }
+
+    /**
+     * 수동 크롤링 실행
+     */
+    @PostMapping("/manual-crawl")
+    public ResponseEntity<Map<String, Object>> manualCrawl() {
+        log.info("[관리자] 수동 크롤링 실행 요청");
+
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            newsSchedulerService.manualCrawl();
+
+            response.put("success", true);
+            response.put("message", "수동 크롤링이 실행되었습니다.");
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            log.error("수동 크롤링 실행 중 오류 발생", e);
+
+            response.put("success", false);
+            response.put("message", "크롤링 중 오류가 발생했습니다. 로그를 확인해주세요.");
+            return ResponseEntity.internalServerError().body(response);
         }
     }
 }

@@ -61,13 +61,6 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
     implementation 'com.yahoofinance-api:YahooFinanceAPI:3.17.0'
-
-    // Apache POI for Excel generation
-    implementation 'org.apache.poi:poi:5.2.5'
-    implementation 'org.apache.poi:poi-ooxml:5.2.5'
-
-    // Apache PDFBox for PDF generation
-    implementation 'org.apache.pdfbox:pdfbox:2.0.30'
 }
 
 tasks.named('test') {
@@ -81,34 +74,4 @@ tasks.withType(JavaCompile) {
 
 tasks.withType(Test) {
     systemProperty 'file.encoding', 'UTF-8'
-}
-
-// Task to run RequirementsExcelGenerator
-tasks.register('generateRequirements', JavaExec) {
-    mainClass = 'org.zerock.finance_dwpj1.util.RequirementsExcelGenerator'
-    classpath = sourceSets.main.runtimeClasspath
-}
-
-// Task to run ClassDesignPdfGenerator
-tasks.register('generateClassDesignPdf', JavaExec) {
-    mainClass = 'org.zerock.finance_dwpj1.util.ClassDesignPdfGenerator'
-    classpath = sourceSets.main.runtimeClasspath
-}
-
-// Task to run ClassDesignExcelGenerator
-tasks.register('generateClassDesignExcel', JavaExec) {
-    mainClass = 'org.zerock.finance_dwpj1.util.ClassDesignExcelGenerator'
-    classpath = sourceSets.main.runtimeClasspath
-}
-
-// Task to run ComprehensiveClassDesignPdfGenerator
-tasks.register('generateComprehensivePdf', JavaExec) {
-    mainClass = 'org.zerock.finance_dwpj1.util.ComprehensiveClassDesignPdfGenerator'
-    classpath = sourceSets.main.runtimeClasspath
-}
-
-// Task to run FormattedClassDesignPdfGenerator (양식 준수)
-tasks.register('generateFormattedPdf', JavaExec) {
-    mainClass = 'org.zerock.finance_dwpj1.util.FormattedClassDesignPdfGenerator'
-    classpath = sourceSets.main.runtimeClasspath
 }

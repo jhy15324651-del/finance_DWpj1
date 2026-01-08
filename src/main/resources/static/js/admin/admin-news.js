@@ -253,6 +253,37 @@ async function retranslateNews() {
 }
 
 /**
+ * 수동 크롤링 실행
+ */
+async function manualCrawlNews() {
+    if (!confirm('수동 크롤링을 실행하시겠습니까?\n\n크롤링에는 시간이 소요될 수 있습니다.')) {
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/admin/news/manual-crawl', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            alert(result.message);
+            loadNewsList();
+        } else {
+            alert('크롤링 실패: ' + result.message);
+        }
+
+    } catch (error) {
+        console.error('수동 크롤링 실패:', error);
+        alert('크롤링 중 오류가 발생했습니다.');
+    }
+}
+
+/**
  * 뉴스 탭 활성화 시 자동 로드
  */
 document.addEventListener('DOMContentLoaded', function() {
