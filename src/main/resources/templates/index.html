@@ -355,10 +355,11 @@
             white-space: nowrap;
         }
 
-        .review-content {
+        /* 메인 콘텐츠 래퍼 (추천 카드 + 리뷰 상세) */
+        .review-main-content {
             display: flex;
             flex-direction: column;
-            gap: 40px;
+            gap: 30px;
         }
 
         .review-cards {
@@ -368,13 +369,13 @@
         }
 
         .content-card {
-            height: 160px;                 /* 카드 높이 고정 */
+            height: 160px;
             background: #fff;
             border: 1px solid #e5e7eb;
             border-radius: 12px;
             overflow: hidden;
 
-            display: flex;                 /* 🔥 핵심 */
+            display: flex;
             justify-content: space-between;
 
             box-shadow: 0 2px 8px rgba(0,0,0,0.06);
@@ -388,7 +389,7 @@
 
         .card-left {
             flex: 1;
-            padding: 18px 16px;   /* 🔥 상하 여백 조금 여유 */
+            padding: 18px 16px;
 
             display: flex;
             flex-direction: column;
@@ -398,7 +399,7 @@
         .card-bottom {
             display: flex;
             flex-direction: column;
-            gap: 2px;   /* 작성자 ↔ 평점 미세 간격 */
+            gap: 2px;
         }
 
         .content-title {
@@ -406,20 +407,20 @@
             font-weight: 600;
             color: #1f2937;
 
-            line-height: 1.4;      /* 🔥 줄 간격 조금 여유 */
-            margin-bottom: 12px;   /* 🔥 제목 ↔ 작성자 간격 */
+            line-height: 1.4;
+            margin-bottom: 12px;
 
             display: -webkit-box;
-            -webkit-line-clamp: 2;     /* ✅ 2줄 고정 */
+            -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
 
         .content-thumbnail {
-            width: 140px;                  /* ✅ 여기서 크기 조절 */
+            width: 140px;
             height: 100%;
             background: #f3f4f6;
-            flex-shrink: 0;                /* 줄어들지 않게 */
+            flex-shrink: 0;
 
             display: flex;
             align-items: center;
@@ -431,7 +432,6 @@
             height: 100%;
             object-fit: cover;
         }
-
 
         .paid-badge {
             background: #fbbf24;
@@ -445,8 +445,7 @@
         .creator {
             font-size: 13px;
             color: #6b7280;
-
-            margin-bottom: 6px; /* 🔥 작성자 ↔ 평점 간격 */
+            margin-bottom: 6px;
         }
 
         .rating {
@@ -456,7 +455,7 @@
 
             display: flex;
             align-items: center;
-            gap: 4px;             /* ⭐ 숫자 ↔ /5.0 간격 */
+            gap: 4px;
         }
 
         .stars {
@@ -464,11 +463,12 @@
             font-size: 1.1rem;
         }
 
+        /* 리뷰 상세 정보 */
         .review-info {
-            grid-column: 2 / 3;
             background: #f8f9fa;
             padding: 30px;
             border-radius: 12px;
+            margin-top: 10px;
         }
 
         .review-info h3 {
@@ -590,68 +590,84 @@
     </div>
 </section>
 
-<!-- 핵심 기능 + 왼쪽 이달의 자료 섹션 -->
-<section class="features">
+<!-- 투자 판단 4단계 프로세스 섹션 -->
+<section class="snn-process" style="background:#f8f9fa; padding:80px 20px;">
     <div class="container">
-        <h2>핵심 기능</h2>
-        <div class="features-layout">
+        <h2 class="process-title" style="text-align:center; font-size:2.5rem; font-weight:700; color:#2d3748; margin-bottom:50px;">
+            투자 판단 4단계 프로세스
+        </h2>
 
-            <!-- 왼쪽 이달의 자료 사이드바 -->
-            <aside class="monthly-sidebar">
-                <h3>📚 이달의 자료</h3>
+        <!-- 가로형 Stepper -->
+        <div class="process-stepper">
+            <div class="step-item active">
+                <div class="step-circle">1</div>
+                <div class="step-label">분석</div>
+            </div>
+            <div class="step-connector"></div>
 
-                <ul class="ranking-list">
-                    <li class="ranking-item"
-                        th:each="post, stat : ${monthlyDataList}">
+            <div class="step-item">
+                <div class="step-circle">2</div>
+                <div class="step-label">학습</div>
+            </div>
+            <div class="step-connector"></div>
 
-                        <a th:href="@{/content/post/{id}(id=${post.id})}"
-                           class="ranking-link">
+            <div class="step-item">
+                <div class="step-circle">3</div>
+                <div class="step-label">재검증</div>
+            </div>
+            <div class="step-connector"></div>
 
-                            <span class="rank-number"
-                                  th:classappend="${stat.index < 3} ? ' top'"
-                                  th:text="${stat.index + 1}"></span>
+            <div class="step-item">
+                <div class="step-circle">4</div>
+                <div class="step-label">검증</div>
+            </div>
+        </div>
 
-                            <div>
-                                <div class="rank-title"
-                                     th:text="${post.title}"></div>
+        <!-- 4단계 카드 (Flexbox로 변경) -->
+        <div class="process-row">
+            <!-- STEP 1 -->
+            <div class="process-card">
+                <div class="process-badge">STEP 1</div>
+                <div class="process-icon">📰</div>
+                <h3 class="process-title">분석 · 뉴스 인사이트</h3>
+                <p class="process-desc">실시간 경제 뉴스와 전문가 인사이트로 시장 흐름을 빠르게 파악하세요</p>
+                <button class="process-btn" onclick="location.href='/news'">뉴스 인사이트로 →</button>
+            </div>
 
-                                <div class="rank-views">
-                                    👁 <span th:text="${post.viewCountMonth}"></span>
-                                </div>
-                            </div>
+            <!-- Arrow (Desktop only) -->
+            <div class="process-arrow">→</div>
 
-                        </a>
-                    </li>
-                </ul>
-            </aside>
+            <!-- STEP 2 -->
+            <div class="process-card">
+                <div class="process-badge">STEP 2</div>
+                <div class="process-icon">📝</div>
+                <h3 class="process-title">학습 · 콘텐츠 리뷰</h3>
+                <p class="process-desc">검증된 투자 콘텐츠를 학습하고 평가하며 투자 지식을 쌓아가세요</p>
+                <button class="process-btn" onclick="location.href='/content/home'">콘텐츠 리뷰로 →</button>
+            </div>
 
-            <!-- 오른쪽 기존 핵심 기능 카드 -->
-            <div class="features-main">
-                <div class="feature-grid">
-                    <div class="feature-card" onclick="location.href='/content/home'">
-                        <div class="feature-icon">📝</div>
-                        <h3>콘텐츠 리뷰</h3>
-                        <p>유튜브, 블로그 등 유료 경제 콘텐츠를 맛집 리뷰처럼 평가하세요. 실제 구독자들의 솔직한 후기와 평점으로 검증된 콘텐츠만 선택할 수 있습니다.</p>
-                    </div>
+            <!-- Arrow (Desktop only) -->
+            <div class="process-arrow">→</div>
 
-                    <div class="feature-card" onclick="location.href='/stock/chart'">
-                        <div class="feature-icon">📈</div>
-                        <h3>종목 차트 & 토론방</h3>
-                        <p>실시간 차트를 보면서 바로 아래 토론방에서 다른 투자자들과 의견을 나누세요. 차트 분석부터 매매 전략까지 실시간으로 공유합니다.</p>
-                    </div>
+            <!-- STEP 3 -->
+            <div class="process-card">
+                <div class="process-badge">STEP 3</div>
+                <div class="process-icon">📈</div>
+                <h3 class="process-title">재검증 수정 · 주식 토론방</h3>
+                <p class="process-desc">실시간 차트와 토론으로 투자 아이디어를 검증하고 수정하세요</p>
+                <button class="process-btn" onclick="location.href='/stock/chart'">주식 토론으로 →</button>
+            </div>
 
-                    <div class="feature-card" onclick="location.href='/news'">
-                        <div class="feature-icon">📰</div>
-                        <h3>뉴스 & 트위터 인사이트</h3>
-                        <p>중요한 경제 뉴스 요약과 유명 투자 인플루언서들의 트윗을 한눈에 모아보세요. 시장의 흐름을 빠르게 파악할 수 있습니다.</p>
-                    </div>
+            <!-- Arrow (Desktop only) -->
+            <div class="process-arrow">→</div>
 
-                    <div class="feature-card" onclick="location.href='/portfolio'">
-                        <div class="feature-icon">💼</div>
-                        <h3>포트폴리오 & 투자자 비교</h3>
-                        <p>내 포트폴리오를 유명 투자자들과 비교 분석하세요. 수익률, 자산 배분, 투자 스타일을 비교하며 인사이트를 얻을 수 있습니다.</p>
-                    </div>
-                </div>
+            <!-- STEP 4 -->
+            <div class="process-card">
+                <div class="process-badge">STEP 4</div>
+                <div class="process-icon">💼</div>
+                <h3 class="process-title">검증 · AI 추천 포트폴리오</h3>
+                <p class="process-desc">AI 분석과 전문가 포트폴리오로 최종 투자 전략을 검증하세요</p>
+                <button class="process-btn" onclick="location.href='/portfolio'">AI 추천으로 →</button>
             </div>
         </div>
     </div>
@@ -665,6 +681,7 @@
         <div class="review-container">
             <!-- 왼쪽 사이드바 -->
             <div class="ranking-sidebar">
+                <!-- 인기 뉴스 -->
                 <div class="ranking-section">
                     <h3>📰 인기 뉴스</h3>
                     <ul class="ranking-list">
@@ -688,19 +705,39 @@
                         </li>
                     </ul>
                 </div>
+
+                <!-- 이달의 자료 -->
+                <div class="ranking-section">
+                    <h3>📚 이달의 자료</h3>
+                    <ul class="ranking-list">
+                        <li class="ranking-item"
+                            th:each="post, stat : ${monthlyDataList}">
+                            <a th:href="@{/content/post/{id}(id=${post.id})}"
+                               class="ranking-link">
+                                <span class="rank-number"
+                                      th:classappend="${stat.index < 3} ? 'top'"
+                                      th:text="${stat.index + 1}"></span>
+                                <div>
+                                    <div class="rank-title" th:text="${post.title}"></div>
+                                    <div class="rank-views">👁 <span th:text="${post.viewCountMonth}"></span></div>
+                                </div>
+                            </a>
+                        </li>
+
+                        <li class="ranking-item" th:if="${#lists.isEmpty(monthlyDataList)}">
+                            <span class="rank-number">-</span>
+                            <div>
+                                <div class="rank-title">등록된 자료가 없습니다</div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
             </div>
 
-            <!-- 오른쪽 추천 카드 영역 -->
-            <div class="review-content">
+            <!-- 메인 콘텐츠 영역 (추천 카드 + 리뷰 상세) -->
+            <div class="review-main-content">
+                <!-- 추천 카드 영역 -->
                 <div class="review-cards">
-
-                    <!-- 요약 쓰고 싶으면 여기 추가 (선택) -->
-                    <!--
-                    <div class="content-summary"
-                         th:text="${post.preview}">
-                    </div>
-                    -->
-
                     <div class="content-card"
                          th:each="post : ${recommendedPosts}"
                          th:onclick="|location.href='@{/content/post/{id}(id=${post.id})}'|"
@@ -721,7 +758,7 @@
                             </div>
                         </div>
 
-                        <!-- 👉 우측 썸네일 -->
+                        <!-- 우측 썸네일 -->
                         <div class="content-thumbnail">
                             <img th:if="${post.thumbnail != null}"
                                  th:src="${post.thumbnail}"
@@ -729,38 +766,39 @@
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="review-info">
-                <h3>리뷰 상세 정보</h3>
+                <!-- 리뷰 상세 정보 -->
+                <div class="review-info">
+                    <h3>리뷰 상세 정보</h3>
 
-                <div class="keyword-tags">
-                    <span class="tag">#ETF투자</span>
-                    <span class="tag">#초보자환영</span>
-                    <span class="tag">#실전전략</span>
-                    <span class="tag">#장기투자</span>
+                    <div class="keyword-tags">
+                        <span class="tag">#ETF투자</span>
+                        <span class="tag">#초보자환영</span>
+                        <span class="tag">#실전전략</span>
+                        <span class="tag">#장기투자</span>
+                    </div>
+
+                    <div class="pros-cons">
+                        <h4>👍 장점</h4>
+                        <ul>
+                            <li>초보자도 이해하기 쉬운 설명</li>
+                            <li>실제 투자 사례가 풍부함</li>
+                            <li>정기적으로 업데이트되는 콘텐츠</li>
+                        </ul>
+                    </div>
+
+                    <div class="pros-cons">
+                        <h4>💡 개선 포인트</h4>
+                        <ul>
+                            <li>고급 전략은 다소 부족</li>
+                            <li>한국 시장 분석이 적음</li>
+                        </ul>
+                    </div>
+
+                    <button class="btn" onclick="location.href='/content/home'">
+                        전체 리뷰 보러가기
+                    </button>
                 </div>
-
-                <div class="pros-cons">
-                    <h4>👍 장점</h4>
-                    <ul>
-                        <li>초보자도 이해하기 쉬운 설명</li>
-                        <li>실제 투자 사례가 풍부함</li>
-                        <li>정기적으로 업데이트되는 콘텐츠</li>
-                    </ul>
-                </div>
-
-                <div class="pros-cons">
-                    <h4>💡 개선 포인트</h4>
-                    <ul>
-                        <li>고급 전략은 다소 부족</li>
-                        <li>한국 시장 분석이 적음</li>
-                    </ul>
-                </div>
-
-                <button class="btn" onclick="location.href='/content/home'">
-                    전체 리뷰 보러가기
-                </button>
             </div>
         </div>
     </div>

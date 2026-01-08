@@ -189,7 +189,15 @@ public class NewsSchedulerService {
      */
     public void manualCrawl() {
         log.info("수동 크롤링 시작");
-        crawlNewsDaily();
+
+        // 수동 실행은 스케줄러 상태와 무관하게 동작
+        boolean originalState = schedulerEnabled;
+        try {
+            schedulerEnabled = true;
+            crawlNewsDaily();
+        } finally {
+            schedulerEnabled = originalState;
+        }
     }
 
     /**

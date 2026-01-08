@@ -1111,3 +1111,76 @@ body::before {
     max-width: 500px;
     margin: 0 auto;
 }
+
+/* ========== 종목 입력 헤더 라벨 (UX 개선) ========== */
+.stock-list-header {
+    display: flex;
+    gap: 12px;
+    margin: 24px 0 12px 0;
+    padding: 0 4px;
+    align-items: center;
+}
+
+.header-label {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    padding: 8px 12px;
+    background: linear-gradient(135deg,
+        rgba(102, 126, 234, 0.05) 0%,
+        rgba(118, 75, 162, 0.05) 100%);
+    border-radius: 6px;
+    border-left: 3px solid var(--primary-purple);
+    transition: all 0.3s ease;
+}
+
+.header-label i {
+    color: var(--primary-purple);
+    font-size: 14px;
+    opacity: 0.8;
+}
+
+.header-label span {
+    line-height: 1;
+}
+
+/* 삭제 버튼 자리 확보용 */
+.header-spacer {
+    width: 64px; /* .btn-remove 버튼 너비와 동일 */
+    flex-shrink: 0;
+}
+
+/* Hover 효과 */
+.header-label:hover {
+    background: linear-gradient(135deg,
+        rgba(102, 126, 234, 0.08) 0%,
+        rgba(118, 75, 162, 0.08) 100%);
+}
+
+/* ========== 반응형 - 헤더 라벨 (모바일) ========== */
+@media (max-width: 768px) {
+    .stock-list-header {
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+
+    .header-label {
+        width: 100%;
+        justify-content: flex-start;
+        padding: 10px 14px;
+        font-size: 14px;
+    }
+
+    .header-label i {
+        font-size: 16px;
+    }
+
+    .header-spacer {
+        display: none;
+    }
+}
