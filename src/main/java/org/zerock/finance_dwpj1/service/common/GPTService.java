@@ -257,39 +257,6 @@ public class GPTService {
     }
 
     /**
-     * 뉴스 요약 생성 (더 이상 사용 안 함 - summary 필드 제거로 deprecated)
-     * @param content 뉴스 본문
-     * @return AI 요약 (3-4문장)
-     * @deprecated summary 필드를 사용하지 않으므로 더 이상 필요 없음. 번역된 content만 사용.
-     */
-    @Deprecated
-    public String summarizeNews(String content) {
-        try {
-            if (content == null || content.isEmpty()) {
-                return "요약을 생성할 수 없습니다.";
-            }
-
-            // 내용이 너무 길면 앞부분만 사용 (토큰 제한)
-            String truncatedContent = content.length() > 2000 ?
-                    content.substring(0, 2000) + "..." : content;
-
-            AiRequest request = AiRequest.builder()
-                    .system("당신은 금융 뉴스 요약 전문가입니다. 핵심 내용과 시장 영향을 중심으로 요약해주세요.")
-                    .user(String.format("다음 금융 뉴스를 3-4문장으로 요약해주세요:\n\n%s", truncatedContent))
-                    .temperature(0.7)
-                    .maxTokens(400) // Gemini 기준 증가
-                    .timeoutSeconds(60)
-                    .build();
-
-            AiResult result = aiClient.generate(request);
-            return result.getText();
-        } catch (AiClientException e) {
-            log.error("[{}] 요약 생성 중 오류: {}", e.getProvider(), e.getMessage());
-            return "요약 생성에 실패했습니다.";
-        }
-    }
-
-    /**
      * 뉴스 한국어 번역 (Gemini 최적화)
      * @param englishContent 영어 원문
      * @return 한국어 번역본
